@@ -6,7 +6,17 @@ import requests
 from prompts import PROMPTS
 from llm.llm_client import LLMClientFactory, LLMClient
 import os
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler("app.log", mode='w'),
+        logging.StreamHandler()
+    ]
+)
 log = logging.getLogger(__name__)
+
 
 
 class WikidataEntityNotFoundException(Exception):
@@ -95,14 +105,14 @@ class Solver():
             one_hop_relations = [self.retriever.get_one_hop_relations(entity_id) for entity_id in entities_id]
             linearized_relations = self.linearize_relations(entities, one_hop_relations)
             answer = self.ask_answer(question, linearized_relations)
-            log.error(f"Question: {question}")
-            log.error(f"Answer: {answer}")
+            log.info(f"Question: {question}")
+            log.info(f"Answer: {answer}")
             answer_entities = answer.split(', ')
             answer_entities_ids = [self.retriever.get_entity_id(entity) for entity in answer_entities]
-            log.error(f"Answer entities: {answer_entities_ids}")
+            log.info(f"Answer entities: {answer_entities_ids}")
             return answer_entities_ids
         except WikidataEntityNotFoundException as e:
-            log.error(e)
+            log.info(e)
             answer = "I don't know."
 
     def ask_entities(self, question):
