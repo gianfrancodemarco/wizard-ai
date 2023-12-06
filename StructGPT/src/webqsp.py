@@ -3,12 +3,13 @@ import json
 from tqdm import tqdm
 import logging
 import requests
-from prompts import PROMPTS
-from llm.llm_client import LLMClientFactory, LLMClient
+from prompts import PROMPTS, ANSWERS
+from llm.llm_client import LLMClientFactory, LLMClient, LLMType
+from wikidata_client import WikidataClient, WikidataEntityNotFoundException
 import os
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
         logging.FileHandler("app.log", mode='w'),
@@ -18,99 +19,36 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 
-
-class WikidataEntityNotFoundException(Exception):
-    pass
-
-class Retriever():
-
-    # TODO: Fix relevance ordering
-    def get_entity_id(self, entity_name):
-        """Get the entity id from Wikidata by the wbsearchentities API, ordering by relevance."""
-        url = "https://www.wikidata.org/w/api.php"
-        params = {
-            "action": "wbsearchentities",
-            "format": "json",
-            "language": "en",
-            "search": entity_name,
-            "limit": 1,
-            "strictlanguage": 1,
-            "type": "item"
-        }
-        r = requests.get(url, params=params)
-
-        try:
-            data = r.json()
-            return data['search'][0]['id']
-        except IndexError:
-            raise WikidataEntityNotFoundException(f"Entity {entity_name} not found in Wikidata.")
-
-
-    def get_one_hop_relations(
-        self,
-        tpe_id,
-        max_properties_and_values=10
-    ):
-        """
-            Get the one-hop relations of the topic entity from Wikidata.
-            The relations are in the format of (relation_id, relation_name).
-        """
-
-        sparql = """
-            SELECT ?wdLabel ?ps_Label {
-            VALUES (?entity) {(wd:<tpe_id>)}
-            
-            ?entity ?p ?statement .
-            ?statement ?ps ?ps_ .
-            
-            ?wd wikibase:claim ?p.
-            ?wd wikibase:statementProperty ?ps.
-            
-            SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
-            } ORDER BY ?wd ?statement ?ps_
-        """.replace('<tpe_id>', tpe_id)
-
-        results = self.execute_sparql(sparql)
-        one_hop_relations = {}
-        for result in results:
-            relation_name = result['wdLabel']['value']
-            relation_value = result['ps_Label']['value']
-
-            if not "id" in relation_name.lower().split():
-                one_hop_relations[relation_name] = one_hop_relations.get(relation_name, []) + [relation_value]
-            if len(one_hop_relations) >= max_properties_and_values:
-                break
-
-        return one_hop_relations
-
-    def execute_sparql(self, sparql):
-        """Execute the sparql query."""
-        sparql = sparql.replace('\n', ' ').replace('\t', ' ').replace('\r', ' ').strip()
-        url = "https://query.wikidata.org/sparql"
-        r = requests.get(url, params={'format': 'json', 'query': sparql})
-        data = r.json()
-        return data['results']['bindings']
-
-
 class Solver():
 
     def __init__(self) -> None:
-        self.LLMClient: LLMClient = LLMClientFactory.create(llm_type="gpt3")
-        self.retriever = Retriever()
+        self.LLMClient: LLMClient = LLMClientFactory.create(llm_type=LLMType.GPT3_5_TURBO.value)
+        self.retriever = WikidataClient()
 
     def solve(self, question: str):
         try:
             entities = self.ask_entities(question)
-            entities_id = [self.retriever.get_entity_id(entity) for entity in entities]
-            one_hop_relations = [self.retriever.get_one_hop_relations(entity_id) for entity_id in entities_id]
-            linearized_relations = self.linearize_relations(entities, one_hop_relations)
+            entities_id = [self.retriever.get_entity_id(
+                entity) for entity in entities]
+            one_hop_relations = [self.retriever.get_one_hop_relations(
+                entity_id) for entity_id in entities_id]
+            linearized_relations = self.linearize_relations(
+                entities, one_hop_relations)
             answer = self.ask_answer(question, linearized_relations)
             log.info(f"Question: {question}")
             log.info(f"Answer: {answer}")
-            answer_entities = answer.split(', ')
-            answer_entities_ids = [self.retriever.get_entity_id(entity) for entity in answer_entities]
-            log.info(f"Answer entities: {answer_entities_ids}")
+
+            answer_entities_ids = []
+            if answer == ANSWERS['NO_ANSWER']:
+                log.warning("No answer found.")
+            else:
+                answer_entities = answer.split(', ')
+                answer_entities_ids = [self.retriever.get_entity_id(
+                    entity) for entity in answer_entities]
+                log.info(f"Answer entities: {answer_entities_ids}")
+
             return answer_entities_ids
+
         except WikidataEntityNotFoundException as e:
             log.info(e)
             answer = "I don't know."
@@ -119,9 +57,9 @@ class Solver():
         """Ask the LLM to retrieve the entities in the question."""
         question = PROMPTS['ASK_ENTITIES'].replace('<question>', question)
         answer = self.LLMClient.prompt_completion(question)
-        entities = answer.split('Entities: ')[-1].split(', ')
+        entities = answer.split(', ')
         return entities
-    
+
     def linearize_relations(self, entities, one_hop_relations):
         """Convert the one-hop relations into natural language."""
         linearization = ""
@@ -131,12 +69,14 @@ class Solver():
                 linearization += f"{relation_name}: {', '.join(relation_values)}\n\t"
 
         return linearization
-    
+
     def ask_answer(self, question, linearized_relations):
         """Ask the LLM to answer the question."""
-        question = PROMPTS['ASK_ANSWER'].replace('<question>', question).replace('<linearized_relations>', linearized_relations)
+        question = PROMPTS['ASK_ANSWER'].replace('<question>', question).replace(
+            '<linearized_relations>', linearized_relations)
         answer = self.LLMClient.prompt_completion(question)
         return answer
+
 
 class Executor():
 
@@ -184,7 +124,7 @@ class Executor():
         args = parser.parse_args()
         log.info("Start querying the LLM.")
         return args
-    
+
     def parse_api_key(self):
         api_key = self.args.api_key
         if not api_key.startswith("sk-"):
@@ -192,11 +132,9 @@ class Executor():
             with open(api_key_path, "r") as f:
                 all_keys = [line.strip('\n') for line in f.readlines()]
                 api_key = all_keys[0]
-                #all_keys = [line.strip('\n') for line in all_keys]
-                #assert len(all_keys) == args.num_process, (len(all_keys), args.num_process)
+                # all_keys = [line.strip('\n') for line in all_keys]
+                # assert len(all_keys) == args.num_process, (len(all_keys), args.num_process)
         os.environ["API_KEY"] = api_key
-        
-
 
     def load_data(self, input_path: str):
         with open(input_path, "r") as f:

@@ -1,10 +1,12 @@
+ANSWERS = {
+    "NO_ANSWER": "<no_answer>"
+}
 PROMPTS = {
     "ASK_ENTITIES": """
-        You are a knowledge explorer assistant. 
-        You duty is to find ENTITIES in the question asked to you.
+        Find ENTITIES in the question asked to you.
         An ENTITY is a SPECIFIC instance of something, for example "Donald Trump", "Italy", "Potassium".
         Generic words like "country" or "team" or "university" must not be recognized as entities.
-        Your response must only consist of the word "Entities:" followed by the entities, separated by a comma.
+        Your response must only consist of the entities separated by a comma.
         Do not add any other output.
 
         ### Examples
@@ -30,8 +32,8 @@ PROMPTS = {
     "ASK_ANSWER": """
         You are a virtual assistance.
         You answer questions ONLY using the data you are given below.
-        Your answer should only be directly the answer to the question, without any other output.
-        If the answer contains multiple results, separate them with a comma.
+        Your response must only consist of the direct responses to the answer, separated by a comma.
+        If you cannot find an answer, return <no_answer>.
 
         ### Examples
         
