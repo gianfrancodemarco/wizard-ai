@@ -8,15 +8,13 @@ from openai._client import OpenAI
 logger = getLogger(__name__)
 
 
-class LLMType(Enum):
-    GPT3_5_TURBO = "gpt3"
-    GPT3__5_TURBO_INSTRUCT = "gpt3-instruct"
+class LLM_MODELS(Enum):
+    GPT3_5_TURBO = "gpt-3.5-turbo"
 
 
-LLM_MODEL_NAMES = {
-    LLMType.GPT3_5_TURBO.value: "gpt-3.5-turbo",
-    LLMType.GPT3__5_TURBO_INSTRUCT.value: "gpt-3.5-turbo-instruct"
-}
+OPEN_AI_CHAT_COMPLETION_MODELS = [
+    LLM_MODELS.GPT3_5_TURBO.value
+]
 
 
 class LLMClient(ABC):
@@ -37,13 +35,15 @@ class LLMClient(ABC):
         raise NotImplementedError
 
 
-class GPT3Client(LLMClient):
-
-    def __init__(self):
+class OpenAIChatCompletitionClient(LLMClient):
+    def __init__(
+        self,
+        model_name: str
+    ):
         super().__init__()
-        self.__model_name__ = None
-        self.__COST_PER_INPUT_TOKEN__ = None
-        self.__COST_PER_OUTPUT_TOKEN__ = None
+        self.__model_name__ = model_name
+        self.__COST_PER_INPUT_TOKEN__ = 0.001 / 1000
+        self.__COST_PER_OUTPUT_TOKEN__ = 0.002 / 1000
         self.__input_tokens__, self.__output_tokens__, self.__total_tokens__ = 0, 0, 0
 
     def estimate_costs(self):
@@ -53,15 +53,6 @@ class GPT3Client(LLMClient):
         logger.info(f"Input tokens: {self.__input_tokens__}")
         logger.info(f"Output tokens: {self.__output_tokens__}")
         logger.info(f"Estimated costs: {self.estimate_costs()}")
-
-
-class GPT3TurboClient(GPT3Client):
-    def __init__(self):
-        super().__init__()
-        self.__model_name__ = LLM_MODEL_NAMES[LLMType.GPT3_5_TURBO.value]
-        self.__COST_PER_INPUT_TOKEN__ = 0.001 / 1000
-        self.__COST_PER_OUTPUT_TOKEN__ = 0.002 / 1000
-        self.__input_tokens__, self.__output_tokens__, self.__total_tokens__ = 0, 0, 0
 
     def prompt_completion(self, prompt):
 
@@ -96,26 +87,14 @@ class GPT3TurboClient(GPT3Client):
         return response_text
 
 
-class GPT3TurboInstructClient(GPT3Client):
-    def __init__(self):
-        super().__init__()
-        self.__model_name__ = LLM_MODEL_NAMES[LLMType.GPT3__5_TURBO_INSTRUCT.value]
-        self.__COST_PER_INPUT_TOKEN__ = 0.0015 / 1000
-        self.__COST_PER_OUTPUT_TOKEN__ = 0.002 / 1000
-        self.__input_tokens__, self.__output_tokens__, self.__total_tokens__ = 0, 0, 0
-
-    def prompt_completion(self, prompt):
-        raise NotImplementedError
-
-
 class LLMClientFactory():
     @staticmethod
     def create(
-        llm_type: str
+        model_name: str
     ):
-        if llm_type == LLMType.GPT3_5_TURBO.value:
-            return GPT3TurboClient()
-        elif llm_type == LLMType.GPT3__5_TURBO_INSTRUCT.value:
-            return GPT3TurboInstructClient()
+        if model_name in OPEN_AI_CHAT_COMPLETION_MODELS:
+            return OpenAIChatCompletitionClient(
+                model_name=model_name
+            )
         else:
-            raise Exception("Unknown LLM type: {}".format(llm_type))
+            raise Exception("Unknown LLM type: {}".format(model_name))

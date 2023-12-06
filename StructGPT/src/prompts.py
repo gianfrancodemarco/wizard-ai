@@ -3,11 +3,12 @@ ANSWERS = {
 }
 PROMPTS = {
     "ASK_ENTITIES": """
-        Find ENTITIES in the question asked to you.
-        An ENTITY is a SPECIFIC instance of something, for example "Donald Trump", "Italy", "Potassium".
-        Generic words like "country" or "team" or "university" must not be recognized as entities.
-        Your response must only consist of the entities separated by a comma.
-        Do not add any other output.
+Identify specific instances, referred to as ENTITIES, in the given question. ENTITIES are concrete examples such as "Donald Trump," "Italy," or "Potassium." Exclude generic terms like "country," "team," or "university" from consideration. Provide a response containing only the identified entities, separated by commas. Avoid including any additional information in the output.
+
+
+
+
+
 
         ### Examples
 

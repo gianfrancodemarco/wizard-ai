@@ -32,7 +32,7 @@ class WikidataClient():
     def get_one_hop_relations(
         self,
         tpe_id,
-        max_properties_and_values=10
+        max_properties_and_values=None
     ):
         """
             Get the one-hop relations of the topic entity from Wikidata.
@@ -59,13 +59,34 @@ class WikidataClient():
             relation_name = result['wdLabel']['value']
             relation_value = result['ps_Label']['value']
 
-            if not "id" in relation_name.lower().split():
-                one_hop_relations[relation_name] = one_hop_relations.get(
-                    relation_name, []) + [relation_value]
-            if len(one_hop_relations) >= max_properties_and_values:
+            one_hop_relations[relation_name] = one_hop_relations.get(
+                relation_name, []) + [relation_value]
+            if max_properties_and_values and len(one_hop_relations) >= max_properties_and_values:
                 break
 
         return one_hop_relations
+
+    def filter_ids(self, one_hop_relations):
+        """Filter the one-hop relations to remove all the ids."""
+        filtered_one_hop_relations = {}
+        for relation_name, relation_values in one_hop_relations.items():
+            if not "id" in relation_name.lower().split():
+                filtered_one_hop_relations[relation_name] = relation_values
+        return filtered_one_hop_relations
+
+    def get_freebase_id(self, entity_id):
+        """Get the freebase id from Wikidata."""
+        sparql = """
+            SELECT ?freebase_id WHERE {
+            wd:<entity_id> wdt:P646 ?freebase_id.
+            }
+        """.replace('<entity_id>', entity_id)
+
+        results = self.execute_sparql(sparql)
+        try:
+            return results[0]['freebase_id']['value']
+        except IndexError:
+            return None
 
     def execute_sparql(self, sparql):
         """Execute the sparql query."""

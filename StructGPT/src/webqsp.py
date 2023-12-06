@@ -1,18 +1,20 @@
 import argparse
 import json
-from tqdm import tqdm
 import logging
-import requests
-from prompts import PROMPTS, ANSWERS
-from llm.llm_client import LLMClientFactory, LLMClient, LLMType
-from wikidata_client import WikidataClient, WikidataEntityNotFoundException
 import os
+from logging.handlers import RotatingFileHandler
+
+from llm.llm_client import LLM_MODELS, LLMClient, LLMClientFactory
+from prompts import ANSWERS, PROMPTS
+from tqdm import tqdm
+from wikidata_client import WikidataClient, WikidataEntityNotFoundException
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
-        logging.FileHandler("app.log", mode='w'),
+        RotatingFileHandler("app.log", mode='w',
+                            maxBytes=5*1024*1024, backupCount=3),
         logging.StreamHandler()
     ]
 )
@@ -22,16 +24,19 @@ log = logging.getLogger(__name__)
 class Solver():
 
     def __init__(self) -> None:
-        self.LLMClient: LLMClient = LLMClientFactory.create(llm_type=LLMType.GPT3_5_TURBO.value)
+        self.LLMClient: LLMClient = LLMClientFactory.create(
+            model_name=LLM_MODELS.GPT3_5_TURBO.value)
         self.retriever = WikidataClient()
 
     def solve(self, question: str):
         try:
             entities = self.ask_entities(question)
-            entities_id = [self.retriever.get_entity_id(
+            entities_ids = [self.retriever.get_entity_id(
                 entity) for entity in entities]
             one_hop_relations = [self.retriever.get_one_hop_relations(
-                entity_id) for entity_id in entities_id]
+                entity_id) for entity_id in entities_ids]
+            one_hop_relations = [self.retriever.filter_ids(_one_hop_relations)
+                                 for _one_hop_relations in one_hop_relations]
             linearized_relations = self.linearize_relations(
                 entities, one_hop_relations)
             answer = self.ask_answer(question, linearized_relations)
@@ -46,8 +51,10 @@ class Solver():
                 answer_entities_ids = [self.retriever.get_entity_id(
                     entity) for entity in answer_entities]
                 log.info(f"Answer entities: {answer_entities_ids}")
+                answer_entities_freebase_ids = [
+                    self.retriever.get_freebase_id(entity_id) for entity_id in answer_entities_ids]
 
-            return answer_entities_ids
+            return answer_entities_freebase_ids
 
         except WikidataEntityNotFoundException as e:
             log.info(e)
@@ -60,15 +67,29 @@ class Solver():
         entities = answer.split(', ')
         return entities
 
-    def linearize_relations(self, entities, one_hop_relations):
+    def linearize_relations(self, entities, relations):
         """Convert the one-hop relations into natural language."""
+        relations = [self.__purge_relations(_relations) for _relations in relations]
         linearization = ""
-        for entity, one_hop_relation in zip(entities, one_hop_relations):
+        for entity, one_hop_relation in zip(entities, relations):
             linearization += f"{entity}:\n\t"
             for relation_name, relation_values in one_hop_relation.items():
                 linearization += f"{relation_name}: {', '.join(relation_values)}\n\t"
 
         return linearization
+    
+    def __purge_relations(self, relations: dict):
+        """
+        Remove the relations that are considered to be useless in order to reduce the length of the input.
+        """
+        purged_relations = {}
+
+        for relation_name, relation_values in relations.items():
+            # Remove keys where all values are links.
+            if all([value.startswith('http') for value in relation_values]):
+                continue
+            purged_relations[relation_name] = relation_values
+        return purged_relations
 
     def ask_answer(self, question, linearized_relations):
         """Ask the LLM to answer the question."""
@@ -177,10 +198,17 @@ class Executor():
 
     def _execute(self):
         self.load_data(self.args.input_path)
+
+        results = []
         for sample in tqdm(self.data, total=len(self.data)):
             # try:
             question = sample["RawQuestion"]
-            self.solver.solve(question)
+            answer_ids = self.solver.solve(question)
+            results.append({
+                "QuestionId": sample["QuestionId"],
+                "Answers": answer_ids
+            })
+            json.dump(results, open(self.args.output_path, "w"))
             # except openai.error.InvalidRequestError as e:
             #     print(e)
             #     continue
