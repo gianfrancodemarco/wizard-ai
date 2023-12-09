@@ -1,21 +1,55 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Run websq",
-            "type": "python",
-            "request": "launch",
-            "program": "${workspaceFolder}/StructGPT/src/webqsp.py",
-            "console": "integratedTerminal",
-            "args": [
-                "--input_path",
-                "StructGPT/datasets/WebQSP/data/WebQSP.train.json",
-                "--api_key",
-                "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"
-            ],
-        }
-    ]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run websq",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/StructGPT/src/webqsp.py",
+      "console": "integratedTerminal",
+      "args": [
+        "--input_path",
+        "StructGPT/datasets/WebQSP/data/WebQSP.train.json",
+        "--api_key",
+        "your-key"
+      ]
+    },
+    {
+      "name": "Run KQA pro",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/StructGPT/src/kqa_pro.py",
+      "console": "integratedTerminal",
+      "args": [
+        "--input_path",
+        "StructGPT/datasets/KQA Pro/data/data/train.json",
+        "--output_path",
+        "StructGPT/datasets/KQA Pro/data/data/predictions.json",
+        "--api_key",
+        "your-key"
+      ]
+    },
+    {
+      "name": "Run ReAct",
+      "type": "python",
+      "request": "launch",
+      "justMyCode": false,
+      "program": "${workspaceFolder}/ToolQA/src/main.py",
+      "args": [
+        "--dataset",
+        "flights",
+        "--hardness",
+        "easy",
+        // "--version",
+        // "v2",
+        "--gpt",
+        "chatgpt",
+        "--openai_api_key",
+        "your-key"
+      ]
+    }
+  ]
 }

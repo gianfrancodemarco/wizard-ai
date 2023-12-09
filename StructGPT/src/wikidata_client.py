@@ -7,27 +7,23 @@ class WikidataEntityNotFoundException(Exception):
 
 class WikidataClient():
 
-    # TODO: Fix relevance ordering
-    def get_entity_id(self, entity_name):
-        """Get the entity id from Wikidata by the wbsearchentities API, ordering by relevance."""
-        url = "https://www.wikidata.org/w/api.php"
+    def get_entity_id(self, entity):
+        """Get the entity id from Wikidata by performing a full text search and returning the first result."""
+        base_url = 'https://wikidata.org/w/api.php'
         params = {
-            "action": "wbsearchentities",
-            "format": "json",
-            "language": "en",
-            "search": entity_name,
-            "limit": 1,
-            "strictlanguage": 1,
-            "type": "item"
+            'action': 'query',
+            'format': 'json',
+            'list': 'search',
+            'srsearch': entity
         }
-        r = requests.get(url, params=params)
+
+        response = requests.get(base_url, params=params)
+        data = response.json()
 
         try:
-            data = r.json()
-            return data['search'][0]['id']
+            return data['query']['search'][0]['title']
         except IndexError:
-            raise WikidataEntityNotFoundException(
-                f"Entity {entity_name} not found in Wikidata.")
+            return None
 
     def get_one_hop_relations(
         self,
