@@ -4,11 +4,11 @@ import tiktoken
 from agents.agent import Agent
 from agents.utils import *
 from fewshots import TOOLQA_EASY8, TOOLQA_HARD3
-from langchain.llms.base import BaseLLM
 from langchain.prompts import PromptTemplate
 from prompts import react_agent_prompt
 from tools.graph import graphtools
 from tools.table import tabtools
+from llm.llm_client import LLMClientFactory, LLM_MODELS, LLMClient
 
 log = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class ReactAgent(Agent):
         path: str,
         max_steps: int = 20,
         agent_prompt: PromptTemplate = react_agent_prompt,
-        react_llm: BaseLLM = get_llm()
+        react_llm: LLMClient = LLMClientFactory.create(LLM_MODELS.GPT3_5_TURBO.value)
     ) -> None:
 
         self.answer = ''
@@ -94,7 +94,7 @@ class ReactAgent(Agent):
             question=question_context.question,
             scratchpad=question_context.scratchpad
         )
-        answer = self.llm(prompt)
+        answer = self.llm.prompt_completion(prompt)
         formatted_answer = format_step(answer)
         return formatted_answer
 

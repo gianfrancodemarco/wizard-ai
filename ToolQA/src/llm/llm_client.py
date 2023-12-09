@@ -54,7 +54,12 @@ class OpenAIChatCompletitionClient(LLMClient):
         logger.info(f"Output tokens: {self.__output_tokens__}")
         logger.info(f"Estimated costs: {self.estimate_costs()}")
 
-    def prompt_completion(self, prompt):
+    def prompt_completion(
+        self,
+        prompt: str,
+        max_tokens: int = 250,
+        temperature: float = 0,
+    ):
 
         logger.info(f"----------------------------------------")
 
@@ -68,7 +73,9 @@ class OpenAIChatCompletitionClient(LLMClient):
                     "role": "user",
                     "content": prompt
                 }
-            ]
+            ],
+            max_tokens=max_tokens,
+            temperature=temperature
         )
 
         # Update token counts

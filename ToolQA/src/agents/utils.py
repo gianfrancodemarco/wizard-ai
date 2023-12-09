@@ -1,8 +1,12 @@
+import os
 import re
 import string
+from enum import Enum
 from typing import List
 
 import tiktoken
+from langchain import OpenAI
+from langchain.llms.base import BaseLLM
 from prompts import LAST_TRIAL_HEADER, REFLECTION_HEADER
 
 ### String Stuff ###
@@ -59,17 +63,6 @@ def normalize_answer(s):
 
 def EM(answer, key) -> bool:
     return normalize_answer(str(answer)) == normalize_answer(str(key))
-
-
-def get_llm(
-    model_name: str = "gpt-3.5-turbo",
-) -> BaseLLM:
-    return OpenAI(
-        temperature=0,
-        max_tokens=250,
-        model_name=model_name,
-        model_kwargs={"stop": "\n"},
-        openai_api_key=os.environ['OPENAI_API_KEY'])
 
 
 class ReflexionStrategy(Enum):

@@ -1,7 +1,6 @@
 import re
 from logging import getLogger
 
-import openai
 from agents.utils import *
 
 from prompts import REFLECTION_AFTER_LAST_TRIAL_HEADER

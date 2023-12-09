@@ -35,9 +35,8 @@ class Executor:
     def __init__(self) -> None:
         self.ROOT_PATH = os.path.join(os.path.dirname(__file__), "..")
         self.__parse_args__()
-        #self.__setup_logs__()
         self.__load_data__()
-        from agents.agent import ReactAgent
+        from agents.react_agent import ReactAgent
         self.agent = ReactAgent(
             self.args.prompt,
             self.args.path

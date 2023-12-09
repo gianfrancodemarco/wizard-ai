@@ -4,7 +4,6 @@ from typing import List
 from agents.react_agent import ReactAgent
 from agents.utils import *
 from fewshots import REFLECTIONS
-from langchain import OpenAI
 from langchain.llms.base import BaseLLM
 from langchain.prompts import PromptTemplate
 from prompts import react_reflect_agent_prompt, reflect_prompt
