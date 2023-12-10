@@ -94,9 +94,6 @@ class Agent:
         #     self.step_n += 1
         return output
 
-    def is_correct(self) -> bool:
-        return EM(self.answer, self.key)
-
     def parse_action(self, string):
         pattern = r'^(\w+)\[(.+)\]$'
         match = re.match(pattern, string)

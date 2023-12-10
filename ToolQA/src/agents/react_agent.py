@@ -14,6 +14,7 @@ log = logging.getLogger(__name__)
 
 
 class ReactAgent(Agent):
+    
     def __init__(
         self,
         prompt: 'easy' or 'hard',
@@ -45,16 +46,16 @@ class ReactAgent(Agent):
         question: str,
         answer: str,
         question_id: str,
-    ) -> None:
+    ) -> QuestionContext:
         question_context = QuestionContext(
             question=question,
             question_id=question_id,
             answer=answer,
         )
-        while not self.is_halted(question_context):
+        while not self.is_halted(question_context) and not question_context.finished:
             self.step(question_context)
 
-        return question_context.predicted_answer
+        return question_context
 
     def step(
         self,
@@ -102,5 +103,5 @@ class ReactAgent(Agent):
         self,
         question_context: QuestionContext
     ) -> bool:
-        return question_context.step_n > self.max_steps or question_context.finished
+        return question_context.step_n > self.max_steps
         # return ((self.step_n > self.max_steps) or (len(self.enc.encode(self._build_agent_prompt())) > 3896)) and not self.finished

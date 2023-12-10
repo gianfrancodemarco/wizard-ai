@@ -1,11 +1,14 @@
-import os
 import argparse
-import jsonlines
 import datetime
-import sys
-from tqdm import tqdm
 import logging
+import os
+import sys
 from logging import FileHandler
+
+import jsonlines
+from agents.react_agent import ReactAgent
+from tqdm import tqdm
+from llm.llm_client import LLMClientFactory, LLM_MODELS
 
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 
@@ -36,10 +39,15 @@ class Executor:
         self.ROOT_PATH = os.path.join(os.path.dirname(__file__), "..")
         self.__parse_args__()
         self.__load_data__()
-        from agents.react_agent import ReactAgent
+
+        llm = LLMClientFactory.create(
+            model_name=self.args.model,
+            url="https://6e34-34-124-244-176.ngrok.io"
+        )
         self.agent = ReactAgent(
             self.args.prompt,
-            self.args.path
+            self.args.path,
+            react_llm=llm
         )
 
     def __parse_args__(self):
@@ -54,7 +62,7 @@ class Executor:
                             type=str, default="<WOLFALPHA_API_KEY>")
         parser.add_argument("--debug", type=bool, default=False)
         parser.add_argument("--debug_id", type=int, default=0)
-        parser.add_argument("--gpt", type=str, default="gpt3")
+        parser.add_argument("--model", type=str, default="gpt-3.5-turbo")
         parser.add_argument("--prompt", type=str, default="easy")
         self.args = parser.parse_args()
         os.environ["OPENAI_API_KEY"] = self.args.openai_api_key
@@ -66,13 +74,14 @@ class Executor:
         with open(self.DATASET_PATH, "r") as f:
             self.data = [item for item in jsonlines.Reader(f)]
 
-    # def __setup_logs__(self):
-    #     self.LOGS_PATH = os.path.join(self.ROOT_PATH, "benchmark", "ReAct", "logs",
-    #                                   f"{self.args.gpt}-{datetime_string}", f"{self.args.dataset}-{self.args.hardness}")
-    #     if not os.path.exists(self.LOGS_PATH):
-    #         os.makedirs(self.LOGS_PATH)
-
     def execute(self):
+
+        summary = {
+            "correct": 0,
+            "incorrect": 0,
+            "halted": 0
+        }
+
         for i, item in enumerate(tqdm(self.data)):
             log.info(f"Question {i+1}/{len(self.data)}")
             answer = self.agent.run(
@@ -80,10 +89,17 @@ class Executor:
                 item["answer"],
                 item["qid"]
             )
-            log.info(f"Answer: {answer}")
+            log.info(f"Answer: {answer.predicted_answer}")
             log.info("---------")
-            # self.agent.save_logs(self.LOGS_PATH, item["qid"])
 
+            if self.agent.is_halted(answer):
+                summary["halted"] += 1
+            elif answer.is_correct():
+                summary["correct"] += 1
+            else:
+                summary["incorrect"] += 1
+
+        log.info(f"Summary: {summary}")
 
 if __name__ == "__main__":
     executor = Executor()

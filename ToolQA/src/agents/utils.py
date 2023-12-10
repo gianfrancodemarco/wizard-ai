@@ -100,6 +100,8 @@ class QuestionContext:
         self.scratchpad = ''
         self.predicted_answer = predicted_answer
 
+    def is_correct(self) -> bool:
+        return EM(self.predicted_answer, self.answer)
 
 class ActionContext:
     def __init__(
