@@ -1,0 +1,6 @@
+apiVersion: skaffold/v2beta29
+kind: Config
+requires:
+  - path: .skaffold/namespace.yaml
+  - path: .skaffold/secrets.yaml
+  - path: .skaffold/redis.yaml

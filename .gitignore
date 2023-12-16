@@ -1,6 +1,9 @@
-.api_key
-.history
-__pycache__
+*.log
 *.pdf
-app.log
+*.env
+
+__pycache__
+.history
+
 ToolQA/data
+.envToolQA/data
