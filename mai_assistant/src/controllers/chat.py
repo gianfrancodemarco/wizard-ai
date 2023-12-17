@@ -3,25 +3,21 @@ import os
 import pickle
 from operator import itemgetter
 
-import redis
-from dotenv import load_dotenv
-from fastapi import FastAPI
-from langchain.chains import LLMChain
+from fastapi import APIRouter
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.memory.chat_memory import BaseChatMemory
 from langchain.prompts import PromptTemplate
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from pydantic import BaseModel
 
-from mai_assistant.app.llm_client import LLM_MODELS, LLMClientFactory
+from mai_assistant.src.dependencies import RedisClient
+from mai_assistant.src.llm_client import LLM_MODELS, LLMClientFactory
 
-load_dotenv('mai_assistant/.env')
-
-REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
-redis_client = redis.Redis(password=REDIS_PASSWORD)
+logger = logging.getLogger(__name__)
 
 # Chain components
 # 1. Memory
+
 
 def get_memory_chain(memory: BaseChatMemory):
     return RunnablePassthrough.assign(
@@ -52,39 +48,16 @@ llm = LLMClientFactory.create(
     url=os.environ.get('LLM_URL')
 )
 
-# Add stream and file handlers to logger. Use basic config
-# to avoid adding duplicate handlers when reloading server
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s %(levelname)s %(message)s',
-    handlers=[
-        logging.FileHandler("langchain.log"),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
-
-app = FastAPI(
-    title="LangChain Server",
-    version="1.0",
-    description="A simple API server using LangChain's Runnable interfaces",
-)
-
 
 class ChatPayload(BaseModel):
     conversation_id: str
     question: str
 
 
-@app.delete("/conversations/delete")
-def delete_conversations():
-    """Delete all conversations"""
-    redis_client.flushdb()
-    return {"success": True}
+chat_router = APIRouter()
 
-
-@app.post("/chat")
-def chat(data: ChatPayload):
+@chat_router.post("/chat")
+def chat(data: ChatPayload, redis_client: RedisClient):
 
     memory = redis_client.get(data.conversation_id)
     if memory is not None:
