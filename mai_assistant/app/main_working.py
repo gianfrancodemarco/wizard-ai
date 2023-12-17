@@ -76,6 +76,13 @@ class ChatPayload(BaseModel):
     question: str
 
 
+@app.delete("/conversations/delete")
+def delete_conversations():
+    """Delete all conversations"""
+    redis_client.flushdb()
+    return {"success": True}
+
+
 @app.post("/chat")
 def chat(data: ChatPayload):
 

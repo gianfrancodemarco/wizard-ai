@@ -23,6 +23,14 @@ class LLM_MODELS(Enum):
     GPT3_5_TURBO = "gpt-3.5-turbo"
     LLAMA_2_7B_CHAT_HF = "llama-2-7B-chat-hf"
 
+    @classmethod
+    def keys(cls):
+        return [e.name for e in cls]
+
+    @classmethod
+    def values(cls):
+        return [e.value for e in cls]
+
 
 OPEN_AI_CHAT_COMPLETION_MODELS = [
     LLM_MODELS.GPT3_5_TURBO.value
