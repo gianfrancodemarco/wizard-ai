@@ -1,0 +1,28 @@
+apiVersion: skaffold/v2beta29
+kind: Config
+metadata:
+  name: mai-assistant
+requires:
+  - path: namespace.yaml
+  - path: secrets.yaml
+build:
+  artifacts:
+  - image: mai-assistant
+    docker:
+      dockerfile: .docker/Dockerfile
+      buildArgs:
+          BUILD_TYPE: development
+    context: ../
+    sync:
+      manual:
+        - src: 'mai_assistant/**/*'
+          dest: .
+deploy:
+  kubectl:
+    manifests:
+    - ../.kubernetes/mai_assistant/*.yaml
+portForward:
+  - resourceType: service
+    resourceName: mai-assistant-service
+    namespace: mai-assistant
+    port: 8000

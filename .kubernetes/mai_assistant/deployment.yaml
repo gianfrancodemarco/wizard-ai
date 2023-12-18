@@ -1,0 +1,64 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mai-assistant
+  namespace: mai-assistant
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mai-assistant
+  template:
+    metadata:
+      labels:
+        app: mai-assistant
+    spec:
+      containers:
+        - name: mai-assistant
+          image: mai-assistant
+          ports:
+            - containerPort: 8000
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+            requests:
+              cpu: "0.5"
+              memory: "512Mi"
+          env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mai-assistant-secret
+                  key: OPENAI_API_KEY
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mai-assistant-secret
+                  key: REDIS_PASSWORD
+            - name: LLM_URL
+              valueFrom:
+                secretKeyRef:
+                  name: mai-assistant-secret
+                  key: LLM_URL
+            - name: LLM_MODEL
+              valueFrom:
+                secretKeyRef:
+                  name: mai-assistant-secret
+                  key: LLM_MODEL
+            - name: PIKA_URL
+              valueFrom:
+                secretKeyRef:
+                  name: mai-assistant-secret
+                  key: PIKA_URL
+            - name: RABBIT_MQ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mai-assistant-secret
+                  key: RABBIT_MQ_USER
+            - name: RABBIT_MQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mai-assistant-secret
+                  key: RABBIT_MQ_PASSWORD

@@ -3,5 +3,6 @@ kind: Config
 requires:
   - path: .skaffold/namespace.yaml
   - path: .skaffold/secrets.yaml
-  - path: .skaffold/redis.yaml
-  - path: .skaffold/rabbitmq.yaml
+  # - path: .skaffold/redis.yaml
+  # - path: .skaffold/rabbitmq.yaml
+  - path: .skaffold/mai_assistant.yaml
