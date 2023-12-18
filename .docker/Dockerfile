@@ -1,5 +1,5 @@
 ARG BUILD_TYPE
-FROM tiangolo/uvicorn-gunicorn:python3.11 AS base
+FROM tiangolo/uvicorn-gunicorn:python3.10 AS base
 
 WORKDIR /app/
 
@@ -14,11 +14,13 @@ ENV PYTHONPATH=/app
 ARG BUILD_TYPE
 RUN echo "Building for ${BUILD_TYPE}"
 
-FROM base AS build_development
-ENTRYPOINT ["/start-reload.sh"]
+#FROM base AS build_development
+ENTRYPOINT [ "python3", "-m", "uvicorn", "main:app", "--reload"]
+#ENTRYPOINT ["/start-reload.sh"]
 
-FROM base AS build_testing
-FROM base as build_production
-ENTRYPOINT ["/start.sh"]
+#FROM base AS build_testing
+#FROM base as build_production
+#ENTRYPOINT [ "python3", "-m", "uvicorn", "main:app"]
+#ENTRYPOINT ["/start.sh"]
 
-FROM build_${BUILD_TYPE}
+#FROM build_${BUILD_TYPE}

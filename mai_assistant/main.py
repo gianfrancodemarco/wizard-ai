@@ -6,9 +6,6 @@ from fastapi import FastAPI
 from mai_assistant.src.controllers.chat import chat_router
 from mai_assistant.src.controllers.redis import redis_router
 
-load_dotenv('.env')
-
-
 # Add stream and file handlers to logger. Use basic config
 # to avoid adding duplicate handlers when reloading server
 logging.basicConfig(
