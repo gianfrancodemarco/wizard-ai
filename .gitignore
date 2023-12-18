@@ -3,7 +3,10 @@
 *.env
 
 __pycache__
+venv
 .history
 
-ToolQA/data
-.envToolQA/data
+.env
+
+old/ToolQA/data
+old/StructGPT/datasets

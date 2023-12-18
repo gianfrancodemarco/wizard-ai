@@ -11,7 +11,7 @@ from mai_assistant.src.controllers.redis import redis_router
 # Add stream and file handlers to logger. Use basic config
 # to avoid adding duplicate handlers when reloading server
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format='%(asctime)s %(levelname)s %(message)s',
     handlers=[
         logging.FileHandler("langchain.log"),

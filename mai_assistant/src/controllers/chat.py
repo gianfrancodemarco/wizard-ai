@@ -12,13 +12,12 @@ from pydantic import BaseModel
 
 from mai_assistant.src.dependencies import RedisClient
 from mai_assistant.src.llm_client import LLM_MODELS, LLMClientFactory
+from langchain.callbacks.tracers import ConsoleCallbackHandler
 
 logger = logging.getLogger(__name__)
 
 # Chain components
 # 1. Memory
-
-
 def get_memory_chain(memory: BaseChatMemory):
     return RunnablePassthrough.assign(
         history=RunnableLambda(
@@ -62,13 +61,15 @@ def chat(data: ChatPayload, redis_client: RedisClient):
     memory = redis_client.get(data.conversation_id)
     if memory is not None:
         memory = pickle.loads(memory)
-        logger.info("Loaded memory from redis")
+        logging.info("Loaded memory from redis")
     else:
         memory = ConversationBufferWindowMemory(k=3, memory_key="history")
 
+    # make this verbose
     chain = get_memory_chain(memory) | prompt | llm
-    answer = chain.invoke({"question": data.question})
-
+    answer = chain.invoke({"question": data.question}, config={'callbacks': [ConsoleCallbackHandler()]})
+   
+    
     redis_client.set(data.conversation_id, pickle.dumps(memory))
     logger.info("Saved memory to redis")
     logger.info(f"Answer: {answer}")

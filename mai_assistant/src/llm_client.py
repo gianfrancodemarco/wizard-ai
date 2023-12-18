@@ -8,7 +8,6 @@ from langchain_core.language_models.llms import LLM
 from openai._client import OpenAI
 from typing import Any, Mapping, Optional, List
 
-from langchain.chat_models import ChatOpenAI
 from langchain_core.language_models.llms import LLM
 
 from typing import Any, List, Mapping, Optional
@@ -39,11 +38,11 @@ OPEN_AI_CHAT_COMPLETION_MODELS = [
 
 class LLMClient(LLM, ABC):
 
-    COST_PER_INPUT_TOKEN: float = Field(default=0.0)
-    COST_PER_OUTPUT_TOKEN: float = Field(default=0.0)
-    input_tokens: int = Field(default=0)
-    output_tokens: int = Field(default=0)
-    total_tokens: int = Field(default=0)
+    COST_PER_INPUT_TOKEN: float = 0.0
+    COST_PER_OUTPUT_TOKEN: float = 0.0
+    input_tokens: int = 0
+    output_tokens: int = 0
+    total_tokens: int = 0
 
     # LLM interface methods
 
@@ -91,13 +90,13 @@ class LLMClient(LLM, ABC):
 
 class OpenAIChatCompletitionClient(LLMClient):
 
-    api_key: str = Field(default=os.getenv("API_KEY"))
-    model_name: str = Field()
-    COST_PER_INPUT_TOKEN: float = Field(default=0.001 / 1000)
-    COST_PER_OUTPUT_TOKEN: float = Field(default=0.002 / 1000)
-    input_tokens: int = Field(default=0)
-    output_tokens: int = Field(default=0)
-    total_tokens: int = Field(default=0)
+    api_key: str = os.getenv("OPEN_API_KEY")
+    model_name: str
+    COST_PER_INPUT_TOKEN: float = 0.001 / 1000
+    COST_PER_OUTPUT_TOKEN: float = 0.002 / 1000
+    input_tokens: int = 0
+    output_tokens: int = 0
+    total_tokens: int = 0
 
     def prompt_completion(
         self,
@@ -136,8 +135,8 @@ class OpenAIChatCompletitionClient(LLMClient):
 
 class LlamaChatCompletitionClient(LLMClient):
 
-    url: str = Field()
-    endpoint: str = Field(default="/v1/completition")
+    url: str
+    endpoint: str = "/v1/completition"
 
     def prompt_completion(
         self,
