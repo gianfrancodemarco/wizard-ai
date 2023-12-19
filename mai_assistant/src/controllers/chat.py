@@ -4,7 +4,7 @@ import pickle
 from operator import itemgetter
 
 from fastapi import APIRouter
-from langchain.memory import ConversationBufferWindowMemory
+from langchain.memory import ConversationBufferWindowMemory, ConversationBufferMemory
 from langchain.memory.chat_memory import BaseChatMemory
 from langchain.prompts import PromptTemplate
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
@@ -66,9 +66,13 @@ def chat(data: ChatPayload, redis_client: RedisClient):
         memory = ConversationBufferWindowMemory(k=3, memory_key="history")
 
     # make this verbose
-    chain = get_memory_chain(memory) | prompt | llm
-    answer = chain.invoke({"question": data.question}, config={'callbacks': [ConsoleCallbackHandler()]})
-   
+    chain = RunnablePassthrough.assign(
+        history=RunnableLambda(
+            memory.load_memory_variables) | itemgetter("history")
+    ) | prompt | llm
+    input = {"question": data.question}
+    answer = chain.invoke(input, config={'callbacks': [ConsoleCallbackHandler()]})
+    memory.save_context(input, {"history": answer})
     
     redis_client.set(data.conversation_id, pickle.dumps(memory))
     logger.info("Saved memory to redis")

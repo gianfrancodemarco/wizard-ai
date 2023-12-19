@@ -13,11 +13,11 @@ build:
       buildArgs:
           BUILD_TYPE: development
     context: ../
-    sync:
-      manual:
-        - src: 'mai_assistant_telegram_bot/**/*.py'
-          dest: /app/mai_assistant_telegram_bot
-          strip: mai_assistant_telegram_bot
+    # sync:
+    #   manual:
+    #     - src: 'mai_assistant_telegram_bot/**/*.py'
+    #       dest: /app/mai_assistant_telegram_bot
+    #       strip: mai_assistant_telegram_bot
 deploy:
   kubectl:
     manifests:
@@ -26,4 +26,4 @@ portForward:
   - resourceType: service
     resourceName: mai-assistant-telegram-bot-service
     namespace: mai-assistant
-    port: 5678
+    port: 5679

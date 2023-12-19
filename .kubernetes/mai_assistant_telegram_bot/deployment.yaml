@@ -18,10 +18,7 @@ spec:
           image: mai-assistant-telegram-bot
           env:
             - name: MAI_ASSISTANT_URL
-              valueFrom:
-                secretKeyRef:
-                  name: mai-assistant-telegram-bot-secret
-                  key: MAI_ASSISTANT_URL
+              value: http://mai-assistant-service:8000
             - name: TELEGRAM_API_TOKEN
               valueFrom:
                 secretKeyRef:

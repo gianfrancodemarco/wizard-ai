@@ -31,6 +31,8 @@ spec:
                 secretKeyRef:
                   name: mai-assistant-secret
                   key: OPENAI_API_KEY
+            - name: REDIS_HOST
+              value: "redis-master"
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -42,10 +44,7 @@ spec:
                   name: mai-assistant-secret
                   key: LLM_URL
             - name: LLM_MODEL
-              valueFrom:
-                secretKeyRef:
-                  name: mai-assistant-secret
-                  key: LLM_MODEL
+              value: gpt-3.5-turbo
             - name: PIKA_URL
               valueFrom:
                 secretKeyRef:
