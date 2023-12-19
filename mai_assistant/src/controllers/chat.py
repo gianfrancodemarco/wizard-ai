@@ -4,7 +4,7 @@ import pickle
 from operator import itemgetter
 
 from fastapi import APIRouter
-from langchain.memory import ConversationBufferWindowMemory, ConversationBufferMemory
+from langchain.memory import ConversationBufferWindowMemory
 from langchain.memory.chat_memory import BaseChatMemory
 from langchain.prompts import PromptTemplate
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
@@ -12,7 +12,6 @@ from pydantic import BaseModel
 
 from mai_assistant.src.dependencies import RedisClient
 from mai_assistant.src.llm_client import LLM_MODELS, LLMClientFactory
-from langchain.callbacks.tracers import ConsoleCallbackHandler
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +26,7 @@ def get_memory_chain(memory: BaseChatMemory):
 
 # 2. Prompt
 prompt = PromptTemplate.from_template("""
-You are a personal assistant who helps people with their daily tasks.
+You are a professional personal assistant who helps people with their daily tasks.
 
 Previous conversation:
 {history}
@@ -55,6 +54,25 @@ class ChatPayload(BaseModel):
 
 chat_router = APIRouter()
 
+def start_chain_logger(input):
+    logging.info("\n\n---------------------------------- STARTING CHAIN ----------------------------------\n")
+    return input 
+
+def prompt_logger(prompt):
+    logging.info(f"Calling LLM with prompt:")
+    logging.info(prompt.text)
+    return prompt
+
+def response_logger(response):
+    logging.info(f"Received response:")
+    logging.info(response)
+    return response
+
+def end_chain_logger(input):
+    logging.info("\n\n----------------------------------- ENDING CHAIN ----------------------------------\n\n")
+    return input 
+
+
 @chat_router.post("/chat")
 def chat(data: ChatPayload, redis_client: RedisClient):
 
@@ -66,16 +84,17 @@ def chat(data: ChatPayload, redis_client: RedisClient):
         memory = ConversationBufferWindowMemory(k=3, memory_key="history")
 
     # make this verbose
-    chain = RunnablePassthrough.assign(
-        history=RunnableLambda(
-            memory.load_memory_variables) | itemgetter("history")
-    ) | prompt | llm
+    chain = start_chain_logger | \
+        get_memory_chain(memory) | \
+            prompt | prompt_logger | \
+                llm\
+                      | response_logger |\
+                      end_chain_logger
     input = {"question": data.question}
-    answer = chain.invoke(input, config={'callbacks': [ConsoleCallbackHandler()]})
+    answer = chain.invoke(input)
     memory.save_context(input, {"history": answer})
     
     redis_client.set(data.conversation_id, pickle.dumps(memory))
     logger.info("Saved memory to redis")
-    logger.info(f"Answer: {answer}")
-
+    
     return {"answer": answer}

@@ -7,6 +7,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 import logging
 
 from telegram import Update
+from telegram.constants import ChatAction
 from telegram.ext import Application, ContextTypes, MessageHandler, filters
 
 from mai_assistant_telegram_bot.src.clients.mai_assistant import \
@@ -27,6 +28,13 @@ logging.basicConfig(
 
 
 async def text_handler(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
+
+    logging.info(f"Message received: {update}")
+
+    await update._bot.send_chat_action(
+        chat_id=update.message.chat_id,
+        action=ChatAction.TYPING.value
+    )
     response = MAIAssistantClient().chat(
         conversation_id=str(update.message.chat_id),
         message=update.message.text

@@ -52,16 +52,14 @@ class LLMClient(LLM, ABC):
         **kwargs: Any,
     ) -> str:
 
-        logger.info(f"----------------------------------------")
-        logger.info(f"Querying model: {self._llm_type}")
+        logger.info(f"\n\nQuerying model: {self._llm_type}")
         start = time()
         response = self.prompt_completion(
             prompt=prompt,
             **kwargs
         )
         end = time()
-        logger.info(f"Response time: {end - start}")
-        logger.info(f"----------------------------------------")
+        logger.info(f"Response time: {end - start}\n\n")
         return response
 
     @property
