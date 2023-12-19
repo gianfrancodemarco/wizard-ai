@@ -16,7 +16,7 @@ build:
     sync:
       manual:
         - src: 'mai_assistant/**/*.py'
-          dest: /app/mai_assistant
+          dest: app/mai_assistant
           strip: mai_assistant
 deploy:
   kubectl:

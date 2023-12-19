@@ -39,7 +39,7 @@ spec:
                   name: mai-assistant-secret
                   key: REDIS_PASSWORD
             - name: LLM_URL
-              value: https://69f4-35-226-169-232.ngrok-free.app
+              value: https://36a0-34-90-10-30.ngrok-free.app
             - name: LLM_MODEL
               value: llama-2-7B-chat-hf
               #value: gpt-3.5-turbo
