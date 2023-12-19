@@ -6,14 +6,12 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 import logging
 
-from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import Application, ContextTypes, MessageHandler, filters
 
 from mai_assistant_telegram_bot.src.clients.mai_assistant import \
     MAIAssistantClient
 
-load_dotenv('mai_assistant_telegram_bot/.env')
 TOKEN = os.getenv("TELEGRAM_API_TOKEN")
 
 # Add stream and file handlers to logger. Use basic config

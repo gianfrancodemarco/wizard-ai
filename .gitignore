@@ -11,4 +11,4 @@ venv
 old/ToolQA/data
 old/StructGPT/datasets
 
-.kubernetes/mai_assistant/secrets.yaml
+**/secrets.yaml

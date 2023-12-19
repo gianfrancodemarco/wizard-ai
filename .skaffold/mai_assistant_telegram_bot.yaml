@@ -1,0 +1,29 @@
+apiVersion: skaffold/v2beta29
+kind: Config
+metadata:
+  name: mai-assistant-telegram-bot
+requires:
+  - path: namespace.yaml
+  - path: secrets.yaml
+build:
+  artifacts:
+  - image: mai-assistant-telegram-bot
+    docker:
+      dockerfile: .docker/mai_assistant_telegram_bot.Dockerfile
+      buildArgs:
+          BUILD_TYPE: development
+    context: ../
+    sync:
+      manual:
+        - src: 'mai_assistant_telegram_bot/**/*.py'
+          dest: /app/mai_assistant_telegram_bot
+          strip: mai_assistant_telegram_bot
+deploy:
+  kubectl:
+    manifests:
+    - ../.kubernetes/mai_assistant_telegram_bot/*.yaml
+portForward:
+  - resourceType: service
+    resourceName: mai-assistant-telegram-bot-service
+    namespace: mai-assistant
+    port: 5678

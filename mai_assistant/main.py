@@ -1,6 +1,5 @@
 import logging
 
-from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from mai_assistant.src.controllers.chat import chat_router

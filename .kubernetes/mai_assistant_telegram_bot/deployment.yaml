@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mai-assistant-telegram-bot
+  namespace: mai-assistant
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mai-assistant-telegram-bot
+  template:
+    metadata:
+      labels:
+        app: mai-assistant-telegram-bot
+    spec:
+      containers:
+        - name: mai-assistant-telegram-bot
+          image: mai-assistant-telegram-bot
+          env:
+            - name: MAI_ASSISTANT_URL
+              valueFrom:
+                secretKeyRef:
+                  name: mai-assistant-telegram-bot-secret
+                  key: MAI_ASSISTANT_URL
+            - name: TELEGRAM_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: mai-assistant-telegram-bot-secret
+                  key: TELEGRAM_API_TOKEN
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+            requests:
+              cpu: "0.5"
+              memory: "512Mi"
