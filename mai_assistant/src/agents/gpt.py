@@ -5,16 +5,15 @@ from langchain.chains import LLMChain
 from langchain.memory.chat_memory import BaseMemory
 
 from mai_assistant.src.llm_client import LLM_MODELS, LLMClientFactory
-from mai_assistant.src.tools.calculator import Calculator
-from mai_assistant.src.tools.random_number_generator import \
-    RandomNumberGenerator
+from mai_assistant.src.tools import Calculator, RandomNumberGenerator, Search
 
 
 def get_gpt_agent(memory: BaseMemory):
     
     tools = [
         Calculator(),
-        RandomNumberGenerator()
+        RandomNumberGenerator(),
+        Search()
     ]
     
     llm = LLMClientFactory.create(

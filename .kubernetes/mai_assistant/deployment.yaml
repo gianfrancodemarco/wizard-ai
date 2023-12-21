@@ -42,7 +42,7 @@ spec:
               value: https://f22d-35-197-99-107.ngrok-free.app/
             - name: LLM_MODEL
               #value: llama-2-7B-chat-hf
-              value: gpt-3.5-turbo
+              value: gpt-3.5-turbo-1106
             - name: PIKA_URL
               valueFrom:
                 secretKeyRef:
@@ -58,3 +58,8 @@ spec:
                 secretKeyRef:
                   name: mai-assistant-secret
                   key: RABBIT_MQ_PASSWORD
+            - name: SERPAPI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mai-assistant-secret
+                  key: SERPAPI_API_KEY
