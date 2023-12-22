@@ -1,19 +1,17 @@
+from contextlib import asynccontextmanager
 import os
 import requests
-
+import websockets
 
 class MAIAssistantClient:
 
     def __init__(self) -> None:
-        self.url = os.environ.get('MAI_ASSISTANT_URL', 'http://localhost:8000')
-
-    def chat(
-        self,
-        conversation_id: str,
-        message: str
-    ) -> str:
-        response = requests.post(
-            f"{self.url}/chat",
-            json={"conversation_id": conversation_id, "question": message},
-        )
-        return response.json()
+        self.host = os.environ.get('MAI_ASSISTANT_URL', 'http://localhost:8000')
+    
+    @asynccontextmanager
+    async def chat_ws(
+        self
+    ):
+        websocket = await websockets.connect(f"ws://{self.host}/chat/ws")
+        yield websocket
+        await websocket.close()

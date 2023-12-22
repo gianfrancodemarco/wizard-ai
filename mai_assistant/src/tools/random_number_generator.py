@@ -11,13 +11,13 @@ class RandomNumberGeneratorInput(BaseModel):
 
 class RandomNumberGenerator(StructuredTool):
     name = "RandomNumberGenerator"
-    description = "Useful to do calculations"
+    description = "Generates a random number between min and max; to use only when explicitly requested"
     args_schema: Type[BaseModel] = RandomNumberGeneratorInput
 
     def _run(
         self,
-        min: str,
-        max: str,
+        min: str = "0",
+        max: str = "100",
         run_manager: Optional[CallbackManagerForToolRun] = None
     ) -> str:
         import random

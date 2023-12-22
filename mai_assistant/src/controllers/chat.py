@@ -1,3 +1,6 @@
+from typing import Any, Dict
+from langchain_core.callbacks import BaseCallbackHandler, AsyncCallbackHandler
+import json
 import logging
 import pickle
 
@@ -5,11 +8,14 @@ from fastapi import APIRouter
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.memory.chat_memory import BaseChatMemory
 from pydantic import BaseModel
+from starlette.websockets import WebSocket
 
-from mai_assistant.src.agents.gpt import get_gpt_agent
+from mai_assistant.src.agents.gpt import GPTAgent
 from mai_assistant.src.dependencies import RedisClient
 
 logger = logging.getLogger(__name__)
+
+chat_router = APIRouter()
 
 
 def get_stored_memory(redis_client: RedisClient, conversation_id: str) -> BaseChatMemory:
@@ -18,11 +24,8 @@ def get_stored_memory(redis_client: RedisClient, conversation_id: str) -> BaseCh
         memory = pickle.loads(memory)
         logger.info("Loaded memory from redis")
     else:
-        memory = ConversationBufferWindowMemory(k=3, memory_key="history")
+        memory = ConversationBufferWindowMemory(k=3, memory_key="history", return_messages=True)
     return memory
-
-
-chat_router = APIRouter()
 
 
 class ChatPayload(BaseModel):
@@ -30,19 +33,45 @@ class ChatPayload(BaseModel):
     question: str
 
 
-@chat_router.post("/chat")
-def chat(data: ChatPayload, redis_client: RedisClient):
+class ToolLoggerCallback(AsyncCallbackHandler):
+
+    def __init__(
+        self,
+        ws: WebSocket
+    ) -> None:
+        super().__init__()
+        self.ws = ws
+
+    async def on_tool_start(
+        self, serialized: Dict[str, Any], input_str: str, **kwargs: Any
+    ) -> Any:
+        """Run when tool starts running."""
+        await self.ws.send_text(json.dumps({
+            "tool": serialized["name"],
+            "type": "tool",
+            "content": f"{serialized['name']}: {input_str}"
+        }))
+        return input_str
+
+
+@chat_router.websocket("/chat/ws")
+async def websocket_endpoint(websocket: WebSocket, redis_client: RedisClient):
+
+    await websocket.accept()
+    payload = await websocket.receive_json()
+    data = ChatPayload.model_validate(payload)
 
     # Prepare input and memory
     input = {"input": data.question}
     memory = get_stored_memory(redis_client, data.conversation_id)
 
     # Run agent
-    answer = get_gpt_agent(memory).run(input)
+    answer = GPTAgent(memory).agent_chain.run(
+        input, callbacks=[ToolLoggerCallback(websocket)])
 
     # Save memory
     memory.save_context(input, {"history": answer})
     redis_client.set(data.conversation_id, pickle.dumps(memory))
     logger.info("Saved memory to redis")
 
-    return {"answer": answer}
+    await websocket.send_text(json.dumps({"answer": answer, "type": "answer"}))
