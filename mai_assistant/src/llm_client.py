@@ -113,7 +113,8 @@ class OpenAIInstructClient(LLMClient):
             model="chat-gpt3",
             instructions=prompt,
             max_tokens=max_tokens,
-            temperature=temperature
+            temperature=temperature,
+            stop=stop
         )
 
         # Update token counts
@@ -145,6 +146,11 @@ class OpenAIChatCompletitionClient(LLMClient):
         temperature: float = 0,
         **kwargs
     ):
+        
+        # TODO: Why langchain isn't passing the stop parameter?
+        if stop is None:
+            stop = ["Observation:"]
+
         client = OpenAI(
             api_key=self.api_key
         )
@@ -158,7 +164,8 @@ class OpenAIChatCompletitionClient(LLMClient):
                 }
             ],
             max_tokens=max_tokens,
-            temperature=temperature
+            temperature=temperature,
+            stop=stop
         )
 
         # Update token counts

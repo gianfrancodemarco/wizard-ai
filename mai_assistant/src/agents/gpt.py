@@ -10,10 +10,14 @@ from mai_assistant.src.tools import Calculator, RandomNumberGenerator, Search
 from langchain.agents.structured_chat.base import *
 from langchain_core.prompts.chat import ChatMessagePromptTemplate
 
+PREFIX = """Respond to the human as helpfully and accurately as possible.
+If the user request is not clear, ask for clarification.
+You have access to the following tools:"""
+
 memory_prompts = [
     ChatMessagePromptTemplate.from_template(
-    role="Previous conversation",
-    template="""
+        role="Previous conversation",
+        template="""
     \n\n
 {history}
     \n\n
@@ -31,6 +35,11 @@ def create_prompt(
     input_variables: Optional[List[str]] = None,
     memory_prompts: Optional[List[BasePromptTemplate]] = None,
 ) -> BasePromptTemplate:
+    """
+    Custom prompt with a slightly different positioning of memory and prompt suffix w.r.t StructuredChatAgent.create_prompt
+    """
+
+
     tool_strings = []
     for tool in tools:
         args_schema = re.sub("}", "}}", re.sub("{", "{{", str(tool.args)))
@@ -48,7 +57,9 @@ def create_prompt(
         SystemMessagePromptTemplate.from_template(template),
         *_memory_prompts,
         SystemMessagePromptTemplate.from_template(suffix),
-        HumanMessagePromptTemplate.from_template(template=human_message_template),
+        ChatMessagePromptTemplate.from_template(
+            role="Question",
+            template=human_message_template),
     ]
     return ChatPromptTemplate(input_variables=input_variables, messages=messages)
 
@@ -56,27 +67,26 @@ def create_prompt(
 class GPTAgent():
 
     def __init__(self, memory: BaseMemory):
-        
+
         self.memory = memory
 
         self.tools = [
             Calculator(),
             RandomNumberGenerator(),
-            #Search()
+            Search()
         ]
-      
+
         self.llm = LLMClientFactory.create(
             LLM_MODELS.GPT3_5_TURBO.value,
             url=os.environ.get('LLM_URL')
         )
-        
+
         self.llm_chain = LLMChain(
             llm=self.llm,
-            #prompt=create_prompt(tools=self.tools, memory_prompts=memory_prompts),
-            prompt=StructuredChatAgent.create_prompt(tools=self.tools),
+            prompt=create_prompt(
+                tools=self.tools, memory_prompts=memory_prompts),
             verbose=True
         )
-        
 
         self.agent = StructuredChatAgent(
             llm_chain=self.llm_chain,

@@ -27,7 +27,11 @@ def get_stored_memory(redis_client: RedisClient, conversation_id: str) -> BaseCh
         logger.info("Loaded memory from redis")
     else:
         memory = ConversationBufferWindowMemory(
-            k=3, memory_key="history")
+            k=3,
+            memory_key="history",
+            human_prefix="Question",
+            ai_prefix="Answer"    
+        )
     return memory
 
 

@@ -10,7 +10,7 @@ class Search(Tool):
     def __init__(self):
         super().__init__(
             name="Internet Search",
-            description="Search the internet for information ONLY when the answer cannot be answered by your knowledge",
+            description="Search the internet for information ONLY when the answer cannot be answered by your knowledge and the intention of the user CLEARLY is to search the internet.",
             run_description="Searching the internet with query: ",
             func=SerpAPIWrapper(
                 params={
