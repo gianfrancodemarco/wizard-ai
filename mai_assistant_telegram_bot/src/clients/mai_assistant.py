@@ -1,6 +1,5 @@
 from contextlib import asynccontextmanager
 import os
-import requests
 import websockets
 
 class MAIAssistantClient:

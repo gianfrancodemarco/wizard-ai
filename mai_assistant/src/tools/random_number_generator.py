@@ -6,8 +6,8 @@ from pydantic import BaseModel, Field
 
 
 class RandomNumberGeneratorInput(BaseModel):
-    min: str = Field(default=0)
-    max: str = Field(default=100)
+    min: Optional[str] = Field(default=0)
+    max: Optional[str] = Field(default=100)
 
 class RandomNumberGenerator(StructuredTool):
     name = "RandomNumberGenerator"

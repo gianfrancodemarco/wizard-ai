@@ -1,5 +1,5 @@
 from typing import Any, Dict
-from langchain_core.callbacks import BaseCallbackHandler, AsyncCallbackHandler
+from langchain_core.callbacks import AsyncCallbackHandler
 import json
 import logging
 import pickle
@@ -24,7 +24,8 @@ def get_stored_memory(redis_client: RedisClient, conversation_id: str) -> BaseCh
         memory = pickle.loads(memory)
         logger.info("Loaded memory from redis")
     else:
-        memory = ConversationBufferWindowMemory(k=3, memory_key="history", return_messages=True)
+        memory = ConversationBufferWindowMemory(
+            k=3, memory_key="history")
     return memory
 
 
@@ -67,11 +68,14 @@ async def websocket_endpoint(websocket: WebSocket, redis_client: RedisClient):
 
     # Run agent
     answer = GPTAgent(memory).agent_chain.run(
-        input, callbacks=[ToolLoggerCallback(websocket)])
+        input,
+        #callbacks=[ToolLoggerCallback(websocket)]
+    )
 
     # Save memory
-    memory.save_context(input, {"history": answer})
+    # memory.save_context(input, {"history": answer})
     redis_client.set(data.conversation_id, pickle.dumps(memory))
     logger.info("Saved memory to redis")
 
     await websocket.send_text(json.dumps({"answer": answer, "type": "answer"}))
+    await websocket.close()

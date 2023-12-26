@@ -52,15 +52,15 @@ class LLMClient(LLM, ABC):
         **kwargs: Any,
     ) -> str:
 
-        logger.info(f"\n\nQuerying model: {self._llm_type}")
-        logger.info(f"Prompt: {prompt}")
+        # logger.info(f"\n\nQuerying model: {self._llm_type}")
+        # logger.info(f"Prompt: {prompt}")
         start = time()
         response = self.prompt_completion(
             prompt=prompt,
             **kwargs
         )
-        response = response.split("\nObservation:")[0]
-        response = "\n".join(list(map(lambda x: x.replace("[", "").replace("]", "") if x.startswith("Action:") else x ,response.split("\n"))))
+        # response = response.split("\nObservation:")[0]
+        # response = "\n".join(list(map(lambda x: x.replace("[", "").replace("]", "") if x.startswith("Action:") else x ,response.split("\n"))))
         end = time()
         logger.info(f"Response time: {end - start}\n\n")
         return response
