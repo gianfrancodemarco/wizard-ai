@@ -12,6 +12,8 @@ from starlette.websockets import WebSocket
 
 from mai_assistant.src.agents.gpt import GPTAgent
 from mai_assistant.src.dependencies import RedisClient
+from langchain_core.callbacks.stdout import StdOutCallbackHandler
+from mai_assistant.src.callbacks import LoggerCallbackHandler
 
 logger = logging.getLogger(__name__)
 
@@ -67,9 +69,9 @@ async def websocket_endpoint(websocket: WebSocket, redis_client: RedisClient):
     memory = get_stored_memory(redis_client, data.conversation_id)
 
     # Run agent
-    answer = GPTAgent(memory).agent_chain.run(
+    answer = await GPTAgent(memory).agent_chain.arun(
         input,
-        #callbacks=[ToolLoggerCallback(websocket)]
+        callbacks=[ToolLoggerCallback(websocket), LoggerCallbackHandler()]
     )
 
     # Save memory
@@ -79,3 +81,24 @@ async def websocket_endpoint(websocket: WebSocket, redis_client: RedisClient):
 
     await websocket.send_text(json.dumps({"answer": answer, "type": "answer"}))
     await websocket.close()
+
+
+@chat_router.post("/chat")
+async def chat(data: ChatPayload, redis_client: RedisClient):
+
+    # Prepare input and memory
+    input = {"input": data.question}
+    memory = get_stored_memory(redis_client, data.conversation_id)
+
+    # Run agent
+    answer = await GPTAgent(memory).agent_chain.arun(
+        input,
+        callbacks=[LoggerCallbackHandler()]
+    )
+
+    # Save memory
+    #memory.save_context(input, {"history": answer})
+    redis_client.set(data.conversation_id, pickle.dumps(memory))
+    logger.info("Saved memory to redis")
+
+    return {"answer": answer}

@@ -2,18 +2,14 @@ import os
 from abc import ABC, abstractmethod
 from enum import Enum
 from logging import getLogger
-
-import requests
-from langchain_core.language_models.llms import LLM
-from openai._client import OpenAI
-from typing import Any, Mapping, Optional, List
-
-from langchain_core.language_models.llms import LLM
-
+from time import time
 from typing import Any, List, Mapping, Optional
 
+import requests
+from langchain_core.callbacks import CallbackManagerForLLMRun
+from langchain_core.language_models.llms import LLM
+from openai._client import OpenAI
 from pydantic import Field
-from time import time
 
 logger = getLogger(__name__)
 
@@ -49,6 +45,8 @@ class LLMClient(LLM, ABC):
     def _call(
         self,
         prompt: str,
+        stop: Optional[List[str]] = None,
+        run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> str:
 
@@ -84,50 +82,51 @@ class LLMClient(LLM, ABC):
         return (self.input_tokens * self.COST_PER_INPUT_TOKEN) + (self.output_tokens * self.COST_PER_OUTPUT_TOKEN)
 
     def print_costs(self):
-        logger.info(f"Input tokens: {self.input_tokens}")
-        logger.info(f"Output tokens: {self.output_tokens}")
-        logger.info(f"Estimated costs: {self.estimate_costs()}")
+        logger.debug(f"Input tokens: {self.input_tokens}")
+        logger.debug(f"Output tokens: {self.output_tokens}")
+        logger.debug(f"Estimated costs: {self.estimate_costs()}")
 
 
 class OpenAIInstructClient(LLMClient):
-    
-        api_key: str = os.getenv("OPEN_API_KEY")
-        model_name: str
-        COST_PER_INPUT_TOKEN: float = 0.001 / 1000
-        COST_PER_OUTPUT_TOKEN: float = 0.002 / 1000
-        input_tokens: int = 0
-        output_tokens: int = 0
-        total_tokens: int = 0
-    
-        def prompt_completion(
-            self,
-            prompt: str,
-            stop: Optional[List[str]] = None,
-            max_tokens: int = 250,
-            temperature: float = 0,
-            **kwargs
-        ):
-            client = OpenAI(
-                api_key=self.api_key
-            )
-            # model_kwargs={"stop": "\n"},
-            response = client.completions.create(
-                model="chat-gpt3",
-                instructions=prompt,
-                max_tokens=max_tokens,
-                temperature=temperature
-            )
-    
-            # Update token counts
-            self.input_tokens += response.usage.prompt_tokens
-            self.output_tokens += response.usage.completion_tokens
-            self.total_tokens += response.usage.total_tokens
-    
-            self.print_costs()
-            response_text = response.choices[0].text
-    
-            return response_text
-    
+
+    api_key: str = os.getenv("OPEN_API_KEY")
+    model_name: str
+    COST_PER_INPUT_TOKEN: float = 0.001 / 1000
+    COST_PER_OUTPUT_TOKEN: float = 0.002 / 1000
+    input_tokens: int = 0
+    output_tokens: int = 0
+    total_tokens: int = 0
+
+    def prompt_completion(
+        self,
+        prompt: str,
+        stop: Optional[List[str]] = None,
+        max_tokens: int = 250,
+        temperature: float = 0,
+        **kwargs
+    ):
+        client = OpenAI(
+            api_key=self.api_key
+        )
+        # model_kwargs={"stop": "\n"},
+        response = client.completions.create(
+            model="chat-gpt3",
+            instructions=prompt,
+            max_tokens=max_tokens,
+            temperature=temperature
+        )
+
+        # Update token counts
+        self.input_tokens += response.usage.prompt_tokens
+        self.output_tokens += response.usage.completion_tokens
+        self.total_tokens += response.usage.total_tokens
+
+        self.print_costs()
+        response_text = response.choices[0].text
+
+        return response_text
+
+
 class OpenAIChatCompletitionClient(LLMClient):
 
     api_key: str = os.getenv("OPEN_API_KEY")
@@ -197,13 +196,13 @@ class LlamaChatCompletitionClient(LLMClient):
                 }
             }
         )
-        
+
         try:
             response = response.json()
         except Exception as e:
             logger.error(f"Error parsing response: {response}")
             raise e
-        
+
         # Update token counts
         self.input_tokens += response['input_tokens']
         self.output_tokens += response['output_tokens']

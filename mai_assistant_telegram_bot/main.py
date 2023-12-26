@@ -12,6 +12,9 @@ from mai_assistant_telegram_bot.src.clients.mai_assistant import \
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
+from telegram import Update, Bot
+from telegram.constants import ChatAction
+
 
 TOKEN = os.getenv("TELEGRAM_API_TOKEN")
 bot = Bot(token=TOKEN)
@@ -28,6 +31,21 @@ logging.basicConfig(
 )
 
 
+async def text_handler(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
+
+    logging.info(f"Message received: {update}")
+
+    await bot.send_chat_action(
+        chat_id=update.message.chat_id,
+        action=ChatAction.TYPING.value
+    )
+    response = MAIAssistantClient().chat(
+        conversation_id=str(update.message.chat_id),
+        message=update.message.text
+    )
+    await update.message.reply_text(response["answer"])
+
+
 async def text_handler_websocket(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
 
     logging.info(f"Message received: {update}")
@@ -42,6 +60,12 @@ async def text_handler_websocket(update: Update, _: ContextTypes.DEFAULT_TYPE) -
 
         answer = None
         while answer is None:
+            
+            await bot.send_chat_action(
+                chat_id=update.message.chat_id,
+                action=ChatAction.TYPING.value
+            )
+
             response = json.loads(await websocket.recv())
             # The message is a tool usage
             if response["type"] == "tool":
