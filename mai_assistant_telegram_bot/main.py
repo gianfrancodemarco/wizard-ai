@@ -1,4 +1,6 @@
 
+from mai_assistant_telegram_bot.src.constants import Emojis, MessageType
+from telegram.constants import ChatAction
 import json
 import logging
 import os
@@ -13,10 +15,6 @@ from mai_assistant_telegram_bot.src.clients.mai_assistant import \
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from telegram import Bot, Update
-from telegram.constants import ChatAction
-
-from mai_assistant_telegram_bot.src.constants import Emojis, MessageType
 
 TOKEN = os.getenv("TELEGRAM_API_TOKEN")
 bot = Bot(token=TOKEN)
@@ -71,14 +69,14 @@ async def text_handler_websocket(update: Update, _: ContextTypes.DEFAULT_TYPE) -
 
         answer = None
         while answer is None:
-            
+
             await bot.send_chat_action(
                 chat_id=update.message.chat_id,
                 action=ChatAction.TYPING.value
             )
 
             mai_assistant_update = json.loads(await websocket.recv())
-            
+
             if mai_assistant_update["type"] == MessageType.TOOL_START.value:
                 # We keep the tool_start_update because the tool_end_update will not have all the information
                 tool_start_update = mai_assistant_update
@@ -90,6 +88,13 @@ async def text_handler_websocket(update: Update, _: ContextTypes.DEFAULT_TYPE) -
                 await update.message.reply_text(mai_assistant_update["answer"])
 
 
+async def post_init(application: Application) -> None:
+
+    await application.bot.set_my_commands([
+        ("reset", "Clears the conversation history.")
+    ])
+
+
 def start_bot() -> None:
     """Start the bot."""
     logging.info("Starting the telegram bot")
@@ -97,10 +102,12 @@ def start_bot() -> None:
 
     application = Application.builder()\
         .bot(bot)\
+        .post_init(post_init)\
         .build()
 
     # Add command handler to application
-    application.add_handler(CommandHandler("reset", reset_conversation_handler))
+    application.add_handler(CommandHandler(
+        "reset", reset_conversation_handler))
 
     # on non command i.e message - echo the message on Telegram
     application.add_handler(MessageHandler(

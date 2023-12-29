@@ -11,7 +11,7 @@ from langchain.agents.structured_chat.base import *
 from langchain_core.prompts.chat import ChatMessagePromptTemplate
 
 PREFIX = """Respond to the human as helpfully and accurately as possible.
-If the user request is not clear, ask for clarification.
+If the user request is not clear, ask for clarification (using the final answer tool).
 You have access to the following tools:"""
 
 memory_prompts = [
