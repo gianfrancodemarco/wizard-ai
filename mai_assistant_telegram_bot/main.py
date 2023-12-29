@@ -5,19 +5,22 @@ import os
 import sys
 
 from telegram import Bot, Update
-from telegram.ext import Application, ContextTypes, MessageHandler, filters
+from telegram.ext import (Application, CommandHandler, ContextTypes,
+                          MessageHandler, filters)
 
 from mai_assistant_telegram_bot.src.clients.mai_assistant import \
     MAIAssistantClient
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from telegram import Update, Bot
+from telegram import Bot, Update
 from telegram.constants import ChatAction
 
+from mai_assistant_telegram_bot.src.constants import Emojis, MessageType
 
 TOKEN = os.getenv("TELEGRAM_API_TOKEN")
 bot = Bot(token=TOKEN)
+mai_assistant_client = MAIAssistantClient()
 
 # Add stream and file handlers to logger. Use basic config
 # to avoid adding duplicate handlers when reloading server
@@ -31,6 +34,14 @@ logging.basicConfig(
 )
 
 
+async def reset_conversation_handler(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
+    """Clears the conversation history."""
+    mai_assistant_client.reset_conversation(
+        conversation_id=str(update.message.chat_id)
+    )
+    await update.message.reply_text("Conversation history cleared.")
+
+
 async def text_handler(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
 
     logging.info(f"Message received: {update}")
@@ -39,7 +50,7 @@ async def text_handler(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
         chat_id=update.message.chat_id,
         action=ChatAction.TYPING.value
     )
-    response = MAIAssistantClient().chat(
+    response = mai_assistant_client.chat(
         conversation_id=str(update.message.chat_id),
         message=update.message.text
     )
@@ -50,7 +61,7 @@ async def text_handler_websocket(update: Update, _: ContextTypes.DEFAULT_TYPE) -
 
     logging.info(f"Message received: {update}")
 
-    async with MAIAssistantClient().chat_ws() as websocket:
+    async with mai_assistant_client.chat_ws() as websocket:
 
         # Ask the question to the MAI Assistant
         await websocket.send(json.dumps({
@@ -66,15 +77,17 @@ async def text_handler_websocket(update: Update, _: ContextTypes.DEFAULT_TYPE) -
                 action=ChatAction.TYPING.value
             )
 
-            response = json.loads(await websocket.recv())
-            # The message is a tool usage
-            if response["type"] == "tool":
-                await update.message.reply_text(f"""✔️ {response["content"]}""")
-
-            # The message is the final answer
-            elif response["type"] == "answer":
-                answer = response["answer"]
-                await update.message.reply_text(response["answer"])
+            mai_assistant_update = json.loads(await websocket.recv())
+            
+            if mai_assistant_update["type"] == MessageType.TOOL_START.value:
+                # We keep the tool_start_update because the tool_end_update will not have all the information
+                tool_start_update = mai_assistant_update
+                tool_start_telegram_message_ref = await update.message.reply_text(f"""{Emojis.LOADING.value} {tool_start_update["content"]}""")
+            elif mai_assistant_update["type"] == MessageType.TOOL_END.value:
+                await tool_start_telegram_message_ref.edit_text(f"""{Emojis.DONE.value} {tool_start_update["content"]}""")
+            elif mai_assistant_update["type"] == MessageType.ANSWER.value:
+                answer = mai_assistant_update["answer"]
+                await update.message.reply_text(mai_assistant_update["answer"])
 
 
 def start_bot() -> None:
@@ -85,6 +98,9 @@ def start_bot() -> None:
     application = Application.builder()\
         .bot(bot)\
         .build()
+
+    # Add command handler to application
+    application.add_handler(CommandHandler("reset", reset_conversation_handler))
 
     # on non command i.e message - echo the message on Telegram
     application.add_handler(MessageHandler(

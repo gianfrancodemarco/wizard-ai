@@ -1,23 +1,25 @@
-from contextlib import asynccontextmanager
 import os
-import websockets
+from contextlib import asynccontextmanager
+
 import requests
+import websockets
+
 
 class MAIAssistantClient:
 
     def __init__(self) -> None:
-        self.host = os.environ.get('MAI_ASSISTANT_URL', 'localhost:8000')
-    
+        self.HOST = os.environ.get('MAI_ASSISTANT_URL', 'localhost:8000')
+        self.REST_URL = f"http://{self.HOST}"
+
     @asynccontextmanager
     async def chat_ws(
         self
     ):
-        websocket = await websockets.connect(f"ws://{self.host}/chat/ws")
+        websocket = await websockets.connect(f"ws://{self.HOST}/chat/ws")
         try:
             yield websocket
         finally:
             await websocket.close()
-
 
     def chat(
         self,
@@ -25,7 +27,13 @@ class MAIAssistantClient:
         message: str
     ) -> str:
         response = requests.post(
-            f"http://{self.host}/chat",
+            f"{self.REST_URL}/chat",
             json={"conversation_id": conversation_id, "question": message},
         )
         return response.json()
+
+    def reset_conversation(
+        self,
+        conversation_id: str
+    ) -> None:
+        requests.delete(f"{self.REST_URL}/conversations/{conversation_id}")
