@@ -37,3 +37,10 @@ class MAIAssistantClient:
         conversation_id: str
     ) -> None:
         requests.delete(f"{self.REST_URL}/conversations/{conversation_id}")
+
+    def login_to_google(
+        self,
+        conversation_id: str
+    ) -> str:
+        response = requests.post(f"{self.REST_URL}/google/login/{conversation_id}")
+        return response.json()["content"]

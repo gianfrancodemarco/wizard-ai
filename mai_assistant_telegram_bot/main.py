@@ -39,6 +39,15 @@ async def reset_conversation_handler(update: Update, _: ContextTypes.DEFAULT_TYP
     )
     await update.message.reply_text("Conversation history cleared.")
 
+async def login_to_google_handler(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
+    """Login to Google."""
+    login_url = mai_assistant_client.login_to_google(
+        conversation_id=str(update.message.chat_id)
+    )
+    # Make the url markdown with a nice text so it is clickable
+    login_text = f"[Login to Google]({login_url})"
+    await update.message.reply_markdown(f"Please complete the login process at the following URL:\n{login_text}")
+
 
 async def text_handler(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
 
@@ -91,7 +100,8 @@ async def text_handler_websocket(update: Update, _: ContextTypes.DEFAULT_TYPE) -
 async def post_init(application: Application) -> None:
 
     await application.bot.set_my_commands([
-        ("reset", "Clears the conversation history.")
+        ("reset", "Clears the conversation history."),
+        ("login_to_google", "Login to Google.")
     ])
 
 
@@ -108,6 +118,8 @@ def start_bot() -> None:
     # Add command handler to application
     application.add_handler(CommandHandler(
         "reset", reset_conversation_handler))
+    application.add_handler(CommandHandler(
+        "login_to_google", login_to_google_handler))
 
     # on non command i.e message - echo the message on Telegram
     application.add_handler(MessageHandler(

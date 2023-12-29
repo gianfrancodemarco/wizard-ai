@@ -3,7 +3,7 @@ import logging
 from fastapi import FastAPI
 
 from mai_assistant.src.controllers.websocket.chat import chat_router as chat_router_ws
-from mai_assistant.src.controllers.rest import chat_router as chat_router_rest, conversations_router
+from mai_assistant.src.controllers.rest import chat_router as chat_router_rest, conversations_router, google_login_router, google_actions_router
 
 # Add stream and file handlers to logger. Use basic config
 # to avoid adding duplicate handlers when reloading server
@@ -26,3 +26,5 @@ app.include_router(chat_router_ws)
 
 app.include_router(chat_router_rest)
 app.include_router(conversations_router)
+app.include_router(google_login_router)
+app.include_router(google_actions_router)

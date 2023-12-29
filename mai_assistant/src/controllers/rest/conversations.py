@@ -2,7 +2,7 @@ import logging
 
 from fastapi import APIRouter, HTTPException
 
-from mai_assistant.src.dependencies import RedisClient
+from mai_assistant.src.clients import RedisClient
 
 logger = logging.getLogger(__name__)
 

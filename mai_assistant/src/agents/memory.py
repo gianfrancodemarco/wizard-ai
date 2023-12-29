@@ -4,13 +4,16 @@ import pickle
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.memory.chat_memory import BaseChatMemory
 
-from mai_assistant.src.dependencies import RedisClient
+from mai_assistant.src.clients import RedisClient
 
 logger = logging.getLogger(__name__)
 
 
 def get_stored_memory(redis_client: RedisClient, conversation_id: str) -> BaseChatMemory:
-    memory = redis_client.get(conversation_id)
+    memory = redis_client.hget(
+        conversation_id,
+        "memory"
+    )
     if memory is not None:
         memory = pickle.loads(memory)
         logger.info("Loaded memory from redis")

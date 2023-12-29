@@ -5,7 +5,7 @@ from fastapi import APIRouter
 
 from mai_assistant.src.agents import GPTAgent, get_stored_memory
 from mai_assistant.src.callbacks import LoggerCallbackHandler
-from mai_assistant.src.dependencies import RedisClient
+from mai_assistant.src.clients import RedisClient
 from mai_assistant.src.models.chat_payload import ChatPayload
 
 logger = logging.getLogger(__name__)

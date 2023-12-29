@@ -8,6 +8,7 @@ RUN pip install -r requirements.txt
 
 ADD mai_assistant mai_assistant
 ADD mai_assistant/main.py .
+ADD client_secret.json /
 
 ENV PYTHONPATH=/app
 
