@@ -1,17 +1,19 @@
 
-from mai_assistant_telegram_bot.src.constants import Emojis, MessageType
-from telegram.constants import ChatAction
 import json
 import logging
 import os
 import sys
+import threading
 
 from telegram import Bot, Update
+from telegram.constants import ChatAction
 from telegram.ext import (Application, CommandHandler, ContextTypes,
                           MessageHandler, filters)
 
-from mai_assistant_telegram_bot.src.clients.mai_assistant import \
-    MAIAssistantClient
+from mai_assistant_telegram_bot.src.clients import (AsyncPikaConsumer,
+                                                    MAIAssistantClient)
+from mai_assistant_telegram_bot.src.constants import (Emojis, MessageQueues,
+                                                      MessageType)
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
@@ -38,6 +40,7 @@ async def reset_conversation_handler(update: Update, _: ContextTypes.DEFAULT_TYP
         conversation_id=str(update.message.chat_id)
     )
     await update.message.reply_text("Conversation history cleared.")
+
 
 async def login_to_google_handler(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
     """Login to Google."""
@@ -97,12 +100,34 @@ async def text_handler_websocket(update: Update, _: ContextTypes.DEFAULT_TYPE) -
                 await update.message.reply_text(mai_assistant_update["answer"])
 
 
+def on_message_callback(message: str) -> None:
+    """Callback to be called when a message is received from the RabbitMQ queue."""
+    message = json.loads(message)
+
+    # Make this blocking with asyncio
+    import asyncio
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(
+        bot.send_message(
+            chat_id=message["conversation_id"],
+            text=message["content"]
+        )
+    )
+
+
 async def post_init(application: Application) -> None:
 
     await application.bot.set_my_commands([
         ("reset", "Clears the conversation history."),
         ("login_to_google", "Login to Google.")
     ])
+
+    # Run pika consumer in another thread
+    threading.Thread(target=AsyncPikaConsumer(
+        queue_name=MessageQueues.MAI_ASSISTANT_OUT.value,
+        on_message_callback=on_message_callback
+    ).run_consumer).start()
 
 
 def start_bot() -> None:

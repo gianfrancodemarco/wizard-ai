@@ -1,2 +1,2 @@
 auth:
-  existingPasswordSecret: rabbitmq-custom
+  existingPasswordSecret: rabbitmq-custom-secret

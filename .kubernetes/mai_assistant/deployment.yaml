@@ -48,16 +48,18 @@ spec:
                 secretKeyRef:
                   name: mai-assistant-secret
                   key: PIKA_URL
-            - name: RABBIT_MQ_USER
+            - name: RABBITMQ_HOST
+              value: "rabbitmq"
+            - name: RABBITMQ_USER
               valueFrom:
                 secretKeyRef:
-                  name: mai-assistant-secret
-                  key: RABBIT_MQ_USER
-            - name: RABBIT_MQ_PASSWORD
+                  name: rabbitmq-custom-secret
+                  key: rabbitmq-user
+            - name: RABBITMQ_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: mai-assistant-secret
-                  key: RABBIT_MQ_PASSWORD
+                  name: rabbitmq-custom-secret
+                  key: rabbitmq-password
             - name: SERPAPI_API_KEY
               valueFrom:
                 secretKeyRef:

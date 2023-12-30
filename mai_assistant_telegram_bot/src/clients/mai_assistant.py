@@ -7,9 +7,11 @@ import websockets
 
 class MAIAssistantClient:
 
+
     def __init__(self) -> None:
         self.HOST = os.environ.get('MAI_ASSISTANT_URL', 'localhost:8000')
         self.REST_URL = f"http://{self.HOST}"
+
 
     @asynccontextmanager
     async def chat_ws(
@@ -32,11 +34,13 @@ class MAIAssistantClient:
         )
         return response.json()
 
+
     def reset_conversation(
         self,
         conversation_id: str
     ) -> None:
         requests.delete(f"{self.REST_URL}/conversations/{conversation_id}")
+
 
     def login_to_google(
         self,

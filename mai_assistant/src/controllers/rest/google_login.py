@@ -2,6 +2,7 @@
 File containing endpoints and functions for Google login.
 """
 
+import json
 import logging
 import pickle
 import random
@@ -11,7 +12,8 @@ from fastapi import APIRouter
 from google_auth_oauthlib.flow import Flow
 from starlette.exceptions import HTTPException
 
-from mai_assistant.src.clients import RedisClient
+from mai_assistant.src.clients import RabbitMQClient, RedisClient
+from mai_assistant.src.constants import MessageQueues
 
 logger = logging.getLogger(__name__)
 google_login_router = APIRouter(prefix="/google")
@@ -83,7 +85,8 @@ def login(
 def callback(
     code: str,
     state: str,
-    redis_client: RedisClient
+    redis_client: RedisClient,
+    rabbitmq_client: RabbitMQClient
 ):
     """
     We store the state token 2 times:
@@ -151,6 +154,17 @@ def callback(
     redis_client.hdel(
         "google_state_token_mapping",
         state_token
+    )
+
+    # Publish a message to the RabbitMQ queue
+    channel = rabbitmq_client.connect()
+    rabbitmq_client.publish(
+        channel=channel,
+        queue=MessageQueues.MAI_ASSISTANT_OUT.value,
+        message=json.dumps({
+            "conversation_id": conversation_id,
+            "content": "Successfully logged in to Google."
+        })
     )
 
     return {"content": "Successfully logged in to Google."}
