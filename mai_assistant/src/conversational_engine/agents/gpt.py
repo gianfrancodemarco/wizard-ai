@@ -4,8 +4,8 @@ from langchain.agents import AgentExecutor, StructuredChatAgent
 from langchain.chains import LLMChain
 from langchain.memory.chat_memory import BaseMemory
 
-from mai_assistant.src.llm_client import LLM_MODELS, LLMClientFactory
-from mai_assistant.src.tools import Calculator, RandomNumberGenerator, Search
+from mai_assistant.src.clients.llm import LLM_MODELS, LLMClientFactory
+from mai_assistant.src.conversational_engine.tools import Calculator, RandomNumberGenerator, Search, GoogleCalendar
 
 from langchain.agents.structured_chat.base import *
 from langchain_core.prompts.chat import ChatMessagePromptTemplate
@@ -73,7 +73,8 @@ class GPTAgent():
         self.tools = [
             Calculator(),
             RandomNumberGenerator(),
-            Search()
+            #Search(),
+            GoogleCalendar()
         ]
 
         self.llm = LLMClientFactory.create(

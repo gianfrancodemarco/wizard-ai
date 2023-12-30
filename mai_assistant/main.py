@@ -8,7 +8,7 @@ from mai_assistant.src.constants import MessageQueues
 from mai_assistant.src.controllers import (conversations_router,
                                                 google_actions_router,
                                                 google_login_router)
-from mai_assistant.src.engine import process_message
+from mai_assistant.src.conversational_engine.engine import process_message
 
 # Add stream and file handlers to logger. Use basic config
 # to avoid adding duplicate handlers when reloading server

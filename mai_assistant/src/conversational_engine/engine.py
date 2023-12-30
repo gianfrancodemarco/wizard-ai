@@ -6,12 +6,13 @@ import pickle
 import redis
 from fastapi.responses import JSONResponse
 
-from mai_assistant.src.agents import GPTAgent, get_stored_memory
-from mai_assistant.src.callbacks import LoggerCallbackHandler
-from mai_assistant.src.callbacks.tool_logger import ToolLoggerCallback
 from mai_assistant.src.clients import (RabbitMQProducer, get_rabbitmq_producer,
                                        get_redis_client)
 from mai_assistant.src.constants import MessageQueues, MessageType
+from mai_assistant.src.conversational_engine.agents import (GPTAgent,
+                                                            get_stored_memory)
+from mai_assistant.src.conversational_engine.callbacks import (
+    LoggerCallbackHandler, ToolLoggerCallback)
 from mai_assistant.src.models.chat_payload import ChatPayload
 
 logger = logging.getLogger(__name__)
