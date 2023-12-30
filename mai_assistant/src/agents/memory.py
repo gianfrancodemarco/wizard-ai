@@ -1,15 +1,14 @@
 import logging
 import pickle
 
+import redis
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.memory.chat_memory import BaseChatMemory
-
-from mai_assistant.src.clients import RedisClient
 
 logger = logging.getLogger(__name__)
 
 
-def get_stored_memory(redis_client: RedisClient, chat_id: str) -> BaseChatMemory:
+def get_stored_memory(redis_client: redis.Redis, chat_id: str) -> BaseChatMemory:
     memory = redis_client.hget(
         chat_id,
         "memory"

@@ -1,4 +1,3 @@
-from .mai_assistant import MAIAssistantClient
-from .rabbitmq_consumer import AsyncPikaConsumer
-from .aio_pika_consumer import AioPikaConsumer
-from .redis import RedisClient
+from .mai_assistant import MAIAssistantClient 
+from .redis import get_redis_client
+from .rabbitmq import get_rabbitmq_consumer, get_rabbitmq_producer

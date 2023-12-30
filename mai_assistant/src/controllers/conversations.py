@@ -2,7 +2,7 @@ import logging
 
 from fastapi import APIRouter, HTTPException
 
-from mai_assistant.src.clients import RedisClient
+from mai_assistant.src.clients import RedisClientDep
 
 logger = logging.getLogger(__name__)
 
@@ -11,14 +11,14 @@ conversations_router = APIRouter(prefix="/conversations")
 
 
 @conversations_router.delete
-def delete_conversations(redis_client: RedisClient):
+def delete_conversations(redis_client: RedisClientDep):
     """Delete all conversations"""
     redis_client.flushdb()
     return {"content": None}
 
 
 @conversations_router.delete("/{chat_id}")
-async def chat(chat_id: str, redis_client: RedisClient):
+async def chat(chat_id: str, redis_client: RedisClientDep):
     """Delete a conversation"""
 
     if not redis_client.exists(chat_id):

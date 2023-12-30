@@ -4,7 +4,7 @@ import pickle
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from mai_assistant.src.clients import GoogleClient, RedisClient
+from mai_assistant.src.clients import GoogleClient, RedisClientDep
 from mai_assistant.src.models.create_calendar_event_payload import \
     CreateCalendarEventPayload
 
@@ -16,7 +16,7 @@ google_actions_router = APIRouter(prefix="/google")
 def create_calendar_event(
     chat_id: str,
     data: CreateCalendarEventPayload,
-    redis_client: RedisClient
+    redis_client: RedisClientDep
 ):
 
     credentials = redis_client.hget(

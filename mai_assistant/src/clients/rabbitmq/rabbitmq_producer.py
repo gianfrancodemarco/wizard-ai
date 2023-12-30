@@ -1,23 +1,14 @@
 import logging
-import os
 from typing import Annotated
 
 import pika
-from fastapi import Depends
 
-RABBITMQ_HOST = os.environ.get('RABBITMQ_HOST')
-RABBITMQ_PORT = os.environ.get('RABBITMQ_PORT', 5672)
-RABBITMQ_PASSWORD = os.environ.get('RABBITMQ_PASSWORD')
-RABBITMQ_USER = os.environ.get('RABBITMQ_USER')
-
-# Convert port to int if it is a string (Due to the fact that Kubernetes automatically populates some env variables from the services)
-if type(RABBITMQ_PORT) == str and ':' in RABBITMQ_PORT:
-    RABBITMQ_PORT = int(RABBITMQ_PORT.split(':')[-1])
+from .constants import RABBITMQ_HOST, RABBITMQ_PASSWORD, RABBITMQ_PORT, RABBITMQ_USER
 
 logger = logging.getLogger(__name__)
 
 
-class _RabbitMQClient:
+class RabbitMQProducer:
 
     def __init__(self, host, port, user, password):
         self.host = host
@@ -48,8 +39,8 @@ class _RabbitMQClient:
         self.channel.basic_publish(exchange='', routing_key=queue, body=message)
 
 
-def get_rabbitmq_client():
-    client = _RabbitMQClient(
+def get_rabbitmq_producer():
+    client = RabbitMQProducer(
         host=RABBITMQ_HOST,
         port=RABBITMQ_PORT,
         user=RABBITMQ_USER,
@@ -58,5 +49,9 @@ def get_rabbitmq_client():
     client.connect()
     return client
 
-
-RabbitMQClient = Annotated[_RabbitMQClient, Depends(get_rabbitmq_client)]
+RabbitMQProducerDep = None
+try:
+    from fastapi import Depends
+    RabbitMQProducerDep = Annotated[RabbitMQProducer, Depends(get_rabbitmq_producer)]
+except ImportError:
+    pass

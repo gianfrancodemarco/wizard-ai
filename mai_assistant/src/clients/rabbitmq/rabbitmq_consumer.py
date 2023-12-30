@@ -1,22 +1,18 @@
 import asyncio
 import json
-import os
+import logging
 from typing import Coroutine
+
 import aio_pika
 
-RABBITMQ_HOST = os.environ.get('RABBITMQ_HOST')
-RABBITMQ_PORT = os.environ.get('RABBITMQ_PORT', 5672)
-RABBITMQ_PASSWORD = os.environ.get('RABBITMQ_PASSWORD')
-RABBITMQ_USER = os.environ.get('RABBITMQ_USER')
+from .constants import (RABBITMQ_HOST, RABBITMQ_PASSWORD, RABBITMQ_PORT,
+                        RABBITMQ_USER)
 
-# Convert port to int if it is a string (Due to the fact that Kubernetes automatically populates some env variables from the services)
-if type(RABBITMQ_PORT) == str and ':' in RABBITMQ_PORT:
-    RABBITMQ_PORT = int(RABBITMQ_PORT.split(':')[-1])
+logger = logging.getLogger(__name__)
 
-class AioPikaConsumer:
+class RabbitMQConsumer:
     def __init__(
         self,
-        # coroutine
         on_message_callback: Coroutine[dict, None, None],
         queue_name: str
     ):
@@ -29,7 +25,7 @@ class AioPikaConsumer:
         async with message.process():
             async with self.lock:
                 body = json.loads(message.body.decode())
-                print(f" [x] Received {body}")
+                logging.info(f" [x] Received {body}")
                 await self.on_message_callback(body)
                 # Your processing logic here
                 # For example, you can call an async function:
@@ -50,3 +46,13 @@ class AioPikaConsumer:
 
     async def run_consumer(self):
         await self.setup_consumer()
+
+
+def get_rabbitmq_consumer(
+    on_message_callback: Coroutine[dict, None, None],
+    queue_name: str
+):
+    return RabbitMQConsumer(
+        on_message_callback=on_message_callback,
+        queue_name=queue_name
+    )

@@ -12,8 +12,8 @@ from fastapi import APIRouter
 from google_auth_oauthlib.flow import Flow
 from starlette.exceptions import HTTPException
 
-from mai_assistant.src.clients import RabbitMQClient, RedisClient
-from mai_assistant.src.constants import MessageQueues
+from mai_assistant.src.clients import RabbitMQProducerDep, RedisClientDep
+from mai_assistant.src.constants import MessageQueues, MessageType
 
 logger = logging.getLogger(__name__)
 google_login_router = APIRouter(prefix="/google")
@@ -55,7 +55,7 @@ def generate_authorization_url():
 @google_login_router.post("/login/{chat_id}")
 def login(
     chat_id: str,
-    redis_client: RedisClient
+    redis_client: RedisClientDep
 ):
     """
     Returns a URL to login to Google.
@@ -85,8 +85,8 @@ def login(
 def callback(
     code: str,
     state: str,
-    redis_client: RedisClient,
-    rabbitmq_client: RabbitMQClient
+    redis_client: RedisClientDep,
+    rabbitmq_client: RabbitMQProducerDep
 ):
     """
     We store the state token 2 times:
@@ -160,6 +160,7 @@ def callback(
     rabbitmq_client.publish(
         queue=MessageQueues.MAI_ASSISTANT_OUT.value,
         message=json.dumps({
+            "type": MessageType.TEXT.value,
             "chat_id": chat_id,
             "content": "Successfully logged in to Google."
         })

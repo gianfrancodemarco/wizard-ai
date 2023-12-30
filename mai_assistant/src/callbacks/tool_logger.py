@@ -3,7 +3,7 @@ from typing import Any, Dict
 
 from langchain_core.callbacks import AsyncCallbackHandler
 
-from mai_assistant.src.clients import RabbitMQClient
+from mai_assistant.src.clients import RabbitMQProducer
 from mai_assistant.src.constants import MessageType
 
 
@@ -12,7 +12,7 @@ class ToolLoggerCallback(AsyncCallbackHandler):
     def __init__(
         self,
         chat_id: str,
-        rabbitmq_client: RabbitMQClient,
+        rabbitmq_client: RabbitMQProducer,
         queue: str
     ) -> None:
         super().__init__()
