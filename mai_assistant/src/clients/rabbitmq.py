@@ -25,43 +25,38 @@ class _RabbitMQClient:
         self.user = user
         self.password = password
 
+        self.connection = None
+        self.channel = None
+
+
     def connect(self):
         connection_params = pika.ConnectionParameters(
             host=self.host,
             port=self.port,
             credentials=pika.PlainCredentials(self.user, self.password)
         )
-        connection = pika.BlockingConnection(connection_params)
-        channel = connection.channel()
-        return channel
+        self.connection = pika.BlockingConnection(connection_params)
+        self.channel = self.connection.channel()
+
 
     def publish(
         self,
-        channel: pika.adapters.blocking_connection.BlockingChannel,
         queue: str,
         message: str
     ):
-        channel.queue_declare(queue=queue, durable=True)
-        channel.basic_publish(exchange='', routing_key=queue, body=message)
-
-    def consume(
-        self,
-        channel: pika.adapters.blocking_connection.BlockingChannel,
-        queue: str,
-        callback: callable
-    ):
-        channel.queue_declare(queue=queue, durable=True)
-        channel.basic_consume(queue=queue, on_message_callback=callback, auto_ack=True)
-        channel.start_consuming()
+        self.channel.queue_declare(queue=queue, durable=True)
+        self.channel.basic_publish(exchange='', routing_key=queue, body=message)
 
 
 def get_rabbitmq_client():
-    return _RabbitMQClient(
+    client = _RabbitMQClient(
         host=RABBITMQ_HOST,
         port=RABBITMQ_PORT,
         user=RABBITMQ_USER,
         password=RABBITMQ_PASSWORD
     )
+    client.connect()
+    return client
 
 
 RabbitMQClient = Annotated[_RabbitMQClient, Depends(get_rabbitmq_client)]

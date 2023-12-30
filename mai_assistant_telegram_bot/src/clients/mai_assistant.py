@@ -25,26 +25,26 @@ class MAIAssistantClient:
 
     def chat(
         self,
-        conversation_id: str,
+        chat_id: str,
         message: str
     ) -> str:
         response = requests.post(
             f"{self.REST_URL}/chat",
-            json={"conversation_id": conversation_id, "question": message},
+            json={"chat_id": chat_id, "question": message},
         )
         return response.json()
 
 
     def reset_conversation(
         self,
-        conversation_id: str
+        chat_id: str
     ) -> None:
-        requests.delete(f"{self.REST_URL}/conversations/{conversation_id}")
+        requests.delete(f"{self.REST_URL}/conversations/{chat_id}")
 
 
     def login_to_google(
         self,
-        conversation_id: str
+        chat_id: str
     ) -> str:
-        response = requests.post(f"{self.REST_URL}/google/login/{conversation_id}")
+        response = requests.post(f"{self.REST_URL}/google/login/{chat_id}")
         return response.json()["content"]

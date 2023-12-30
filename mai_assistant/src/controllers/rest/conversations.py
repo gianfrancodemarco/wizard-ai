@@ -17,13 +17,13 @@ def delete_conversations(redis_client: RedisClient):
     return {"content": None}
 
 
-@conversations_router.delete("/{conversation_id}")
-async def chat(conversation_id: str, redis_client: RedisClient):
+@conversations_router.delete("/{chat_id}")
+async def chat(chat_id: str, redis_client: RedisClient):
     """Delete a conversation"""
 
-    if not redis_client.exists(conversation_id):
+    if not redis_client.exists(chat_id):
         raise HTTPException(status_code=404, detail="Item not found")
 
-    redis_client.delete(conversation_id)
-    logger.info(f"Deleted conversation {conversation_id}")
+    redis_client.delete(chat_id)
+    logger.info(f"Deleted conversation {chat_id}")
     return {"content": "Conversation deleted"}

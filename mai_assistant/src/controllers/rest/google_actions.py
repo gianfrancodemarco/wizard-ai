@@ -12,15 +12,15 @@ logger = logging.getLogger(__name__)
 google_actions_router = APIRouter(prefix="/google")
 
 
-@google_actions_router.post("/{conversation_id}/calendar")
+@google_actions_router.post("/{chat_id}/calendar")
 def create_calendar_event(
-    conversation_id: str,
+    chat_id: str,
     data: CreateCalendarEventPayload,
     redis_client: RedisClient
 ):
 
     credentials = redis_client.hget(
-        conversation_id,
+        chat_id,
         "google_credentials"
     )
     credentials = pickle.loads(credentials)

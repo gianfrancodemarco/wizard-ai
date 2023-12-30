@@ -52,9 +52,9 @@ def generate_authorization_url():
     return authorization_url, state_token
 
 
-@google_login_router.post("/login/{conversation_id}")
+@google_login_router.post("/login/{chat_id}")
 def login(
-    conversation_id: str,
+    chat_id: str,
     redis_client: RedisClient
 ):
     """
@@ -64,7 +64,7 @@ def login(
 
     # Store the state token in the user credentials mapping
     redis_client.hset(
-        conversation_id,
+        chat_id,
         "google_state_token",
         state_token
     )
@@ -73,7 +73,7 @@ def login(
     redis_client.hset(
         "google_state_token",
         state_token,
-        conversation_id
+        chat_id
     )
 
     return {"content": authorization_url}
@@ -109,19 +109,19 @@ def callback(
     state_token = state
 
     # Verify that the state token is valid
-    conversation_id = redis_client.hget(
+    chat_id = redis_client.hget(
         "google_state_token",
         state_token
     )
 
-    if not conversation_id:
+    if not chat_id:
         raise HTTPException(status_code=400, detail="Invalid state token.")
 
-    conversation_id = conversation_id.decode("utf-8")
+    chat_id = chat_id.decode("utf-8")
 
     # Get the stored user and compare the state tokens
     stored_conversation_google_state_token = redis_client.hget(
-        conversation_id,
+        chat_id,
         "google_state_token"
     )
 
@@ -146,7 +146,7 @@ def callback(
     # Save the obtained tokens securely
     credentials = flow.credentials
     redis_client.hset(
-        conversation_id,
+        chat_id,
         "google_credentials",
         pickle.dumps(credentials)
     )
@@ -157,12 +157,10 @@ def callback(
     )
 
     # Publish a message to the RabbitMQ queue
-    channel = rabbitmq_client.connect()
     rabbitmq_client.publish(
-        channel=channel,
         queue=MessageQueues.MAI_ASSISTANT_OUT.value,
         message=json.dumps({
-            "conversation_id": conversation_id,
+            "chat_id": chat_id,
             "content": "Successfully logged in to Google."
         })
     )

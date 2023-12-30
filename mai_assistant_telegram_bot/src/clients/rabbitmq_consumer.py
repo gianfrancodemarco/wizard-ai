@@ -2,6 +2,7 @@ import os
 
 import pika
 from pika import channel
+import threading
 
 RABBITMQ_HOST = os.environ.get('RABBITMQ_HOST')
 RABBITMQ_PORT = os.environ.get('RABBITMQ_PORT', 5672)

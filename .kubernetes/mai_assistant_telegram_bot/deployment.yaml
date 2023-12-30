@@ -24,6 +24,13 @@ spec:
                 secretKeyRef:
                   name: mai-assistant-telegram-bot-secret
                   key: TELEGRAM_API_TOKEN
+            - name: REDIS_HOST
+              value: "redis-master"
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mai-assistant-secret
+                  key: REDIS_PASSWORD
             - name: RABBITMQ_HOST
               value: "rabbitmq"
             - name: RABBITMQ_USER

@@ -9,9 +9,9 @@ from mai_assistant.src.clients import RedisClient
 logger = logging.getLogger(__name__)
 
 
-def get_stored_memory(redis_client: RedisClient, conversation_id: str) -> BaseChatMemory:
+def get_stored_memory(redis_client: RedisClient, chat_id: str) -> BaseChatMemory:
     memory = redis_client.hget(
-        conversation_id,
+        chat_id,
         "memory"
     )
     if memory is not None:

@@ -2,5 +2,5 @@ from pydantic import BaseModel
 
 
 class ChatPayload(BaseModel):
-    conversation_id: str
+    chat_id: str
     question: str
