@@ -26,13 +26,14 @@ async def process_message(data: dict) -> None:
     data: ChatPayload = ChatPayload.model_validate(data)
 
     # Prepare input and memory
-    input = {"input": data.content}
     memory = get_stored_memory(redis_client, data.chat_id)
 
     # Run agent
-    answer = await GPTAgent(memory).agent_chain.arun(
-        input,
-        # callbacks=[LoggerCallbackHandler()]
+    answer = await GPTAgent(
+        memory=memory,
+        chat_id=data.chat_id,
+    ).agent_chain.arun(
+        input=data.content,
         callbacks=[
             ToolLoggerCallback(
                 chat_id=data.chat_id,

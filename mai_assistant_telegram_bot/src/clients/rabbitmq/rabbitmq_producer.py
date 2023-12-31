@@ -35,6 +35,10 @@ class RabbitMQProducer:
         queue: str,
         message: str
     ):
+        if self.channel.is_closed:
+            logger.debug("RabbitMQ channel is closed. Reconnecting...")
+            self.connect()
+
         self.channel.queue_declare(queue=queue, durable=True)
         self.channel.basic_publish(exchange='', routing_key=queue, body=message)
 

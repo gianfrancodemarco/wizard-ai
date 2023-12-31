@@ -65,8 +65,20 @@ def create_prompt(
 
 
 class GPTAgent():
+    """
+        Agent that uses an LLM to respond to user messages.
 
-    def __init__(self, memory: BaseMemory):
+        Args:
+            memory (BaseMemory): Memory object.
+            chat_id (str): Chat ID. Used by some tools to store and retrieve data from memory.
+
+    """
+    def __init__(
+        self,
+        memory: BaseMemory,
+        chat_id: str,
+    ):
+    
 
         self.memory = memory
 
@@ -74,7 +86,7 @@ class GPTAgent():
             Calculator(),
             RandomNumberGenerator(),
             #Search(),
-            GoogleCalendar()
+            GoogleCalendar(chat_id=chat_id)
         ]
 
         self.llm = LLMClientFactory.create(

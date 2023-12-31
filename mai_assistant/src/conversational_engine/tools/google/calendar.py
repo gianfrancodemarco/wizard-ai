@@ -16,6 +16,8 @@ import pickle
 class GoogleCalendar(BaseTool):
     name = "GoogleCalendar"
     description = "Useful to retrieve, create, update and delete events on Google Calendar"
+    chat_id: Optional[str] = None
+
     args_schema: Type[BaseModel] = CreateCalendarEventPayload
 
     def _run(
@@ -28,9 +30,8 @@ class GoogleCalendar(BaseTool):
     ) -> str:
         """Use the tool."""
 
-        #TODO: Change hardcoded chat id
         credentials = get_redis_client().hget(
-            "1213778192",
+            self.chat_id,
             "google_credentials"
         )
         credentials = pickle.loads(credentials)
@@ -43,7 +44,7 @@ class GoogleCalendar(BaseTool):
             end=end
         )
         google_client.create_calendar_event(payload)
-        return "Event created"
+        return "The event was created successfully"
 
 
 tools = [
