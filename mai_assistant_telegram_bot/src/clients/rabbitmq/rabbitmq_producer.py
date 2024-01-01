@@ -35,10 +35,8 @@ class RabbitMQProducer:
         queue: str,
         message: str
     ):
-        if self.channel.is_closed:
-            logger.debug("RabbitMQ channel is closed. Reconnecting...")
-            self.connect()
-
+        # TODO: we are connecting at every message, there must be a better way...
+        self.connect()
         self.channel.queue_declare(queue=queue, durable=True)
         self.channel.basic_publish(exchange='', routing_key=queue, body=message)
 
@@ -50,7 +48,6 @@ def get_rabbitmq_producer():
         user=RABBITMQ_USER,
         password=RABBITMQ_PASSWORD
     )
-    client.connect()
     return client
 
 RabbitMQProducerDep = None

@@ -24,6 +24,9 @@ async def chat(chat_id: str, redis_client: RedisClientDep):
     if not redis_client.exists(chat_id):
         raise HTTPException(status_code=404, detail="Item not found")
 
-    redis_client.delete(chat_id)
+    redis_client.hdel(
+        chat_id,
+        "memory"
+    )
     logger.info(f"Deleted conversation {chat_id}")
     return {"content": "Conversation deleted"}

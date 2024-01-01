@@ -29,19 +29,23 @@ async def process_message(data: dict) -> None:
     memory = get_stored_memory(redis_client, data.chat_id)
 
     # Run agent
-    answer = await GPTAgent(
+    agent = GPTAgent(
         memory=memory,
         chat_id=data.chat_id,
-    ).agent_chain.arun(
+    )
+    callbacks = [
+        ToolLoggerCallback(
+            chat_id=data.chat_id,
+            rabbitmq_client=rabbitmq_producer,
+            queue=MessageQueues.MAI_ASSISTANT_OUT.value,
+            tools=agent.tools,
+        ),
+        LoggerCallbackHandler()
+    ]
+
+    answer = await agent.agent_chain.arun(
         input=data.content,
-        callbacks=[
-            ToolLoggerCallback(
-                chat_id=data.chat_id,
-                rabbitmq_client=rabbitmq_producer,
-                queue=MessageQueues.MAI_ASSISTANT_OUT.value
-            ),
-            LoggerCallbackHandler()
-        ]
+        callbacks=callbacks
     )
 
     __update_stored_memory(redis_client, data.chat_id, memory)

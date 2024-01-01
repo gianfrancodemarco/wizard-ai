@@ -1,17 +1,18 @@
+import datetime
 import os
 
 from langchain.agents import AgentExecutor, StructuredChatAgent
+from langchain.agents.structured_chat.base import *
 from langchain.chains import LLMChain
 from langchain.memory.chat_memory import BaseMemory
-
-from mai_assistant.src.clients.llm import LLM_MODELS, LLMClientFactory
-from mai_assistant.src.conversational_engine.tools import Calculator, RandomNumberGenerator, Search, GoogleCalendar
-
-from langchain.agents.structured_chat.base import *
 from langchain_core.prompts.chat import ChatMessagePromptTemplate
 
-PREFIX = """Respond to the human as helpfully and accurately as possible.
+from mai_assistant.src.clients.llm import LLM_MODELS, LLMClientFactory
+from mai_assistant.src.conversational_engine.tools import *
+
+PREFIX = f"""Respond to the human as helpfully and accurately as possible.
 If the user request is not clear, ask for clarification (using the final answer tool).
+Today is: {datetime.datetime.now().strftime("%d/%m/%Y")}
 You have access to the following tools:"""
 
 memory_prompts = [
@@ -38,7 +39,6 @@ def create_prompt(
     """
     Custom prompt with a slightly different positioning of memory and prompt suffix w.r.t StructuredChatAgent.create_prompt
     """
-
 
     tool_strings = []
     for tool in tools:
@@ -73,20 +73,22 @@ class GPTAgent():
             chat_id (str): Chat ID. Used by some tools to store and retrieve data from memory.
 
     """
+
     def __init__(
         self,
         memory: BaseMemory,
         chat_id: str,
     ):
-    
 
         self.memory = memory
 
         self.tools = [
             Calculator(),
             RandomNumberGenerator(),
-            #Search(),
-            GoogleCalendar(chat_id=chat_id)
+            # Search(),
+            GoogleCalendarCreator(chat_id=chat_id),
+            GoogleCalendarRetriever(chat_id=chat_id),
+            DateCalculatorTool()
         ]
 
         self.llm = LLMClientFactory.create(
