@@ -38,6 +38,7 @@ class RabbitMQConsumer:
             port=RABBITMQ_PORT,
             login=RABBITMQ_USER,
             password=RABBITMQ_PASSWORD,
+            reconnect_interval=15
         )
         channel = await self.connection.channel()
 

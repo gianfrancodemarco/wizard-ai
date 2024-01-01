@@ -12,7 +12,7 @@ from mai_assistant.src.conversational_engine.tools import *
 
 PREFIX = f"""Respond to the human as helpfully and accurately as possible.
 If the user request is not clear, ask for clarification (using the final answer tool).
-Today is: {datetime.datetime.now().strftime("%d/%m/%Y")}
+Today is: {datetime.datetime.now().strftime("%Y-%m-%d")}
 You have access to the following tools:"""
 
 memory_prompts = [
