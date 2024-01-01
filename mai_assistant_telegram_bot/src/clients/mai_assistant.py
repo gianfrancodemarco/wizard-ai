@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 import requests
 
+
 class MAIAssistantClient:
 
     def __init__(self) -> None:

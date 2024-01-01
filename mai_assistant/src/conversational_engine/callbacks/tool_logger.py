@@ -9,6 +9,7 @@ from mai_assistant.src.constants import MessageType
 from langchain_core.tools import Tool
 from typing import List
 
+
 class ToolLoggerCallback(AsyncCallbackHandler):
 
     def __init__(
@@ -38,9 +39,9 @@ class ToolLoggerCallback(AsyncCallbackHandler):
         """Run when tool starts running."""
 
         try:
-            tool = self.__get_tool_from_name(serialized["name"])        
+            tool = self.__get_tool_from_name(serialized["name"])
             tool_start_message = self.__get_tool_start_message(tool, input_str)
-        except:
+        except BaseException:
             tool_start_message = f"{serialized['name']}: {input_str}"
 
         self.rabbitmq_client.publish(

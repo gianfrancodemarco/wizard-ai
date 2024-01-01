@@ -38,12 +38,11 @@ class MaiAssistantTelegramBot:
         self.application.add_handler(CommandHandler(
             "reset", self.update_handler.reset_conversation_handler))
         self.application.add_handler(CommandHandler(
-            "login_to_google",  self.update_handler.login_to_google_handler))
+            "login_to_google", self.update_handler.login_to_google_handler))
 
         # on non command i.e message - echo the message on Telegram
         self.application.add_handler(MessageHandler(
-            filters.TEXT & ~filters.COMMAND,  self.update_handler.text_handler))
-
+            filters.TEXT & ~filters.COMMAND, self.update_handler.text_handler))
 
     async def post_init(
         self,
@@ -54,7 +53,6 @@ class MaiAssistantTelegramBot:
             ("reset", "Clears the conversation history."),
             ("login_to_google", "Login to Google.")
         ])
-
 
     def start(self) -> None:
         # Run the bot until the user presses Ctrl-C

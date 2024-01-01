@@ -3,7 +3,8 @@ import logging
 import os
 import sys
 
-from mai_assistant_telegram_bot.src.clients import (get_rabbitmq_consumer, get_redis_client)
+from mai_assistant_telegram_bot.src.clients import (
+    get_rabbitmq_consumer, get_redis_client)
 from mai_assistant_telegram_bot.src.constants import MessageQueues
 
 from mai_assistant_telegram_bot.src.bot.bot import MaiAssistantTelegramBot

@@ -61,7 +61,9 @@ def create_prompt(
             role="Question",
             template=human_message_template),
     ]
-    return ChatPromptTemplate(input_variables=input_variables, messages=messages)
+    return ChatPromptTemplate(
+        input_variables=input_variables,
+        messages=messages)
 
 
 class GPTAgent():

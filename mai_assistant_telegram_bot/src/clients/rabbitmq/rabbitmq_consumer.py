@@ -10,6 +10,7 @@ from .constants import (RABBITMQ_HOST, RABBITMQ_PASSWORD, RABBITMQ_PORT,
 
 logger = logging.getLogger(__name__)
 
+
 class RabbitMQConsumer:
     def __init__(
         self,

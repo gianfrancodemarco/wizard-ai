@@ -8,7 +8,9 @@ from langchain.memory.chat_memory import BaseChatMemory
 logger = logging.getLogger(__name__)
 
 
-def get_stored_memory(redis_client: redis.Redis, chat_id: str) -> BaseChatMemory:
+def get_stored_memory(
+        redis_client: redis.Redis,
+        chat_id: str) -> BaseChatMemory:
     memory = redis_client.hget(
         chat_id,
         "memory"

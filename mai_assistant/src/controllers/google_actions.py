@@ -37,7 +37,6 @@ def create_calendar_event(
     )
 
 
-
 @google_actions_router.get("/{chat_id}/calendar")
 def create_calendar_event(
     chat_id: str,
