@@ -2,6 +2,11 @@
 # 1. Memory
 
 
+from mai_assistant.src.tools.random_number_generator import RandomNumberGenerator
+from mai_assistant.src.tools.calculator import Calculator
+from langchain.agents import AgentType, initialize_agent
+
+
 def get_memory_chain(memory: BaseChatMemory):
     return RunnablePassthrough.assign(
         history=RunnableLambda(
@@ -31,14 +36,13 @@ llm = LLMClientFactory.create(
     url=os.environ.get('LLM_URL')
 )
 
-from langchain.agents import AgentType, initialize_agent
-from mai_assistant.src.tools.calculator import Calculator
-from mai_assistant.src.tools.random_number_generator import RandomNumberGenerator
 
 tools = [
     Calculator(),
     RandomNumberGenerator()
 ]
 agent = initialize_agent(
-    tools, llm, agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION, verbose=True
-)
+    tools,
+    llm,
+    agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+    verbose=True)

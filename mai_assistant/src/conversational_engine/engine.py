@@ -54,7 +54,10 @@ async def process_message(data: dict) -> None:
     return JSONResponse({"content": answer})
 
 
-def __update_stored_memory(redis_client: redis.Redis, chat_id: str, memory: dict):
+def __update_stored_memory(
+        redis_client: redis.Redis,
+        chat_id: str,
+        memory: dict):
 
     redis_client.hset(
         chat_id,
@@ -64,7 +67,10 @@ def __update_stored_memory(redis_client: redis.Redis, chat_id: str, memory: dict
     logger.info("Saved memory to redis")
 
 
-def __publish_answer(rabbitmq_client: RabbitMQProducer, chat_id: str, answer: str):
+def __publish_answer(
+        rabbitmq_client: RabbitMQProducer,
+        chat_id: str,
+        answer: str):
     rabbitmq_client.publish(
         queue=MessageQueues.MAI_ASSISTANT_OUT.value,
         message=json.dumps({

@@ -19,7 +19,7 @@ class GoogleCalendarRetriever(StructuredTool):
     args_schema: Type[BaseModel] = GetCalendarEventsPayload
 
     chat_id: Optional[str] = None
-    
+
     def _run(
         self,
         start: Optional[datetime] = None,

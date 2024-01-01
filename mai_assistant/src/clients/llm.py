@@ -79,7 +79,8 @@ class LLMClient(LLM, ABC):
         pass
 
     def estimate_costs(self):
-        return (self.input_tokens * self.COST_PER_INPUT_TOKEN) + (self.output_tokens * self.COST_PER_OUTPUT_TOKEN)
+        return (self.input_tokens * self.COST_PER_INPUT_TOKEN) + \
+            (self.output_tokens * self.COST_PER_OUTPUT_TOKEN)
 
     def print_costs(self):
         logger.debug(f"Input tokens: {self.input_tokens}")
@@ -146,7 +147,7 @@ class OpenAIChatCompletitionClient(LLMClient):
         temperature: float = 0,
         **kwargs
     ):
-        
+
         # TODO: Why langchain isn't passing the stop parameter?
         if stop is None:
             stop = ["Observation:"]

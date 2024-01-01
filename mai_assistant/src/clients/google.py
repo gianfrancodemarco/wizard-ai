@@ -18,9 +18,15 @@ class CreateCalendarEventPayload(BaseModel):
 
 
 class GetCalendarEventsPayload(BaseModel):
-    start: Optional[datetime] = Field(default=None, description="Start date to retrieve events from. Null if number_of_events is not null")
-    end: Optional[datetime] = Field(default=None, description="End date to retrieve events from. Null if number_of_events is not null")
-    number_of_events: Optional[int] = Field(default=None, description="Number of events to retrieve. Null if start and end are not null")
+    start: Optional[datetime] = Field(
+        default=None,
+        description="Start date to retrieve events from. Null if number_of_events is not null")
+    end: Optional[datetime] = Field(
+        default=None,
+        description="End date to retrieve events from. Null if number_of_events is not null")
+    number_of_events: Optional[int] = Field(
+        default=None,
+        description="Number of events to retrieve. Null if start and end are not null")
 
 
 class GoogleClient:

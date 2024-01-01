@@ -46,8 +46,10 @@ def generate_authorization_url():
 
     state_token = generate_state_token()
     flow = Flow.from_client_secrets_file(
-        GOOGLE_CLIENT_SECRET_PATH, scopes=SCOPES, redirect_uri=REDIRECT_URI, state=state_token
-    )
+        GOOGLE_CLIENT_SECRET_PATH,
+        scopes=SCOPES,
+        redirect_uri=REDIRECT_URI,
+        state=state_token)
     authorization_url, _ = flow.authorization_url(prompt='consent')
     return authorization_url, state_token
 
@@ -69,7 +71,8 @@ def login(
         state_token
     )
 
-    # Also, set the state token as the key and the user ID as the value in the mapping for lookup later
+    # Also, set the state token as the key and the user ID as the value in the
+    # mapping for lookup later
     redis_client.hset(
         "google_state_token",
         state_token,
@@ -136,10 +139,12 @@ def callback(
 
     # Get user credentials
     flow = Flow.from_client_secrets_file(
-        GOOGLE_CLIENT_SECRET_PATH, scopes=['https://www.googleapis.com/auth/calendar'], redirect_uri=REDIRECT_URI
-    )
+        GOOGLE_CLIENT_SECRET_PATH,
+        scopes=['https://www.googleapis.com/auth/calendar'],
+        redirect_uri=REDIRECT_URI)
 
-    # Horrendous hack to get around the fact that we can't use localhost as a redirect URI...
+    # Horrendous hack to get around the fact that we can't use localhost as a
+    # redirect URI...
     flow.fetch_token(authorization_response=REDIRECT_URI.replace(
         "http", "https") + f'?code={authorization_code}')
 

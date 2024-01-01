@@ -27,7 +27,7 @@ class DateCalculatorTool(BaseTool):
         if len(operation) != 7:
             raise ValueError(
                 "The operation must be a string with the following format: '[+,-] years months days hours minutes seconds'")
-    
+
         sign = operation[0]
         years = int(operation[1])
         months = int(operation[2])
@@ -44,7 +44,7 @@ class DateCalculatorTool(BaseTool):
             minutes=minutes,
             seconds=seconds
         )
-        
+
         if sign == "+":
             result = now + _timedelta
         elif sign == "-":
@@ -52,5 +52,5 @@ class DateCalculatorTool(BaseTool):
         else:
             raise ValueError(
                 "The operation must be a string with the following format: '[+,-] years months days hours minutes seconds'")
-        
+
         return result.strftime("%d/%m/%Y %H:%M:%S")

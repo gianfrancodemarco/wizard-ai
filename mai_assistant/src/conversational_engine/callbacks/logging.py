@@ -16,7 +16,6 @@ for handler in logger.handlers:
     handler.setFormatter(formatter)
 
 
-
 class LoggerCallbackHandler(BaseCallbackHandler):
     """Callback Handler that logs chain steps."""
 
@@ -24,7 +23,8 @@ class LoggerCallbackHandler(BaseCallbackHandler):
         self, serialized: Dict[str, Any], inputs: Dict[str, Any], **kwargs: Any
     ) -> None:
         """Log that we are entering a chain."""
-        class_name = serialized.get("name", serialized.get("id", ["<unknown>"])[-1])
+        class_name = serialized.get(
+            "name", serialized.get("id", ["<unknown>"])[-1])
         logger.info(f"> Entering new {class_name} chain...")
 
     def on_chain_end(self, outputs: Dict[str, Any], **kwargs: Any) -> None:
@@ -61,7 +61,7 @@ class LoggerCallbackHandler(BaseCallbackHandler):
     ) -> None:
         """Run when agent ends."""
         logger.info(text)
-        
+
     def on_agent_finish(
         self, finish: AgentFinish, color: Optional[str] = None, **kwargs: Any
     ) -> None:

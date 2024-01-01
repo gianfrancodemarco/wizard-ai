@@ -13,6 +13,7 @@ def get_redis_client():
         password=REDIS_PASSWORD
     )
 
+
 RedisClientDep = None
 try:
     from fastapi import Depends
