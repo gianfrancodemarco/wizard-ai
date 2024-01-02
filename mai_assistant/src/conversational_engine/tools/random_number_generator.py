@@ -23,3 +23,7 @@ class RandomNumberGenerator(StructuredTool):
     ) -> str:
         import random
         return random.randint(min, max)
+
+    def get_tool_start_message(self, input: dict) -> str:
+        payload = RandomNumberGeneratorInput(**input)
+        return f"Generating a random number between {payload.min} and {payload.max}."

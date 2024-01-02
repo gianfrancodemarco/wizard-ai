@@ -63,6 +63,7 @@ class Handler:
         audio_file_id = update.message.voice.file_id
         audio_telegram_file = await self.bot.get_file(audio_file_id)
 
+        # TODO: Use download_to_memory
         await audio_telegram_file.download_to_drive("audio.ogg")
 
         # Call OpenAI whisper API

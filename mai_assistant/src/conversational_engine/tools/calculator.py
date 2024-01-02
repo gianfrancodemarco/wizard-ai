@@ -20,3 +20,7 @@ class Calculator(BaseTool):
             computation: str,
             run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         return eval(computation)
+
+    def get_tool_start_message(self, input: dict) -> str:
+        payload = CalculatorInput(**input)
+        return f"Calculating {payload.computation}"
