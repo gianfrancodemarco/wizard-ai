@@ -12,14 +12,15 @@ client = Client(
         "Accept-Language": "en-US,en;q=0.9,lt;q=0.8,et;q=0.7,de;q=0.6",
     },
     follow_redirects=True,
-    http2=True,  # use HTTP/2 
+    http2=True,  # use HTTP/2
 )
 
 
 def parse_search_results(selector: Selector):
     """parse search results from google search page"""
     results = []
-    for box in selector.xpath("//h1[contains(text(),'Search Results')]/following-sibling::div[1]/div"):
+    for box in selector.xpath(
+            "//h1[contains(text(),'Search Results')]/following-sibling::div[1]/div"):
         title = box.xpath(".//h3/text()").get()
         url = box.xpath(".//h3/../@href").get()
         text = "".join(box.xpath(".//div[@data-sncf]//text()").getall())
@@ -33,7 +34,8 @@ def parse_search_results(selector: Selector):
 def scrape_search(query: str, page=1):
     """scrape search results for a given keyword"""
     # retrieve the SERP
-    url = f"https://www.google.com/search?hl=en&q={quote(query)}" + (f"&start={10*(page-1)}" if page > 1 else "")
+    url = f"https://www.google.com/search?hl=en&q={quote(query)}" + (
+        f"&start={10*(page-1)}" if page > 1 else "")
     print(f"scraping {query=} {page=}")
     results = defaultdict(list)
     response = client.get(url)
@@ -42,6 +44,7 @@ def scrape_search(query: str, page=1):
     selector = Selector(response.text)
     results["search"].extend(parse_search_results(selector))
     return dict(results)
+
 
 # example use: scrape 3 pages: 1,2,3
 for page in [1, 2, 3]:

@@ -9,7 +9,7 @@ from readability import Document
 
 class GoogleSearchClientPayload(BaseModel):
     query: str
-    #page: int = 1
+    # page: int = 1
     num_expanded_results: int = 1
 
 
@@ -67,7 +67,7 @@ class GoogleSearchClient:
                     "url": result_url,
                     "title": result_title
                 })
-            except:
+            except BaseException:
                 pass
         return parsed
 
@@ -103,10 +103,10 @@ class GoogleSearchClient:
                 selector = Selector(response.text)
                 results = self.parse_search_results(
                     selector)
-                
+
                 texts = []
                 for result in results:
-                    if len(texts) < payload.num_expanded_results:                        
+                    if len(texts) < payload.num_expanded_results:
                         text = self.get_main_content_from_url(result["url"])
                         if text:
                             texts.append(text)

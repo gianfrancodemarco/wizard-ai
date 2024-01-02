@@ -28,7 +28,6 @@ class MAIAssistantConsumer:
         """Sanitizes a message to be sent to Telegram."""
         return message
 
-        
     async def on_message_callback(
         self,
         message: str
