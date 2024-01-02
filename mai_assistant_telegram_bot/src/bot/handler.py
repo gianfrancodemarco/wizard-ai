@@ -91,7 +91,7 @@ class Handler:
         logging.info(f"Message received: {update}")
         text = update.message.text
         chat_id = str(update.message.chat_id)
-        self._text_handler(text, chat_id)
+        await self._text_handler(text, chat_id)
 
 
     async def _text_handler(

@@ -6,3 +6,4 @@ Dep are FastAPI dependencies that can be injected into FastAPI routes
 from .redis import get_redis_client, RedisClientDep
 from .google import GoogleClient, CreateCalendarEventPayload, GetCalendarEventsPayload
 from .rabbitmq import get_rabbitmq_producer, get_rabbitmq_consumer, RabbitMQConsumer, RabbitMQProducer, RabbitMQProducerDep
+from .google_search import GoogleSearchClient, GoogleSearchClientPayload

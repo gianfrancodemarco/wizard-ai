@@ -94,7 +94,7 @@ class GPTAgent():
         self.tools = [
             Calculator(),
             RandomNumberGenerator(),
-            # Search(),
+            GoogleSearch(),
             GoogleCalendarCreator(chat_id=chat_id),
             GoogleCalendarRetriever(chat_id=chat_id),
             DateCalculatorTool()
