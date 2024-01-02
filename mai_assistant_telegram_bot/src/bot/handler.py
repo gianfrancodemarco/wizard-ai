@@ -5,7 +5,8 @@ from telegram import Bot, Update
 from telegram.constants import ChatAction
 from telegram.ext import ContextTypes
 
-from mai_assistant_telegram_bot.src.clients import (MAIAssistantClient, get_rabbitmq_producer)
+from mai_assistant_telegram_bot.src.clients import (
+    MAIAssistantClient, get_rabbitmq_producer)
 from mai_assistant_telegram_bot.src.constants import MessageQueues, MessageType
 
 from openai import OpenAI
@@ -38,7 +39,6 @@ class Handler:
         )
         await update.message.reply_text("Conversation history cleared.")
 
-
     async def login_to_google_handler(
         self,
         update: Update,
@@ -50,7 +50,6 @@ class Handler:
         )
         login_text = f"<a href='{login_url}'>Login to Google</a>"
         await update.message.reply_html(f"Please complete the login process at the following URL:\n{login_text}")
-
 
     async def voice_handler(
         self,
@@ -80,7 +79,6 @@ class Handler:
             )
         )
 
-
     async def text_handler(
         self,
         update: Update,
@@ -92,7 +90,6 @@ class Handler:
         text = update.message.text
         chat_id = str(update.message.chat_id)
         await self._text_handler(text, chat_id)
-
 
     async def _text_handler(
         self,

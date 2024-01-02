@@ -18,7 +18,7 @@ class GoogleCalendarCreator(BaseTool):
     args_schema: Type[BaseModel] = CreateCalendarEventPayload
 
     chat_id: Optional[str] = None
-    
+
     def _run(
         self,
         summary: str,
