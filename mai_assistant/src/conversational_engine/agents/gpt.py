@@ -10,10 +10,17 @@ from langchain_core.prompts.chat import ChatMessagePromptTemplate
 from mai_assistant.src.clients.llm import LLM_MODELS, LLMClientFactory
 from mai_assistant.src.conversational_engine.tools import *
 
-PREFIX = f"""Respond to the human as helpfully and accurately as possible.
-If the user request is not clear, ask for clarification (using the final answer tool).
-Today is: {datetime.datetime.now().strftime("%Y-%m-%d")}
-You have access to the following tools:"""
+
+def get_prefix():
+    """
+    We use a function here to avoid the prefix being cached in the module, so that the current time is always up to date.
+    """
+
+    return f"""Respond to the human as helpfully and accurately as possible.
+    If the user request is not clear, ask for clarification (using the final answer tool).
+    Today is: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+    You have access to the following tools:"""
+
 
 memory_prompts = [
     ChatMessagePromptTemplate.from_template(
@@ -29,7 +36,7 @@ memory_prompts = [
 
 def create_prompt(
     tools: Sequence[BaseTool],
-    prefix: str = PREFIX,
+    prefix: str = get_prefix(),
     suffix: str = SUFFIX,
     human_message_template: str = HUMAN_MESSAGE_TEMPLATE,
     format_instructions: str = FORMAT_INSTRUCTIONS,

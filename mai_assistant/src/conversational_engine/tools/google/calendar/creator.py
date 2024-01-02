@@ -14,10 +14,11 @@ class GoogleCalendarCreator(BaseTool):
 
     name = "GoogleCalendarCreator"
     description = """Useful to create events on Google Calendar"""
+    return_direct = True
     args_schema: Type[BaseModel] = CreateCalendarEventPayload
 
     chat_id: Optional[str] = None
-
+    
     def _run(
         self,
         summary: str,

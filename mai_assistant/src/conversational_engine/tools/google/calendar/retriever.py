@@ -41,7 +41,7 @@ class GoogleCalendarRetriever(StructuredTool):
             end=end,
             number_of_events=number_of_events
         )
-        return google_client.get_calendar_events_markdown(payload)
+        return google_client.get_calendar_events_html(payload)
 
     def get_tool_start_message(self, input: dict) -> str:
 

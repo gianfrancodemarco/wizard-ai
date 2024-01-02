@@ -77,15 +77,15 @@ class GoogleClient:
         events = events_result.get('items', [])
         return events
 
-    def get_calendar_events_markdown(
+    def get_calendar_events_html(
         self,
         data: GetCalendarEventsPayload
     ) -> str:
         events = self.get_calendar_events(data)
-        events_string = self.__events_result_to_markdown_string(events)
+        events_string = self.__events_result_to_html_string(events)
         return events_string
 
-    def __events_result_to_markdown_string(self, events: List[Any]) -> str:
+    def __events_result_to_html_string(self, events: List[Any]) -> str:
         events_string = ""
         for idx, event in enumerate(events):
             event_start = event['start'].get(
@@ -93,6 +93,10 @@ class GoogleClient:
             event_end = event['end'].get('dateTime', event['end'].get('date'))
             event_summary = event['summary']
             event_link = event['htmlLink']
-            event_string = f"{idx+1}. {event_start} - [{event_summary}]({event_link})\n"
+            event_string = f"{idx+1}. {event_start} - <a href=\"{event_link}\">{event_summary}</a>\n"
             events_string += event_string
+
+        if not events_string:
+            events_string = "No events found"
+
         return events_string

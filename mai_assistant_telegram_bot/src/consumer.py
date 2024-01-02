@@ -26,9 +26,8 @@ class MAIAssistantConsumer:
         message: str
     ) -> str:
         """Sanitizes a message to be sent to Telegram."""
+        return message
 
-        # Escape . and
-        return re.sub(r"([._\-\+\{\}])", r"\\\1", message)
         
     async def on_message_callback(
         self,
@@ -63,7 +62,7 @@ class MAIAssistantConsumer:
         sent_message = await self.bot.send_message(
             chat_id=message["chat_id"],
             text=text,
-            parse_mode=ParseMode.MARKDOWN_V2
+            parse_mode=ParseMode.HTML
         )
 
         self.redis_client.hset(
@@ -99,7 +98,7 @@ class MAIAssistantConsumer:
             chat_id=message["chat_id"],
             message_id=last_tool_start_message["message_id"],
             text=text,
-            parse_mode=ParseMode.MARKDOWN_V2
+            parse_mode=ParseMode.HTML
         )
 
         self.redis_client.hdel(
@@ -117,5 +116,5 @@ class MAIAssistantConsumer:
         await self.bot.send_message(
             chat_id=message["chat_id"],
             text=text,
-            parse_mode=ParseMode.MARKDOWN_V2
+            parse_mode=ParseMode.HTML
         )

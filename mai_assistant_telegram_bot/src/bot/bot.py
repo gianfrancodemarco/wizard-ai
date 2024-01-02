@@ -40,9 +40,11 @@ class MaiAssistantTelegramBot:
         self.application.add_handler(CommandHandler(
             "login_to_google", self.update_handler.login_to_google_handler))
 
-        # on non command i.e message - echo the message on Telegram
         self.application.add_handler(MessageHandler(
             filters.TEXT & ~filters.COMMAND, self.update_handler.text_handler))
+
+        self.application.add_handler(MessageHandler(
+            filters.VOICE, self.update_handler.voice_handler))
 
     async def post_init(
         self,
