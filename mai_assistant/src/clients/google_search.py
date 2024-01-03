@@ -115,7 +115,8 @@ class GoogleSearchClient:
             {"".join(texts)}
         """)
 
-    def __scrape_financial_data(self, selector: Selector) -> List[Dict[str, str]]:
+    def __scrape_financial_data(
+            self, selector: Selector) -> List[Dict[str, str]]:
         """
         Scrape financial data from Google search results.
         The first xpath is for "Converter" result type; the second is for "asset chart" result type.
@@ -133,10 +134,8 @@ class GoogleSearchClient:
             financial_data,
             [
                 '//div[@class="cbXzDb"]//span[2]//text()',
-                '//div[@class="oPhL2e"]//span[@data-attrid="Company Name"]//text()'
-            ],
-            extract_first=True
-        )
+                '//div[@class="oPhL2e"]//span[@data-attrid="Company Name"]//text()'],
+            extract_first=True)
 
         value = self._get_xpath_with_alternatives(
             financial_data,
@@ -160,9 +159,7 @@ class GoogleSearchClient:
             financial_data,
             [
                 '//span[@class="iXabQc ASafz"]',
-                '//span[contains(@class, "WlRRw") and contains(@class, "IsqQVc")]'
-            ]
-        )
+                '//span[contains(@class, "WlRRw") and contains(@class, "IsqQVc")]'])
 
         absolute_variation = self._get_xpath_with_alternatives(
             variation,

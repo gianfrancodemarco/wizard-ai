@@ -12,6 +12,7 @@ from mai_assistant.src.conversational_engine.tools import *
 
 from textwrap import dedent
 
+
 def get_prefix():
     """
     We use a function here to avoid the prefix being cached in the module, so that the current time is always up to date.
@@ -23,7 +24,8 @@ def get_prefix():
         Today is: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
         \n
         You have access to the following tools:"""
-    )
+                  )
+
 
 memory_prompts = [
     ChatMessagePromptTemplate.from_template(
