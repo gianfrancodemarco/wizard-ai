@@ -40,7 +40,7 @@ async def process_message(data: dict) -> None:
             queue=MessageQueues.MAI_ASSISTANT_OUT.value,
             tools=agent.tools,
         ),
-        #LoggerCallbackHandler()
+        # LoggerCallbackHandler()
     ]
 
     answer = await agent.agent_chain.arun(
