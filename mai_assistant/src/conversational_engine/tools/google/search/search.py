@@ -16,14 +16,14 @@ class GoogleSearch(BaseTool):
     def _run(
         self,
         query: str,
-        num_expanded_results: int = 1,
+        num_expanded_results: int = 3,
     ) -> str:
         """Use the tool."""
 
         google_search_client = GoogleSearchClient()
         payload = GoogleSearchClientPayload(
             query=query,
-            num_expanded_results=3
+            num_expanded_results=num_expanded_results
         )
         results = google_search_client.search(payload)
         return results

@@ -10,17 +10,20 @@ from langchain_core.prompts.chat import ChatMessagePromptTemplate
 from mai_assistant.src.clients.llm import LLM_MODELS, LLMClientFactory
 from mai_assistant.src.conversational_engine.tools import *
 
+from textwrap import dedent
 
 def get_prefix():
     """
     We use a function here to avoid the prefix being cached in the module, so that the current time is always up to date.
     """
 
-    return f"""Respond to the human as helpfully and accurately as possible.
-    If the user request is not clear, ask for clarification (using the final answer tool).
-    Today is: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-    You have access to the following tools:"""
-
+    return dedent(f"""
+        Respond to the human as helpfully and accurately as possible.
+        If the user request is not clear, ask for clarification (using the final answer tool).
+        Today is: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+        \n
+        You have access to the following tools:"""
+    )
 
 memory_prompts = [
     ChatMessagePromptTemplate.from_template(
@@ -65,7 +68,7 @@ def create_prompt(
         *_memory_prompts,
         SystemMessagePromptTemplate.from_template(suffix),
         ChatMessagePromptTemplate.from_template(
-            role="Question",
+            role="Input",
             template=human_message_template),
     ]
     return ChatPromptTemplate(
