@@ -1,10 +1,14 @@
+import base64
 import os
 from datetime import datetime, timezone
+from textwrap import dedent
 from typing import Any, List, Optional
 
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from pydantic import BaseModel, Field
+
+from mai_assistant.src.html_processor import HtmlProcessor
 
 REDIS_HOST = os.environ.get('REDIS_HOST')
 REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
@@ -27,6 +31,13 @@ class GetCalendarEventsPayload(BaseModel):
     number_of_events: Optional[int] = Field(
         default=None,
         description="Number of events to retrieve. Null if start and end are not null")
+
+
+class GetEmailsPayload(BaseModel):
+    number_of_emails: Optional[int] = Field(
+        default=3,
+        description="Number of emails to retrieve"
+    )
 
 
 class GoogleClient:
@@ -100,3 +111,86 @@ class GoogleClient:
             events_string = "No events found"
 
         return events_string
+
+    def get_emails(
+        self,
+        payload: GetEmailsPayload
+    ):
+        service = build('gmail', 'v1', credentials=self.credentials)
+
+        messages_list = service.users().messages().list(
+            userId='me', maxResults=payload.number_of_emails).execute()
+        messages = messages_list.get('messages', [])
+
+        result = []
+
+        for message in messages:
+            msg = service.users().messages().get(
+                userId="me", id=message['id']).execute()
+
+            # Extracting sender, time, and content from the message
+            sender = next((header['value'] for header in msg['payload']
+                          ['headers'] if header['name'] == 'From'), None)
+            time = next((header['value'] for header in msg['payload']
+                        ['headers'] if header['name'] == 'Date'), None)
+            subject = next((header['value'] for header in msg['payload']
+                           ['headers'] if header['name'] == 'Subject'), None)
+
+            
+            full_content = ''
+            GET_FULL_CONTENT = False
+            if GET_FULL_CONTENT:
+                # Check if the email is in multipart format
+                if 'multipart' in msg['payload']['mimeType']:
+                    parts = msg['payload']['parts']
+                    full_content = ''
+                    for part in parts:
+                        if 'body' in part and 'data' in part['body']:
+                            data = part['body']['data']
+                            decoded_data = base64.urlsafe_b64decode(data.encode('UTF-8')).decode('UTF-8')
+                            full_content += decoded_data
+                else:
+                    # If the email is in plain text format
+                    full_content = base64.urlsafe_b64decode(msg['payload']['body']['data'].encode('UTF-8')).decode('UTF-8')
+
+                # Clear the full content 
+                full_content = HtmlProcessor.clear_html(full_content)
+            else:
+                full_content = msg['snippet']
+
+            result.append({
+                "sender": sender,
+                "time": time,
+                "subject": subject,
+                "content": full_content
+            })
+
+        return result
+
+    def get_emails_html(
+        self,
+        payload: GetEmailsPayload
+    ) -> str:
+        emails = self.get_emails(payload)
+        emails_string = self.__emails_result_to_html_string(emails)
+        return emails_string
+
+    def __emails_result_to_html_string(self, emails: List[Any]) -> str:
+    
+        emails_string = "\n\nLast emails:\n\n"
+        for idx, email in enumerate(emails):
+            emails_string += dedent(f"""
+                {idx+1}. Subject: {email['subject']}
+                Sender: {email['sender']}
+                Time: {email['time']}
+                Content: {email['content']}
+                \n\n
+            """)
+
+        if not emails_string:
+            emails_string = "No emails found"
+
+        # Remove < and > from the string for HTML compliance
+        emails_string = emails_string.replace("<", "").replace(">", "")
+
+        return emails_string

@@ -3,7 +3,9 @@ Clients to interact with external services
 Dep are FastAPI dependencies that can be injected into FastAPI routes
 """
 
-from .redis import get_redis_client, RedisClientDep
-from .google import GoogleClient, CreateCalendarEventPayload, GetCalendarEventsPayload
-from .rabbitmq import get_rabbitmq_producer, get_rabbitmq_consumer, RabbitMQConsumer, RabbitMQProducer, RabbitMQProducerDep
+from .google import (CreateCalendarEventPayload, GetCalendarEventsPayload,
+                     GetEmailsPayload, GoogleClient)
 from .google_search import GoogleSearchClient, GoogleSearchClientPayload
+from .rabbitmq import (RabbitMQConsumer, RabbitMQProducer, RabbitMQProducerDep,
+                       get_rabbitmq_consumer, get_rabbitmq_producer)
+from .redis import RedisClientDep, get_redis_client

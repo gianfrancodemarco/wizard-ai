@@ -1,6 +1,7 @@
-from typing import Type
+from typing import Optional, Type
 
 from langchain.tools.base import BaseTool
+from langchain_core.callbacks import CallbackManagerForToolRun
 from pydantic import BaseModel
 
 from mai_assistant.src.clients.google_search import (GoogleSearchClient,
@@ -17,6 +18,7 @@ class GoogleSearch(BaseTool):
         self,
         query: str,
         num_expanded_results: int = 3,
+        run_manager: Optional[CallbackManagerForToolRun] = None
     ) -> str:
         """Use the tool."""
 

@@ -20,7 +20,7 @@ google_login_router = APIRouter(prefix="/google")
 
 GOOGLE_CLIENT_SECRET_PATH = "/client_secret.json"
 REDIRECT_URI = "http://localhost:8000/google/callback"
-SCOPES = ['https://www.googleapis.com/auth/calendar']
+SCOPES = ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/gmail.readonly']
 
 
 def generate_state_token():
@@ -28,21 +28,6 @@ def generate_state_token():
 
 
 def generate_authorization_url():
-
-    # if not creds or not creds.valid:
-    #     if creds and creds.expired and creds.refresh_token:
-    #         creds.refresh(Request())
-    #     else:
-    #         flow = InstalledAppFlow.from_client_secrets_file(
-    #             '/client_secret.json',
-    #             SCOPES,
-    #             redirect_uri='http://localhost:8000'
-    #         )
-    #         authorization_url, _ = flow.authorization_url(prompt='consent')
-
-    #     # Save the credentials for the next run
-    #     # with open('token.json', 'w') as token:
-    #     #     token.write(creds.to_json())
 
     state_token = generate_state_token()
     flow = Flow.from_client_secrets_file(
@@ -140,7 +125,7 @@ def callback(
     # Get user credentials
     flow = Flow.from_client_secrets_file(
         GOOGLE_CLIENT_SECRET_PATH,
-        scopes=['https://www.googleapis.com/auth/calendar'],
+        scopes=SCOPES,
         redirect_uri=REDIRECT_URI)
 
     # Horrendous hack to get around the fact that we can't use localhost as a

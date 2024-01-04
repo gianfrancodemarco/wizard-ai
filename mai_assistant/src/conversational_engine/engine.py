@@ -5,6 +5,7 @@ import pickle
 
 import redis
 from fastapi.responses import JSONResponse
+from langchain_core.callbacks import StdOutCallbackHandler
 
 from mai_assistant.src.clients import (RabbitMQProducer, get_rabbitmq_producer,
                                        get_redis_client)
@@ -40,7 +41,8 @@ async def process_message(data: dict) -> None:
             queue=MessageQueues.MAI_ASSISTANT_OUT.value,
             tools=agent.tools,
         ),
-        # LoggerCallbackHandler()
+        StdOutCallbackHandler(),
+        LoggerCallbackHandler()
     ]
 
     answer = await agent.agent_chain.arun(

@@ -102,6 +102,7 @@ class GPTAgent():
             GoogleSearch(),
             GoogleCalendarCreator(chat_id=chat_id),
             GoogleCalendarRetriever(chat_id=chat_id),
+            GmailRetriever(chat_id=chat_id),
             DateCalculatorTool()
         ]
 

@@ -3,10 +3,10 @@ from textwrap import dedent
 from typing import Dict, List
 
 import requests
-from bs4 import BeautifulSoup
 from parsel import Selector
 from pydantic import BaseModel
-from readability import Document
+
+from mai_assistant.src.html_processor import HtmlProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -189,7 +189,7 @@ class GoogleSearchClient:
     def _scrape_info_box(self, selector: Selector) -> List[Dict[str, str]]:
         info_box = selector.xpath("//div[@class='I6TXqe']").extract_first()
         if info_box:
-            return self._clear_html(info_box)
+            return HtmlProcessor.clear_html(info_box)
 
     def _scrape_results_list(self, selector: Selector) -> List[Dict[str, str]]:
         parsed = []
@@ -241,14 +241,6 @@ class GoogleSearchClient:
             if result:
                 return result.extract_first().strip() if extract_first else result
         return "Not found"
-
-    def _clear_html(self, html):
-        doc = Document(html)
-        main_content = doc.summary()
-        soup = BeautifulSoup(main_content, 'html.parser')
-        for script in soup(['script', 'style']):
-            script.decompose()
-        return soup.get_text(separator='\n', strip=True)
 
     def _enable_expanded_results(self, query: str) -> bool:
         """
