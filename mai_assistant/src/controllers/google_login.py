@@ -20,7 +20,8 @@ google_login_router = APIRouter(prefix="/google")
 
 GOOGLE_CLIENT_SECRET_PATH = "/client_secret.json"
 REDIRECT_URI = "http://localhost:8000/google/callback"
-SCOPES = ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/gmail.readonly']
+SCOPES = ['https://www.googleapis.com/auth/calendar',
+          'https://www.googleapis.com/auth/gmail.readonly']
 
 
 def generate_state_token():

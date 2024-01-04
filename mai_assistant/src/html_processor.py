@@ -3,7 +3,7 @@ from readability import Document
 
 
 class HtmlProcessor:
-    
+
     @staticmethod
     def clear_html(html):
         doc = Document(html)
