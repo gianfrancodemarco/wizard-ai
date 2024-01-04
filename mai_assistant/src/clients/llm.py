@@ -50,15 +50,12 @@ class LLMClient(LLM, ABC):
         **kwargs: Any,
     ) -> str:
 
-        # logger.info(f"\n\nQuerying model: {self._llm_type}")
-        # logger.info(f"Prompt: {prompt}")
         start = time()
         response = self.prompt_completion(
             prompt=prompt,
+            stop=stop,
             **kwargs
         )
-        # response = response.split("\nObservation:")[0]
-        # response = "\n".join(list(map(lambda x: x.replace("[", "").replace("]", "") if x.startswith("Action:") else x ,response.split("\n"))))
         end = time()
         logger.info(f"Response time: {end - start}\n\n")
         return response
@@ -72,8 +69,6 @@ class LLMClient(LLM, ABC):
     def _llm_type(self) -> str:
         return "custom"
 
-    ###
-
     @abstractmethod
     def prompt_completion(self, prompt, **kwargs):
         pass
@@ -86,47 +81,6 @@ class LLMClient(LLM, ABC):
         logger.debug(f"Input tokens: {self.input_tokens}")
         logger.debug(f"Output tokens: {self.output_tokens}")
         logger.debug(f"Estimated costs: {self.estimate_costs()}")
-
-
-class OpenAIInstructClient(LLMClient):
-
-    api_key: str = os.getenv("OPEN_API_KEY")
-    model_name: str
-    COST_PER_INPUT_TOKEN: float = 0.001 / 1000
-    COST_PER_OUTPUT_TOKEN: float = 0.002 / 1000
-    input_tokens: int = 0
-    output_tokens: int = 0
-    total_tokens: int = 0
-
-    def prompt_completion(
-        self,
-        prompt: str,
-        stop: Optional[List[str]] = None,
-        max_tokens: int = 250,
-        temperature: float = 0,
-        **kwargs
-    ):
-        client = OpenAI(
-            api_key=self.api_key
-        )
-        # model_kwargs={"stop": "\n"},
-        response = client.completions.create(
-            model="chat-gpt3",
-            instructions=prompt,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            stop=stop
-        )
-
-        # Update token counts
-        self.input_tokens += response.usage.prompt_tokens
-        self.output_tokens += response.usage.completion_tokens
-        self.total_tokens += response.usage.total_tokens
-
-        self.print_costs()
-        response_text = response.choices[0].text
-
-        return response_text
 
 
 class OpenAIChatCompletitionClient(LLMClient):
@@ -143,19 +97,14 @@ class OpenAIChatCompletitionClient(LLMClient):
         self,
         prompt: str,
         stop: Optional[List[str]] = None,
-        max_tokens: int = 250,
+        max_tokens: int = 2048,
         temperature: float = 0,
         **kwargs
     ):
 
-        # TODO: Why langchain isn't passing the stop parameter?
-        if stop is None:
-            stop = ["Observation:"]
-
         client = OpenAI(
             api_key=self.api_key
         )
-        # model_kwargs={"stop": "\n"},
         response = client.chat.completions.create(
             model=self.model_name,
             messages=[
@@ -189,7 +138,7 @@ class LlamaChatCompletitionClient(LLMClient):
         self,
         prompt: str,
         stop: Optional[List[str]] = None,
-        max_new_tokens: int = 250,
+        max_new_tokens: int = 2048,
         top_k: int = 1,
         **kwargs
     ):
@@ -210,6 +159,10 @@ class LlamaChatCompletitionClient(LLMClient):
         except Exception as e:
             logger.error(f"Error parsing response: {response}")
             raise e
+
+        # Tools compatibility adjustments
+        response = response.split("\nObservation:")[0]
+        response = "\n".join(list(map(lambda x: x.replace("[", "").replace("]", "") if x.startswith("Action:") else x ,response.split("\n"))))
 
         # Update token counts
         self.input_tokens += response['input_tokens']

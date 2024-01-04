@@ -22,7 +22,7 @@ def get_stored_memory(
         memory = ConversationBufferWindowMemory(
             k=3,
             memory_key="history",
-            human_prefix="Question",
+            human_prefix="Human",
             ai_prefix="Answer"
         )
     return memory

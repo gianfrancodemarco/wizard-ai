@@ -5,12 +5,11 @@ import pickle
 
 import redis
 from fastapi.responses import JSONResponse
-from langchain_core.callbacks import StdOutCallbackHandler
 
 from mai_assistant.src.clients import (RabbitMQProducer, get_rabbitmq_producer,
                                        get_redis_client)
 from mai_assistant.src.constants import MessageQueues, MessageType
-from mai_assistant.src.conversational_engine.agents import (GPTAgent,
+from mai_assistant.src.conversational_engine.agents import (AgentFactory,
                                                             get_stored_memory)
 from mai_assistant.src.conversational_engine.callbacks import (
     LoggerCallbackHandler, ToolLoggerCallback)
@@ -30,7 +29,7 @@ async def process_message(data: dict) -> None:
     memory = get_stored_memory(redis_client, data.chat_id)
 
     # Run agent
-    agent = GPTAgent(
+    agent = AgentFactory.create(
         memory=memory,
         chat_id=data.chat_id,
     )
@@ -41,8 +40,8 @@ async def process_message(data: dict) -> None:
             queue=MessageQueues.MAI_ASSISTANT_OUT.value,
             tools=agent.tools,
         ),
-        StdOutCallbackHandler(),
-        LoggerCallbackHandler()
+        # StdOutCallbackHandler(),
+        # LoggerCallbackHandler()
     ]
 
     answer = await agent.agent_chain.arun(

@@ -178,7 +178,7 @@ class GoogleClient:
 
     def __emails_result_to_html_string(self, emails: List[Any]) -> str:
 
-        emails_string = "\n\nLast emails:\n\n"
+        emails_string = ""
         for idx, email in enumerate(emails):
             emails_string += dedent(f"""
                 {idx+1}. Subject: {email['subject']}
