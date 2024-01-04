@@ -136,7 +136,6 @@ class GoogleClient:
             subject = next((header['value'] for header in msg['payload']
                            ['headers'] if header['name'] == 'Subject'), None)
 
-            
             full_content = ''
             GET_FULL_CONTENT = False
             if GET_FULL_CONTENT:
@@ -147,13 +146,15 @@ class GoogleClient:
                     for part in parts:
                         if 'body' in part and 'data' in part['body']:
                             data = part['body']['data']
-                            decoded_data = base64.urlsafe_b64decode(data.encode('UTF-8')).decode('UTF-8')
+                            decoded_data = base64.urlsafe_b64decode(
+                                data.encode('UTF-8')).decode('UTF-8')
                             full_content += decoded_data
                 else:
                     # If the email is in plain text format
-                    full_content = base64.urlsafe_b64decode(msg['payload']['body']['data'].encode('UTF-8')).decode('UTF-8')
+                    full_content = base64.urlsafe_b64decode(
+                        msg['payload']['body']['data'].encode('UTF-8')).decode('UTF-8')
 
-                # Clear the full content 
+                # Clear the full content
                 full_content = HtmlProcessor.clear_html(full_content)
             else:
                 full_content = msg['snippet']
@@ -176,7 +177,7 @@ class GoogleClient:
         return emails_string
 
     def __emails_result_to_html_string(self, emails: List[Any]) -> str:
-    
+
         emails_string = "\n\nLast emails:\n\n"
         for idx, email in enumerate(emails):
             emails_string += dedent(f"""
