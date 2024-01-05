@@ -13,22 +13,6 @@ from mai_assistant.src.clients.llm import LLM_MODELS, LLMClientFactory
 from mai_assistant.src.conversational_engine.tools import *
 
 
-class MyStructuredChatAgent(StructuredChatAgent):
-    def _construct_scratchpad(
-        self, intermediate_steps: List[Tuple[AgentAction, str]]
-    ) -> str:
-        agent_scratchpad = super()._construct_scratchpad(intermediate_steps)
-        if not isinstance(agent_scratchpad, str):
-            raise ValueError("agent_scratchpad should be of type string.")
-        if agent_scratchpad:
-            return (
-                f"This was your previous work "
-                f"(but I haven't seen any of it! I only see what "
-                f"you return as final answer):\n{agent_scratchpad}"
-            )
-        else:
-            return agent_scratchpad
-
 class Agent(ABC):
     """s
         Agent that uses an LLM to respond to user messages.
@@ -72,7 +56,7 @@ class Agent(ABC):
             verbose=True
         )
 
-        self.agent = MyStructuredChatAgent(
+        self.agent = StructuredChatAgent(
             llm_chain=self.llm_chain,
             tools=self.tools,
             verbose=True
