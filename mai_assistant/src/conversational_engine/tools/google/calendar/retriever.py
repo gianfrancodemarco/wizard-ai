@@ -1,21 +1,21 @@
 import pickle
-import textwrap
 from datetime import datetime
 from typing import Optional, Type
 
-from langchain.tools.base import StructuredTool
 from langchain_core.callbacks import CallbackManagerForToolRun
 from pydantic import BaseModel
 
 from mai_assistant.src.clients import (GetCalendarEventsPayload, GoogleClient,
                                        get_redis_client)
+from mai_assistant.src.conversational_engine.langchain_extention import \
+    FormTool, FormToolActivator
 
 
-class GoogleCalendarRetriever(StructuredTool):
+class GoogleCalendarRetriever(FormTool):
 
     name = "GoogleCalendarRetriever"
     description = """Useful to retrieve events from Google Calendar"""
-    return_direct = True
+    return_direct = False #TODO: set to True
     args_schema: Type[BaseModel] = GetCalendarEventsPayload
 
     chat_id: Optional[str] = None
@@ -51,3 +51,10 @@ class GoogleCalendarRetriever(StructuredTool):
             return f"Retrieving events from Google Calendar between {payload.start} and {payload.end}"
         elif payload.number_of_events:
             return f"Retrieving next {payload.number_of_events} from Google Calendar"
+
+class GoogleCalendarRetrieverActivator(FormToolActivator):
+    name = "GoogleCalendarRetrieverActivator"
+    description = """Useful to retrieve events from Google Calendar"""
+
+    form_tool_class: Type[FormTool] = GoogleCalendarRetriever
+    form_tool: GoogleCalendarRetriever = None

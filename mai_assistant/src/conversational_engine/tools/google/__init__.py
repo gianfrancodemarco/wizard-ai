@@ -1,2 +1,2 @@
-from .calendar import GoogleCalendarCreator, GoogleCalendarRetriever
+from .calendar import GoogleCalendarCreator, GoogleCalendarRetriever, GoogleCalendarCreatorActivator, GoogleCalendarRetrieverActivator
 from .gmail import GmailRetriever

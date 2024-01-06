@@ -3,17 +3,18 @@ from datetime import datetime
 from typing import Optional, Type
 import textwrap
 
-from langchain.tools.base import BaseTool
 from langchain_core.callbacks import CallbackManagerForToolRun
 from pydantic import BaseModel
 
 from mai_assistant.src.clients import GoogleClient, CreateCalendarEventPayload, get_redis_client
 
+from mai_assistant.src.conversational_engine.langchain_extention import FormTool, FormToolActivator
 
-class GoogleCalendarCreator(BaseTool):
+
+class GoogleCalendarCreator(FormTool):
 
     name = "GoogleCalendarCreator"
-    description = """Useful to create events on Google Calendar"""
+    description = """Useful to create events on Google Calendar."""
     return_direct = True
     args_schema: Type[BaseModel] = CreateCalendarEventPayload
 
@@ -55,3 +56,12 @@ class GoogleCalendarCreator(BaseTool):
                 Start: {payload.start}
                 End: {payload.end}
             """)
+
+
+# We use this class because using directly the form tool, the LLM makes up the input arguments.
+class GoogleCalendarCreatorActivator(FormToolActivator):
+    name = "GoogleCalendarCreatorActivator"
+    description = """Useful to create events on Google Calendar."""
+    
+    form_tool_class: Type[FormTool] = GoogleCalendarCreator
+    form_tool: GoogleCalendarCreator = None

@@ -29,6 +29,9 @@ class ToolLoggerCallback(AsyncCallbackHandler):
         for tool in self.tools:
             if tool.name == name:
                 return tool
+            elif hasattr(tool, "form_tool"):
+                if tool.form_tool.name == name:
+                    return tool.form_tool
 
     def __get_tool_start_message(self, tool: Tool, input_str: str) -> str:
         return tool.get_tool_start_message(eval(input_str))

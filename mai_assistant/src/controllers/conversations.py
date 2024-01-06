@@ -28,5 +28,9 @@ async def chat(chat_id: str, redis_client: RedisClientDep):
         chat_id,
         "memory"
     )
+    redis_client.hdel(
+        chat_id,
+        "context"
+    )
     logger.info(f"Deleted conversation {chat_id}")
     return {"content": "Conversation deleted"}

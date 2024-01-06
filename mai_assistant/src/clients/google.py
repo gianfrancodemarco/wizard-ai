@@ -15,10 +15,18 @@ REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
 
 
 class CreateCalendarEventPayload(BaseModel):
-    summary: str
-    description: str
-    start: datetime
-    end: datetime
+    summary: str = Field(
+        description="Title of the event",
+    )
+    description: str = Field(
+        description="Description of the event",
+    )
+    start: datetime = Field(
+        description="Start date of the event",
+    )
+    end: datetime = Field(
+        description="End date of the event",
+    )
 
 
 class GetCalendarEventsPayload(BaseModel):
