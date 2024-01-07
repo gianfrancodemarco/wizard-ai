@@ -3,15 +3,12 @@ from __future__ import annotations
 
 import asyncio
 import datetime
-import json
 import logging
 import re
 from textwrap import dedent
 from typing import (Any, AsyncIterator, Callable, Dict, Iterator, List,
                     Optional, Sequence, Tuple, Type, Union)
-from langchain_core.prompts.chat import ChatMessagePromptTemplate
 
-import yaml
 from langchain.agents import (AgentExecutor, BaseMultiActionAgent,
                               BaseSingleActionAgent, StructuredChatAgent)
 from langchain.agents.agent import AgentExecutor, ExceptionTool
@@ -24,27 +21,14 @@ from langchain.chains.llm import LLMChain
 from langchain.tools.base import BaseTool
 from langchain_core.agents import AgentAction, AgentFinish, AgentStep
 from langchain_core.exceptions import OutputParserException
+from langchain_core.prompts.chat import ChatMessagePromptTemplate
 from langchain_core.pydantic_v1 import BaseModel
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, create_model
 
 logger = logging.getLogger(__name__)
 
-
-class ContextUpdatePayload(BaseModel):
-    values: Dict[str, Any]
-
-
-class ContextUpdate(BaseTool):
-    name = "ContextUpdate"
-    description = """Useful to store the information given by the user."""
-    args_schema: Type[BaseModel] = ContextUpdatePayload
-
-    def _run(self, *args: Any, **kwargs: Any) -> Any:
-        pass
-
-
-class FormToolActivatorDummyPayload(BaseModel):
+class ToolDummyPayload(BaseModel):
     """
     We cannot pass directly the BaseModel class as args_schema as pydantic will raise errors,
     so we need to create a dummy class that inherits from BaseModel.
@@ -88,17 +72,6 @@ class FormTool(BaseTool):
         context: Optional[FormStructuredChatExecutorContext] = None,
     ):
         pass
-        # Set all args in the instance
-        # if context.form is None:
-        #     context.form = {}
-
-        # for arg in args:
-        #     for key, value in arg.items():
-        #         setattr(self, key, value)
-
-        # for arg in args:
-        #     for key, value in arg.items():
-        #         context.form[key] = value
 
     async def ais_form_complete(
         self,
@@ -109,7 +82,6 @@ class FormTool(BaseTool):
         The default implementation checks if all values except optional ones are set.
         """
         for field_name, field_info in self.args_schema.__fields__.items():
-            # TODO: should be set in an instance of the args_schema
             if field_info.is_required():
                 if not getattr(context.form, field_name):
                     return False
@@ -117,10 +89,13 @@ class FormTool(BaseTool):
 
     def get_tool_start_message(self, input: dict) -> str:
         return "Creating form\n"
+    
+    def get_information_to_collect(self) -> str:
+        return str(list(self.args.keys()))
 
 
 class FormToolActivator(BaseTool):
-    args_schema: Type[BaseModel] = FormToolActivatorDummyPayload
+    args_schema: Type[BaseModel] = ToolDummyPayload
     form_tool_class: Type[FormTool]
     form_tool: FormTool
 
@@ -142,8 +117,34 @@ class FormStructuredChatExecutorContext(BaseModel):
     active_form_tool: Optional[FormTool] = None
     form: BaseModel = None
 
-# Create a new Pydantic model with optional attributes
 
+
+class ContextUpdatePayload(BaseModel):
+    values: Dict[str, Any]
+
+class ContextReset(BaseTool):
+    name = "ContextReset"
+    description = """Call this tool when the user doesn't want to fill the form anymore."""
+    args_schema: Type[BaseModel] = ToolDummyPayload
+
+    context: Optional[FormStructuredChatExecutorContext] = None
+
+    def _run(self, *args: Any, **kwargs: Any) -> Any:
+        self.context.active_form_tool = None
+        self.context.form = None
+        return "Context reset. Form cleared. Ask the user what he wants to do next."
+
+class ContextUpdate(BaseTool):
+    name = "ContextUpdate"
+    description = """Useful to store the information given by the user."""
+    args_schema: Type[BaseModel] = ContextUpdatePayload
+
+    context: Optional[FormStructuredChatExecutorContext] = None
+
+    def _run(self, *args: Any, **kwargs: Any) -> Any:
+        for key, value in kwargs['values'].items():
+            setattr(self.context.form, key, value)
+        return "Context updated"
 
 def make_optional_model(original_model: BaseModel) -> BaseModel:
     """
@@ -204,13 +205,13 @@ class FormStructuredChatExecutor(AgentExecutor):
             tools = [
                 context.active_form_tool,
                 *base_tools,
-                ContextUpdate()
+                ContextUpdate(context=context),
+                ContextReset(context=context)
             ]
         return tools
 
     @classmethod
-    def from_tools_and_builders(
-        cls,
+    def from_tools_and_builders(cls,
         llm_chain_builder: Callable[[Sequence[BaseTool]], LLMChain],
         agent_builder: Callable[[LLMChain, Sequence[BaseTool]], Union[BaseSingleActionAgent, BaseMultiActionAgent]],
         tools: Sequence[BaseTool],
@@ -243,13 +244,20 @@ class FormStructuredChatExecutor(AgentExecutor):
             instance._update_llm_chain()
         return instance
 
+    def _restore_llm_chain(self) -> LLMChain:
+        """Restore the llm_chain to the original state."""
+        tools = self.filter_active_tools(self.original_params["tools"], self.context)
+        self.agent.llm_chain = self.original_params["llm_chain_builder"](
+            tools
+        )
+
     def _update_llm_chain(self) -> LLMChain:
         """After the a form tool is activated, we need to update the llm_chain to include the new prompt."""
 
         tool = self.context.active_form_tool
         # information_to_collect = re.sub(
         #     "}", "}}", re.sub("{", "{{", str(tool.args)))
-        information_to_collect = str(tool.args.keys())
+        information_to_collect = tool.get_information_to_collect()
         information_collected = re.sub("}", "}}", re.sub("{", "{{", str(
             {name: value for name, value in self.context.form.__dict__.items() if value})))
 
@@ -257,14 +265,7 @@ class FormStructuredChatExecutor(AgentExecutor):
             Today is: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
             You are a personal assistant. The user is trying to fill data for {tool.name} and you need to help him.
 
-            The information you need to collect is the following:
-            {information_to_collect}
-
-            The information you have collected so far is:
-            {information_collected}
-
             Kindly ask the user to provide the next missing information using the Final Answer tool.
-            When you have all the information, call {tool.name} with the input data.
 
             You have access to the following tools:
         """)
@@ -300,16 +301,31 @@ class FormStructuredChatExecutor(AgentExecutor):
             {{{{
             "action": "Final Answer",
             "action_input": "Final response to human"
-            }}}}
+            }}}}                                     
             ```
+        """)
+
+        suffix = dedent(f"""
+            Begin! Reminder to ALWAYS respond with a valid json blob of a single action. Use tools if necessary. Respond directly if appropriate. Format is Action:```$JSON_BLOB```then Observation:.
+            Thought:
+
+            The information you need to collect is the following:
+            {information_to_collect}
+
+            The information you have collected so far is:
+            {information_collected}
+
+            When you have all the NEEDED information, call {tool.name} with the input data.
         """)
 
         prompt = StructuredChatAgent.create_prompt(
             prefix=prefix,
+            suffix=suffix,
             memory_prompts=self.memory_prompts,
             format_instructions=FORMAT_INSTRUCTIONS,
             tools=self.filter_active_tools(
                 self.original_params["tools"], self.context),
+            input_variables=["input"]
         )
 
         self.agent.llm_chain = LLMChain(
@@ -539,19 +555,20 @@ class FormStructuredChatExecutor(AgentExecutor):
                     if not is_form_tool_complete:
                         self._update_llm_chain()
 
-                if isinstance(tool, ContextUpdate):
-                    for key, value in agent_action.tool_input["values"].items():
-                        setattr(self.context.form, key, value)
-                    observation = "Context updated"
-                else:
-                    observation = await tool.arun(
-                        agent_action.tool_input,
-                        verbose=self.verbose,
-                        color=color,
-                        callbacks=run_manager.get_child() if run_manager else None,
-                        context=self.context,
-                        **tool_run_kwargs,
-                    )
+                observation = await tool.arun(
+                    agent_action.tool_input,
+                    verbose=self.verbose,
+                    color=color,
+                    callbacks=run_manager.get_child() if run_manager else None,
+                    context=self.context,
+                    **tool_run_kwargs,
+                )
+
+                # We called the tool and was completed, we can reset the context
+                if isinstance(tool, FormTool) or isinstance(tool, ContextReset):
+                    self.context = FormStructuredChatExecutorContext()
+                    self._restore_llm_chain()
+
             else:
                 tool_run_kwargs = self.agent.tool_run_logging_kwargs()
                 observation = await InvalidTool().arun(

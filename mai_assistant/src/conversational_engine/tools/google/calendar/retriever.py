@@ -10,12 +10,14 @@ from mai_assistant.src.clients import (GetCalendarEventsPayload, GoogleClient,
 from mai_assistant.src.conversational_engine.langchain_extention import \
     FormTool, FormToolActivator
 
+from langchain_core.callbacks import AsyncCallbackManagerForToolRun
+from mai_assistant.src.conversational_engine.langchain_extention import FormStructuredChatExecutorContext
 
 class GoogleCalendarRetriever(FormTool):
 
     name = "GoogleCalendarRetriever"
     description = """Useful to retrieve events from Google Calendar"""
-    return_direct = False #TODO: set to True
+    return_direct = True
     args_schema: Type[BaseModel] = GetCalendarEventsPayload
 
     chat_id: Optional[str] = None
@@ -51,3 +53,22 @@ class GoogleCalendarRetriever(FormTool):
             return f"Retrieving events from Google Calendar between {payload.start} and {payload.end}"
         elif payload.number_of_events:
             return f"Retrieving next {payload.number_of_events} from Google Calendar"
+
+
+    async def ais_form_complete(
+        self,
+        run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
+        context: Optional[FormStructuredChatExecutorContext] = None,
+    ) -> bool:
+        """
+        User should provide number_of_events or start and end dates
+        """
+        if context.form.number_of_events:
+            return True
+        elif context.form.start and context.form.end:
+            return True
+        else:
+            return False
+    
+    def get_information_to_collect(self) -> str:
+        return ["number_of_events OR (start and end dates)"]
