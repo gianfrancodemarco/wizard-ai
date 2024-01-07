@@ -2,12 +2,10 @@
 from __future__ import annotations
 
 import asyncio
+import datetime
 import json
 import logging
 import re
-import time
-from abc import abstractmethod
-from pathlib import Path
 from textwrap import dedent
 from typing import (Any, AsyncIterator, Callable, Dict, Iterator, List,
                     Optional, Sequence, Tuple, Type, Union)
@@ -16,34 +14,17 @@ import yaml
 from langchain.agents import (AgentExecutor, BaseMultiActionAgent,
                               BaseSingleActionAgent, StructuredChatAgent)
 from langchain.agents.agent import AgentExecutor, ExceptionTool
-from langchain.agents.agent_iterator import AgentExecutorIterator
-from langchain.agents.agent_types import AgentType
 from langchain.agents.tools import InvalidTool
-from langchain.callbacks.base import BaseCallbackManager
 from langchain.callbacks.manager import (AsyncCallbackManagerForChainRun,
                                          AsyncCallbackManagerForToolRun,
                                          CallbackManagerForChainRun,
                                          CallbackManagerForToolRun, Callbacks)
-from langchain.chains.base import Chain
 from langchain.chains.llm import LLMChain
 from langchain.tools.base import BaseTool
-from langchain.utilities.asyncio import asyncio_timeout
 from langchain_core.agents import AgentAction, AgentFinish, AgentStep
 from langchain_core.exceptions import OutputParserException
-from langchain_core.language_models import BaseLanguageModel
-from langchain_core.messages import BaseMessage
-from langchain_core.output_parsers import BaseOutputParser
-from langchain_core.prompts import BasePromptTemplate
-from langchain_core.prompts.chat import (ChatPromptTemplate,
-                                         HumanMessagePromptTemplate,
-                                         SystemMessagePromptTemplate)
-from langchain_core.prompts.few_shot import FewShotPromptTemplate
-from langchain_core.prompts.prompt import PromptTemplate
-from langchain_core.pydantic_v1 import BaseModel, root_validator
-from langchain_core.runnables import Runnable, RunnableConfig, ensure_config
-from langchain_core.runnables.utils import AddableDict
+from langchain_core.pydantic_v1 import BaseModel
 from langchain_core.tools import BaseTool
-from langchain_core.utils.input import get_color_mapping
 
 logger = logging.getLogger(__name__)
 
@@ -61,28 +42,6 @@ class ContextUpdate(BaseTool):
 # TODO: this is very bad
 class FormToolActivatorDummyPayload(BaseModel):
     title: str
-
-class FormToolActivator(BaseTool):
-    args_schema: Type[BaseModel] = FormToolActivatorDummyPayload
-    
-    form_tool_class: Type[FormTool]
-    form_tool: form_tool_class
-
-    def __init__(
-        self,
-        **kwargs
-    ):
-        super().__init__(**kwargs)
-        self.form_tool = self.form_tool_class(**kwargs)
-
-    def _run(
-        self,
-        *args: Any,
-        run_manager: Optional[CallbackManagerForToolRun] = None,
-        context: Optional[FormStructuredChatExecutorContext] = None,
-        **kwargs
-    ) -> str:
-        return f"Entered in {self.form_tool.name} context"
 
 class FormTool(BaseTool):
     def _run(
@@ -146,6 +105,21 @@ class FormTool(BaseTool):
     def get_tool_start_message(self, input: dict) -> str:
         return "Creating form\n"
 
+
+class FormToolActivator(BaseTool):
+    args_schema: Type[BaseModel] = FormToolActivatorDummyPayload
+    form_tool_class: Type[FormTool]
+    form_tool: FormTool
+
+    def _run(
+        self,
+        *args: Any,
+        run_manager: Optional[CallbackManagerForToolRun] = None,
+        context: Optional[FormStructuredChatExecutorContext] = None,
+        **kwargs
+    ) -> str:
+        return f"Entered in {self.form_tool.name} context"
+
 class FormStructuredChatExecutorContext(BaseModel):
     active_form_tool: Optional[FormTool] = None
     form: Optional[Dict[str, Any]] = None
@@ -161,21 +135,32 @@ class FormStructuredChatExecutor(AgentExecutor):
         tools: Sequence[BaseTool],
         context: FormStructuredChatExecutorContext
     ):
+        
+        base_tools = list(filter(lambda tool: not isinstance(tool, FormToolActivator) and not isinstance(tool, FormTool), tools))
+
         if context.active_form_tool is None:
-            return tools
+            activator_tools = [
+                FormToolActivator(
+                    form_tool_class=tool.__class__,
+                    form_tool=tool,
+                    name=f"{tool.name}Activator",
+                    description=tool.description
+                )
+                for tool in tools
+                if isinstance(tool, FormTool)
+            ]
+            tools = [
+                *base_tools,
+                *activator_tools
+            ]
         else:
             # If a form_tool is active, remove the Activators and add the form tool and the context update tool
             tools = [
-                tool
-                for tool in tools
-                if not isinstance(tool, FormToolActivator)
+                context.active_form_tool,
+                *base_tools,
+                ContextUpdate()
             ]
-            tools = [
-                *tools,
-                ContextUpdate(),
-                context.active_form_tool
-            ]
-            return tools
+        return tools
 
     @classmethod
     def from_tools_and_builders(
@@ -189,6 +174,11 @@ class FormStructuredChatExecutor(AgentExecutor):
     ) -> AgentExecutor:
         """Create from a list of tools. The tools will be used to create the LLMChain and the agent."""
 
+        original_params={
+            "llm_chain_builder": llm_chain_builder,
+            "agent_builder": agent_builder,
+            "tools": tools
+        }
         tools = cls.filter_active_tools(tools, context)
         llm_chain = llm_chain_builder(tools)
         agent = agent_builder(llm_chain, tools)
@@ -198,11 +188,7 @@ class FormStructuredChatExecutor(AgentExecutor):
             tools=tools,
             context=context,
             callbacks=callbacks,
-            original_params={
-                "llm_chain_builder": llm_chain_builder,
-                "agent_builder": agent_builder,
-                "tools": tools
-            },
+            original_params=original_params,
             **kwargs,
         )
         if context.active_form_tool is not None:
@@ -217,7 +203,8 @@ class FormStructuredChatExecutor(AgentExecutor):
         information_collected = re.sub("}", "}}", re.sub("{", "{{", str(json.dumps(self.context.form))))
 
         prefix = dedent(f"""
-            You are a personal assistance. The user is trying to fill data for {tool.name} and you need to help him.
+            Today is: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+            You are a personal assistant. The user is trying to fill data for {tool.name} and you need to help him.
 
             The information you need to collect is the following:
 

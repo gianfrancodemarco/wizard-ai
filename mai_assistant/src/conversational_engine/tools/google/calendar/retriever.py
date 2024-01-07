@@ -51,10 +51,3 @@ class GoogleCalendarRetriever(FormTool):
             return f"Retrieving events from Google Calendar between {payload.start} and {payload.end}"
         elif payload.number_of_events:
             return f"Retrieving next {payload.number_of_events} from Google Calendar"
-
-class GoogleCalendarRetrieverActivator(FormToolActivator):
-    name = "GoogleCalendarRetrieverActivator"
-    description = """Useful to retrieve events from Google Calendar"""
-
-    form_tool_class: Type[FormTool] = GoogleCalendarRetriever
-    form_tool: GoogleCalendarRetriever = None

@@ -60,10 +60,8 @@ class Agent(ABC):
             # Calculator(),
             # RandomNumberGenerator(),
             # GoogleSearch(),
-            GoogleCalendarCreatorActivator(chat_id=chat_id),
-            GoogleCalendarRetrieverActivator(chat_id=chat_id),
-            # GoogleCalendarCreator(chat_id=chat_id),
-            # GoogleCalendarRetriever(chat_id=chat_id),
+            GoogleCalendarCreator(chat_id=chat_id),
+            GoogleCalendarRetriever(chat_id=chat_id),
             # GmailRetriever(chat_id=chat_id),
             # DateCalculatorTool()
         ]

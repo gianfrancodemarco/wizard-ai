@@ -56,12 +56,3 @@ class GoogleCalendarCreator(FormTool):
                 Start: {payload.start}
                 End: {payload.end}
             """)
-
-
-# We use this class because using directly the form tool, the LLM makes up the input arguments.
-class GoogleCalendarCreatorActivator(FormToolActivator):
-    name = "GoogleCalendarCreatorActivator"
-    description = """Useful to create events on Google Calendar."""
-    
-    form_tool_class: Type[FormTool] = GoogleCalendarCreator
-    form_tool: GoogleCalendarCreator = None
