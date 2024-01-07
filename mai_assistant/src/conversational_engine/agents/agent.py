@@ -87,6 +87,7 @@ class Agent(ABC):
             agent_builder=agent_builder,
             tools=self.tools,
             memory=self.memory,
+            memory_prompts=self.get_memory_prompts(),
             context=kwargs.get("context", FormStructuredChatExecutorContext()),
             verbose=True
         )
@@ -133,7 +134,7 @@ class Agent(ABC):
                     )
 
 
-    def get_memory_prompts(self):
+    def get_memory_prompts(self) -> List[ChatMessagePromptTemplate]:
         return [
             ChatMessagePromptTemplate.from_template(
                 role="Previous conversation",

@@ -11,4 +11,5 @@ redis==5.0.1
 sse_starlette==1.8.2
 beautifulsoup4==4.12.2
 parsel==1.8.1
+python-dateutil==2.8.2
 readability-lxml==0.8.1

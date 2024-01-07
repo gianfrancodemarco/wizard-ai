@@ -9,6 +9,7 @@ import re
 from textwrap import dedent
 from typing import (Any, AsyncIterator, Callable, Dict, Iterator, List,
                     Optional, Sequence, Tuple, Type, Union)
+from langchain_core.prompts.chat import ChatMessagePromptTemplate
 
 import yaml
 from langchain.agents import (AgentExecutor, BaseMultiActionAgent,
@@ -25,11 +26,14 @@ from langchain_core.agents import AgentAction, AgentFinish, AgentStep
 from langchain_core.exceptions import OutputParserException
 from langchain_core.pydantic_v1 import BaseModel
 from langchain_core.tools import BaseTool
+from pydantic import BaseModel, create_model
 
 logger = logging.getLogger(__name__)
 
+
 class ContextUpdatePayload(BaseModel):
     values: Dict[str, Any]
+
 
 class ContextUpdate(BaseTool):
     name = "ContextUpdate"
@@ -38,10 +42,15 @@ class ContextUpdate(BaseTool):
 
     def _run(self, *args: Any, **kwargs: Any) -> Any:
         pass
-    
-# TODO: this is very bad
+
+
 class FormToolActivatorDummyPayload(BaseModel):
-    title: str
+    """
+    We cannot pass directly the BaseModel class as args_schema as pydantic will raise errors,
+    so we need to create a dummy class that inherits from BaseModel.
+    """
+    pass
+
 
 class FormTool(BaseTool):
     def _run(
@@ -78,13 +87,18 @@ class FormTool(BaseTool):
         run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
         context: Optional[FormStructuredChatExecutorContext] = None,
     ):
+        pass
         # Set all args in the instance
-        if context.form is None:
-            context.form = {}
-        
-        for arg in args:
-            for key, value in arg.items():
-                context.form[key] = value            
+        # if context.form is None:
+        #     context.form = {}
+
+        # for arg in args:
+        #     for key, value in arg.items():
+        #         setattr(self, key, value)
+
+        # for arg in args:
+        #     for key, value in arg.items():
+        #         context.form[key] = value
 
     async def ais_form_complete(
         self,
@@ -97,10 +111,9 @@ class FormTool(BaseTool):
         for field_name, field_info in self.args_schema.__fields__.items():
             # TODO: should be set in an instance of the args_schema
             if field_info.is_required():
-                if context.form.get(field_name) is None:
+                if not getattr(context.form, field_name):
                     return False
         return True
-
 
     def get_tool_start_message(self, input: dict) -> str:
         return "Creating form\n"
@@ -120,14 +133,46 @@ class FormToolActivator(BaseTool):
     ) -> str:
         return f"Entered in {self.form_tool.name} context"
 
+    def _parse_input(self, tool_input: str | Dict) -> str | Dict[str, Any]:
+        """FormToolActivator shouldn't have any input, so we ovveride the default implementation."""
+        return {}
+
+
 class FormStructuredChatExecutorContext(BaseModel):
     active_form_tool: Optional[FormTool] = None
-    form: Optional[Dict[str, Any]] = None
+    form: BaseModel = None
+
+# Create a new Pydantic model with optional attributes
+
+
+def make_optional_model(original_model: BaseModel) -> BaseModel:
+    """
+    Takes a Pydantic model and returns a new model with all attributes optional.
+    """
+    optional_attributes = {attr_name: (
+        attr_type, None) for attr_name, attr_type in original_model.__annotations__.items()}
+
+    # Define a custom Pydantic model with optional attributes
+    new_class_name = original_model.__name__ + 'Optional'
+    OptionalModel = create_model(
+        new_class_name,
+        **optional_attributes,
+        __base__=original_model
+    )
+
+    # Adding the dynamically created class to the global scope so that it can be pickled
+    # https://stackoverflow.com/a/39529149/8458431
+    globals()[new_class_name] = OptionalModel
+    # Validators are not working !!!
+
+    return OptionalModel
+
 
 class FormStructuredChatExecutor(AgentExecutor):
 
     context: FormStructuredChatExecutorContext
     original_params: Dict[str, Any]
+    memory_prompts: List[ChatMessagePromptTemplate]
 
     @classmethod
     def filter_active_tools(
@@ -135,8 +180,9 @@ class FormStructuredChatExecutor(AgentExecutor):
         tools: Sequence[BaseTool],
         context: FormStructuredChatExecutorContext
     ):
-        
-        base_tools = list(filter(lambda tool: not isinstance(tool, FormToolActivator) and not isinstance(tool, FormTool), tools))
+
+        base_tools = list(filter(lambda tool: not isinstance(
+            tool, FormToolActivator) and not isinstance(tool, FormTool), tools))
 
         if context.active_form_tool is None:
             activator_tools = [
@@ -169,12 +215,13 @@ class FormStructuredChatExecutor(AgentExecutor):
         agent_builder: Callable[[LLMChain, Sequence[BaseTool]], Union[BaseSingleActionAgent, BaseMultiActionAgent]],
         tools: Sequence[BaseTool],
         context: FormStructuredChatExecutorContext,
+        memory_prompts: List[ChatMessagePromptTemplate],
         callbacks: Callbacks = None,
         **kwargs: Any,
     ) -> AgentExecutor:
         """Create from a list of tools. The tools will be used to create the LLMChain and the agent."""
 
-        original_params={
+        original_params = {
             "llm_chain_builder": llm_chain_builder,
             "agent_builder": agent_builder,
             "tools": tools
@@ -189,6 +236,7 @@ class FormStructuredChatExecutor(AgentExecutor):
             context=context,
             callbacks=callbacks,
             original_params=original_params,
+            memory_prompts=memory_prompts,
             **kwargs,
         )
         if context.active_form_tool is not None:
@@ -197,29 +245,71 @@ class FormStructuredChatExecutor(AgentExecutor):
 
     def _update_llm_chain(self) -> LLMChain:
         """After the a form tool is activated, we need to update the llm_chain to include the new prompt."""
-        
+
         tool = self.context.active_form_tool
-        information_to_collect = re.sub("}", "}}", re.sub("{", "{{", str(tool.args)))
-        information_collected = re.sub("}", "}}", re.sub("{", "{{", str(json.dumps(self.context.form))))
+        # information_to_collect = re.sub(
+        #     "}", "}}", re.sub("{", "{{", str(tool.args)))
+        information_to_collect = str(tool.args.keys())
+        information_collected = re.sub("}", "}}", re.sub("{", "{{", str(
+            {name: value for name, value in self.context.form.__dict__.items() if value})))
 
         prefix = dedent(f"""
             Today is: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
             You are a personal assistant. The user is trying to fill data for {tool.name} and you need to help him.
 
             The information you need to collect is the following:
-
             {information_to_collect}
 
             The information you have collected so far is:
             {information_collected}
 
-            Kindly ask the user to provide the missing information using the Final Answer tool.
-            When you have all the information, call {tool.name} with the input data.create an event for me
+            Kindly ask the user to provide the next missing information using the Final Answer tool.
+            When you have all the information, call {tool.name} with the input data.
+
+            You have access to the following tools:
+        """)
+
+        FORMAT_INSTRUCTIONS = dedent("""
+            Use a json blob to specify a tool by providing an action key (tool name) and an action_input key (tool input).
+
+            Valid "action" values: "Final Answer" or {tool_names}
+
+            Provide only ONE action per $JSON_BLOB, as shown:
+
+            ```
+            {{{{
+            "action": $TOOL_NAME,
+            "action_input": $INPUT
+            }}}}
+            ```
+
+            Follow this format:
+
+            Question: human input to the assistant
+
+            (repeat the following Thought/Action/Observation N times)
+            Thought: consider previous and subsequent steps
+            Action:
+            ```
+            $JSON_BLOB
+            ```
+            Observation: action result
+            Thought: I know what to respond
+            Action:
+            ```
+            {{{{
+            "action": "Final Answer",
+            "action_input": "Final response to human"
+            }}}}
+            ```
         """)
 
         prompt = StructuredChatAgent.create_prompt(
             prefix=prefix,
-            tools=self.filter_active_tools(self.original_params["tools"], self.context),
+            memory_prompts=self.memory_prompts,
+            format_instructions=FORMAT_INSTRUCTIONS,
+            tools=self.filter_active_tools(
+                self.original_params["tools"], self.context),
         )
 
         self.agent.llm_chain = LLMChain(
@@ -227,9 +317,6 @@ class FormStructuredChatExecutor(AgentExecutor):
             prompt=prompt,
             verbose=True
         )
-
-  
-
 
     def _iter_next_step(
         self,
@@ -244,7 +331,8 @@ class FormStructuredChatExecutor(AgentExecutor):
         Override this to take control of how the agent makes and acts on choices.
         """
         try:
-            intermediate_steps = self._prepare_intermediate_steps(intermediate_steps)
+            intermediate_steps = self._prepare_intermediate_steps(
+                intermediate_steps)
 
             # Call the LLM to see what to do.
             output = self.agent.plan(
@@ -276,7 +364,8 @@ class FormStructuredChatExecutor(AgentExecutor):
             elif callable(self.handle_parsing_errors):
                 observation = self.handle_parsing_errors(e)
             else:
-                raise ValueError("Got unexpected type of `handle_parsing_errors`")
+                raise ValueError(
+                    "Got unexpected type of `handle_parsing_errors`")
             output = AgentAction("_Exception", observation, text)
             if run_manager:
                 run_manager.on_agent_action(output, color="green")
@@ -336,7 +425,6 @@ class FormStructuredChatExecutor(AgentExecutor):
                 )
             yield AgentStep(action=agent_action, observation=observation)
 
-
     async def _aiter_next_step(
         self,
         name_to_tool_map: Dict[str, BaseTool],
@@ -350,7 +438,8 @@ class FormStructuredChatExecutor(AgentExecutor):
         Override this to take control of how the agent makes and acts on choices.
         """
         try:
-            intermediate_steps = self._prepare_intermediate_steps(intermediate_steps)
+            intermediate_steps = self._prepare_intermediate_steps(
+                intermediate_steps)
 
             # Call the LLM to see what to do.
             output = await self.agent.aplan(
@@ -382,7 +471,8 @@ class FormStructuredChatExecutor(AgentExecutor):
             elif callable(self.handle_parsing_errors):
                 observation = self.handle_parsing_errors(e)
             else:
-                raise ValueError("Got unexpected type of `handle_parsing_errors`")
+                raise ValueError(
+                    "Got unexpected type of `handle_parsing_errors`")
             output = AgentAction("_Exception", observation, text)
             tool_run_kwargs = self.agent.tool_run_logging_kwargs()
             observation = await ExceptionTool().arun(
@@ -425,7 +515,6 @@ class FormStructuredChatExecutor(AgentExecutor):
                     tool_run_kwargs["llm_prefix"] = ""
 
                 # We then call the tool on the tool input to get an observation
-                
                 is_form_tool_activator = isinstance(tool, FormToolActivator)
                 if is_form_tool_activator:
                     if self.context.active_form_tool != tool.form_tool:
@@ -434,6 +523,10 @@ class FormStructuredChatExecutor(AgentExecutor):
                             run_manager=run_manager.get_child() if run_manager else None,
                             context=self.context
                         )
+                        # Create a copy from the args_schema with all attributes optional, so that we can instantiate it in the context,
+                        # provide partial updates, and still have all original validators
+                        self.context.form = make_optional_model(
+                            tool.form_tool.args_schema)()
                     await tool.form_tool.aupdate(
                         agent_action.tool_input,
                         run_manager=run_manager.get_child() if run_manager else None,
@@ -445,9 +538,10 @@ class FormStructuredChatExecutor(AgentExecutor):
                     )
                     if not is_form_tool_complete:
                         self._update_llm_chain()
-                
+
                 if isinstance(tool, ContextUpdate):
-                    self.context.form.update(agent_action.tool_input["values"])
+                    for key, value in agent_action.tool_input["values"].items():
+                        setattr(self.context.form, key, value)
                     observation = "Context updated"
                 else:
                     observation = await tool.arun(

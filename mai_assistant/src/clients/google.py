@@ -4,9 +4,10 @@ from datetime import datetime, timezone
 from textwrap import dedent
 from typing import Any, List, Optional
 
+from dateutil.parser import parse
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from mai_assistant.src.html_processor import HtmlProcessor
 
@@ -28,6 +29,13 @@ class CreateCalendarEventPayload(BaseModel):
         description="End date of the event",
     )
 
+
+    @field_validator("start", "end", mode="before")
+    def parse_date(cls, v, values):
+        if isinstance(v, datetime):
+            return v
+        if isinstance(v, str):
+            return parse(v)
 
 class GetCalendarEventsPayload(BaseModel):
     start: Optional[datetime] = Field(

@@ -61,8 +61,12 @@ async def process_message(data: dict) -> None:
 def __update_stored_context(
         redis_client: redis.Redis,
         chat_id: str,
-        context: dict):
+        context: FormStructuredChatExecutorContext):
 
+    # this shouldn't be here
+    if context.active_form_tool:
+        context.form = context.form.model_dump_json()
+    
     redis_client.hset(
         chat_id,
         "context",
