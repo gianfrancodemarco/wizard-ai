@@ -47,7 +47,7 @@ async def process_message(data: dict) -> None:
         LoggerCallbackHandler()
     ]
 
-    answer = await agent.agent_chain.arun(
+    answer = agent.agent_chain.arun(
         input=data.content,
         callbacks=callbacks
     )

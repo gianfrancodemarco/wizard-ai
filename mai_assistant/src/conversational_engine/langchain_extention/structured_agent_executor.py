@@ -25,9 +25,9 @@ from pydantic import BaseModel, create_model
 
 from .context_reset import ContextReset
 from .context_update import ContextUpdate
+from .forked_agent_executor import ForkedAgentExecutor
 from .form_tool import (FormStructuredChatExecutorContext, FormTool,
                         FormToolActivator)
-
 from .prompts import get_prompt_components
 
 logger = logging.getLogger(__name__)
@@ -48,16 +48,10 @@ def make_optional_model(original_model: BaseModel) -> BaseModel:
         __base__=original_model
     )
 
-    # TODO: shouldn't be needed anymore; delete
-    # Adding the dynamically created class to the global scope so that it can be pickled
-    # https://stackoverflow.com/a/39529149/8458431
-    # globals()[new_class_name] = OptionalModel
-    # Validators are not working !!!
-
     return OptionalModel
 
 
-class FormStructuredChatExecutor(AgentExecutor):
+class FormStructuredChatExecutor(ForkedAgentExecutor):
 
     context: FormStructuredChatExecutorContext
     original_params: Dict[str, Any]
@@ -278,153 +272,75 @@ class FormStructuredChatExecutor(AgentExecutor):
                 )
             yield AgentStep(action=agent_action, observation=observation)
 
-    async def _aiter_next_step(
+    async def _aperform_agent_action(
         self,
         name_to_tool_map: Dict[str, BaseTool],
         color_mapping: Dict[str, str],
-        inputs: Dict[str, str],
-        intermediate_steps: List[Tuple[AgentAction, str]],
+        agent_action: AgentAction,
         run_manager: Optional[AsyncCallbackManagerForChainRun] = None,
-    ) -> AsyncIterator[Union[AgentFinish, AgentAction, AgentStep]]:
-        """Take a single step in the thought-action-observation loop.
-
-        Override this to take control of how the agent makes and acts on choices.
-        """
-        try:
-            intermediate_steps = self._prepare_intermediate_steps(
-                intermediate_steps)
-
-            # Call the LLM to see what to do.
-            output = await self.agent.aplan(
-                intermediate_steps,
-                callbacks=run_manager.get_child() if run_manager else None,
-                **inputs,
+    ) -> AgentStep:
+        if run_manager:
+            await run_manager.on_agent_action(
+                agent_action, verbose=self.verbose, color="green"
             )
-        except OutputParserException as e:
-            if isinstance(self.handle_parsing_errors, bool):
-                raise_error = not self.handle_parsing_errors
-            else:
-                raise_error = False
-            if raise_error:
-                raise ValueError(
-                    "An output parsing error occurred. "
-                    "In order to pass this error back to the agent and have it try "
-                    "again, pass `handle_parsing_errors=True` to the AgentExecutor. "
-                    f"This is the error: {str(e)}"
-                )
-            text = str(e)
-            if isinstance(self.handle_parsing_errors, bool):
-                if e.send_to_llm:
-                    observation = str(e.observation)
-                    text = str(e.llm_output)
-                else:
-                    observation = "Invalid or incomplete response"
-            elif isinstance(self.handle_parsing_errors, str):
-                observation = self.handle_parsing_errors
-            elif callable(self.handle_parsing_errors):
-                observation = self.handle_parsing_errors(e)
-            else:
-                raise ValueError(
-                    "Got unexpected type of `handle_parsing_errors`")
-            output = AgentAction("_Exception", observation, text)
+        # Otherwise we lookup the tool
+        if agent_action.tool in name_to_tool_map:
+            tool = name_to_tool_map[agent_action.tool]
+            return_direct = tool.return_direct
+            color = color_mapping[agent_action.tool]
             tool_run_kwargs = self.agent.tool_run_logging_kwargs()
-            observation = await ExceptionTool().arun(
-                output.tool_input,
+            if return_direct:
+                tool_run_kwargs["llm_prefix"] = ""
+
+            # We then call the tool on the tool input to get an observation
+            is_form_tool_activator = isinstance(tool, FormToolActivator)
+            if is_form_tool_activator:
+                if self.context.active_form_tool != tool.form_tool:
+                    self.context.active_form_tool = tool.form_tool
+                    await tool.form_tool.aactivate(
+                        run_manager=run_manager.get_child() if run_manager else None,
+                        context=self.context
+                    )
+                    # Create a copy from the args_schema with all attributes optional, so that we can instantiate it in the context,
+                    # provide partial updates, and still have all original validators
+                    self.context.form = make_optional_model(
+                        tool.form_tool.args_schema)()
+                await tool.form_tool.aupdate(
+                    agent_action.tool_input,
+                    run_manager=run_manager.get_child() if run_manager else None,
+                    context=self.context
+                )
+                is_form_tool_complete = await tool.form_tool.ais_form_complete(
+                    run_manager=run_manager.get_child() if run_manager else None,
+                    context=self.context
+                )
+                if not is_form_tool_complete:
+                    self._update_llm_chain()
+
+            observation = await tool.arun(
+                agent_action.tool_input,
+                verbose=self.verbose,
+                color=color,
+                callbacks=run_manager.get_child() if run_manager else None,
+                context=self.context,
+                **tool_run_kwargs,
+            )
+
+            # We called the tool and was completed, we can reset the context
+            if isinstance(tool, FormTool) or isinstance(tool, ContextReset):
+                self.context = FormStructuredChatExecutorContext()
+                self._restore_llm_chain()
+
+        else:
+            tool_run_kwargs = self.agent.tool_run_logging_kwargs()
+            observation = await InvalidTool().arun(
+                {
+                    "requested_tool_name": agent_action.tool,
+                    "available_tool_names": list(name_to_tool_map.keys()),
+                },
                 verbose=self.verbose,
                 color=None,
                 callbacks=run_manager.get_child() if run_manager else None,
                 **tool_run_kwargs,
             )
-            yield AgentStep(action=output, observation=observation)
-            return
-
-        # If the tool chosen is the finishing tool, then we end and return.
-        if isinstance(output, AgentFinish):
-            yield output
-            return
-
-        actions: List[AgentAction]
-        if isinstance(output, AgentAction):
-            actions = [output]
-        else:
-            actions = output
-        for agent_action in actions:
-            yield agent_action
-
-        async def _aperform_agent_action(
-            agent_action: AgentAction,
-        ) -> AgentStep:
-            if run_manager:
-                await run_manager.on_agent_action(
-                    agent_action, verbose=self.verbose, color="green"
-                )
-            # Otherwise we lookup the tool
-            if agent_action.tool in name_to_tool_map:
-                tool = name_to_tool_map[agent_action.tool]
-                return_direct = tool.return_direct
-                color = color_mapping[agent_action.tool]
-                tool_run_kwargs = self.agent.tool_run_logging_kwargs()
-                if return_direct:
-                    tool_run_kwargs["llm_prefix"] = ""
-
-                # We then call the tool on the tool input to get an observation
-                is_form_tool_activator = isinstance(tool, FormToolActivator)
-                if is_form_tool_activator:
-                    if self.context.active_form_tool != tool.form_tool:
-                        self.context.active_form_tool = tool.form_tool
-                        await tool.form_tool.aactivate(
-                            run_manager=run_manager.get_child() if run_manager else None,
-                            context=self.context
-                        )
-                        # Create a copy from the args_schema with all attributes optional, so that we can instantiate it in the context,
-                        # provide partial updates, and still have all original validators
-                        self.context.form = make_optional_model(
-                            tool.form_tool.args_schema)()
-                    await tool.form_tool.aupdate(
-                        agent_action.tool_input,
-                        run_manager=run_manager.get_child() if run_manager else None,
-                        context=self.context
-                    )
-                    is_form_tool_complete = await tool.form_tool.ais_form_complete(
-                        run_manager=run_manager.get_child() if run_manager else None,
-                        context=self.context
-                    )
-                    if not is_form_tool_complete:
-                        self._update_llm_chain()
-
-                observation = await tool.arun(
-                    agent_action.tool_input,
-                    verbose=self.verbose,
-                    color=color,
-                    callbacks=run_manager.get_child() if run_manager else None,
-                    context=self.context,
-                    **tool_run_kwargs,
-                )
-
-                # We called the tool and was completed, we can reset the context
-                if isinstance(tool, FormTool) or isinstance(tool, ContextReset):
-                    self.context = FormStructuredChatExecutorContext()
-                    self._restore_llm_chain()
-
-            else:
-                tool_run_kwargs = self.agent.tool_run_logging_kwargs()
-                observation = await InvalidTool().arun(
-                    {
-                        "requested_tool_name": agent_action.tool,
-                        "available_tool_names": list(name_to_tool_map.keys()),
-                    },
-                    verbose=self.verbose,
-                    color=None,
-                    callbacks=run_manager.get_child() if run_manager else None,
-                    **tool_run_kwargs,
-                )
-            return AgentStep(action=agent_action, observation=observation)
-
-        # Use asyncio.gather to run multiple tool.arun() calls concurrently
-        result = await asyncio.gather(
-            *[_aperform_agent_action(agent_action) for agent_action in actions]
-        )
-
-        # TODO This could yield each result as it becomes available
-        for chunk in result:
-            yield chunk
+        return AgentStep(action=agent_action, observation=observation)
