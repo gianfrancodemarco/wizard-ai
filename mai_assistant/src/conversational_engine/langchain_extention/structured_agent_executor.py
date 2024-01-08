@@ -7,18 +7,15 @@ import logging
 import re
 from textwrap import dedent
 from typing import (Any, AsyncIterator, Callable, Dict, Iterator, List,
-                    Optional, Sequence, Tuple, Type, Union)
+                    Optional, Sequence, Tuple, Union)
 
 from langchain.agents import (AgentExecutor, BaseMultiActionAgent,
                               BaseSingleActionAgent, StructuredChatAgent)
 from langchain.agents.agent import AgentExecutor, ExceptionTool
 from langchain.agents.tools import InvalidTool
 from langchain.callbacks.manager import (AsyncCallbackManagerForChainRun,
-                                         AsyncCallbackManagerForToolRun,
-                                         CallbackManagerForChainRun,
-                                         CallbackManagerForToolRun, Callbacks)
+                                         CallbackManagerForChainRun, Callbacks)
 from langchain.chains.llm import LLMChain
-from langchain.tools.base import BaseTool
 from langchain_core.agents import AgentAction, AgentFinish, AgentStep
 from langchain_core.exceptions import OutputParserException
 from langchain_core.prompts.chat import ChatMessagePromptTemplate
@@ -26,125 +23,15 @@ from langchain_core.pydantic_v1 import BaseModel
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, create_model
 
+from .context_reset import ContextReset
+from .context_update import ContextUpdate
+from .form_tool import (FormStructuredChatExecutorContext, FormTool,
+                        FormToolActivator)
+
+from .prompts import get_prompt_components
+
 logger = logging.getLogger(__name__)
 
-class ToolDummyPayload(BaseModel):
-    """
-    We cannot pass directly the BaseModel class as args_schema as pydantic will raise errors,
-    so we need to create a dummy class that inherits from BaseModel.
-    """
-    pass
-
-
-class FormTool(BaseTool):
-    def _run(
-        self,
-        *args: Any,
-        run_manager: Optional[CallbackManagerForToolRun] = None,
-        context: Optional[FormStructuredChatExecutorContext] = None,
-        **kwargs
-    ) -> str:
-        pass
-
-    def activate(
-        self,
-        run_manager: Optional[CallbackManagerForToolRun] = None,
-        context: Optional[FormStructuredChatExecutorContext] = None,
-    ):
-        """
-        Function called when the tool is activated.
-        """
-
-        pass
-
-    async def aactivate(
-        self,
-        run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
-        context: Optional[FormStructuredChatExecutorContext] = None,
-    ):
-        pass
-
-    # TODO: using context.form as dict is wrong. We need to use a Pydantic model to enable validation etc
-    async def aupdate(
-        self,
-        *args: Any,
-        run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
-        context: Optional[FormStructuredChatExecutorContext] = None,
-    ):
-        pass
-
-    async def ais_form_complete(
-        self,
-        run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
-        context: Optional[FormStructuredChatExecutorContext] = None,
-    ) -> bool:
-        """
-        The default implementation checks if all values except optional ones are set.
-        """
-        for field_name, field_info in self.args_schema.__fields__.items():
-            if field_info.is_required():
-                if not getattr(context.form, field_name):
-                    return False
-        return True
-
-    def get_tool_start_message(self, input: dict) -> str:
-        return "Creating form\n"
-    
-    def get_information_to_collect(self) -> str:
-        return str(list(self.args.keys()))
-
-
-class FormToolActivator(BaseTool):
-    args_schema: Type[BaseModel] = ToolDummyPayload
-    form_tool_class: Type[FormTool]
-    form_tool: FormTool
-
-    def _run(
-        self,
-        *args: Any,
-        run_manager: Optional[CallbackManagerForToolRun] = None,
-        context: Optional[FormStructuredChatExecutorContext] = None,
-        **kwargs
-    ) -> str:
-        return f"Entered in {self.form_tool.name} context"
-
-    def _parse_input(self, tool_input: str | Dict) -> str | Dict[str, Any]:
-        """FormToolActivator shouldn't have any input, so we ovveride the default implementation."""
-        return {}
-
-
-class FormStructuredChatExecutorContext(BaseModel):
-    active_form_tool: Optional[FormTool] = None
-    form: BaseModel = None
-
-
-
-class ContextUpdatePayload(BaseModel):
-    values: Dict[str, Any]
-
-class ContextReset(BaseTool):
-    name = "ContextReset"
-    description = """Call this tool when the user doesn't want to fill the form anymore."""
-    args_schema: Type[BaseModel] = ToolDummyPayload
-
-    context: Optional[FormStructuredChatExecutorContext] = None
-
-    def _run(self, *args: Any, **kwargs: Any) -> Any:
-        self.context.active_form_tool = None
-        self.context.form = None
-        return "Context reset. Form cleared. Ask the user what he wants to do next."
-
-class ContextUpdate(BaseTool):
-    name = "ContextUpdate"
-    description = """Useful to store the information given by the user."""
-    args_schema: Type[BaseModel] = ContextUpdatePayload
-
-    context: Optional[FormStructuredChatExecutorContext] = None
-
-    def _run(self, *args: Any, **kwargs: Any) -> Any:
-        for key, value in kwargs['values'].items():
-            setattr(self.context.form, key, value)
-        return "Context updated"
 
 def make_optional_model(original_model: BaseModel) -> BaseModel:
     """
@@ -161,9 +48,10 @@ def make_optional_model(original_model: BaseModel) -> BaseModel:
         __base__=original_model
     )
 
+    # TODO: shouldn't be needed anymore; delete
     # Adding the dynamically created class to the global scope so that it can be pickled
     # https://stackoverflow.com/a/39529149/8458431
-    globals()[new_class_name] = OptionalModel
+    # globals()[new_class_name] = OptionalModel
     # Validators are not working !!!
 
     return OptionalModel
@@ -261,68 +149,17 @@ class FormStructuredChatExecutor(AgentExecutor):
         information_collected = re.sub("}", "}}", re.sub("{", "{{", str(
             {name: value for name, value in self.context.form.__dict__.items() if value})))
 
-        prefix = dedent(f"""
-            Today is: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-            You are a personal assistant. The user is trying to fill data for {tool.name} and you need to help him.
-
-            Kindly ask the user to provide the next missing information using the Final Answer tool.
-
-            You have access to the following tools:
-        """)
-
-        FORMAT_INSTRUCTIONS = dedent("""
-            Use a json blob to specify a tool by providing an action key (tool name) and an action_input key (tool input).
-
-            Valid "action" values: "Final Answer" or {tool_names}
-
-            Provide only ONE action per $JSON_BLOB, as shown:
-
-            ```
-            {{{{
-            "action": $TOOL_NAME,
-            "action_input": $INPUT
-            }}}}
-            ```
-
-            Follow this format:
-
-            Question: human input to the assistant
-
-            (repeat the following Thought/Action/Observation N times)
-            Thought: consider previous and subsequent steps
-            Action:
-            ```
-            $JSON_BLOB
-            ```
-            Observation: action result
-            Thought: I know what to respond
-            Action:
-            ```
-            {{{{
-            "action": "Final Answer",
-            "action_input": "Final response to human"
-            }}}}                                     
-            ```
-        """)
-
-        suffix = dedent(f"""
-            Begin! Reminder to ALWAYS respond with a valid json blob of a single action. Use tools if necessary. Respond directly if appropriate. Format is Action:```$JSON_BLOB```then Observation:.
-            Thought:
-
-            The information you need to collect is the following:
-            {information_to_collect}
-
-            The information you have collected so far is:
-            {information_collected}
-
-            When you have all the NEEDED information, call {tool.name} with the input data.
-        """)
+        prefix, suffix, format_instructions = get_prompt_components(
+            tool.name,
+            information_to_collect,
+            information_collected
+        )
 
         prompt = StructuredChatAgent.create_prompt(
             prefix=prefix,
             suffix=suffix,
             memory_prompts=self.memory_prompts,
-            format_instructions=FORMAT_INSTRUCTIONS,
+            format_instructions=format_instructions,
             tools=self.filter_active_tools(
                 self.original_params["tools"], self.context),
             input_variables=["input"]
