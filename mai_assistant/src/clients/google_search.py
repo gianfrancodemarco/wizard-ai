@@ -224,7 +224,7 @@ class GoogleSearchClient:
 
         try:
             if response:
-                text_content = self._clear_html(response.text)
+                text_content = HtmlProcessor.clear_html(response.text)
                 logging.info(f"Found content from {url}")
                 return text_content
         except requests.exceptions.RequestException as e:
