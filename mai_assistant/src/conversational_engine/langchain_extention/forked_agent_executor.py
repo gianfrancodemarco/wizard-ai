@@ -180,7 +180,7 @@ class ForkedAgentExecutor(AgentExecutor):
         for chunk in result:
             yield chunk
 
-    async def _perform_agent_action(
+    def _perform_agent_action(
         self,
         name_to_tool_map: Dict[str, BaseTool],
         color_mapping: Dict[str, str],

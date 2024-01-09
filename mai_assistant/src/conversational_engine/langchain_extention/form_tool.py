@@ -9,21 +9,22 @@ from .tool_dummy_payload import ToolDummyPayload
 
 
 class FormTool(BaseTool):
+    handle_tool_error = True
     # FormTool methods should take context as FormStructuredChatExecutorContext, but this creates circular references
     # So we use BaseModel instead
     def _run(
         self,
         *args: Any,
+        context: Optional[BaseModel],
         run_manager: Optional[CallbackManagerForToolRun] = None,
-        context: Optional[BaseModel] = None,
         **kwargs
     ) -> str:
         pass
 
     def activate(
         self,
+        context: Optional[BaseModel],
         run_manager: Optional[CallbackManagerForToolRun] = None,
-        context: Optional[BaseModel] = None,
     ):
         """
         Function called when the tool is activated.
@@ -33,8 +34,8 @@ class FormTool(BaseTool):
 
     async def aactivate(
         self,
+        context: Optional[BaseModel],
         run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
-        context: Optional[BaseModel] = None,
     ):
         pass
 
@@ -42,15 +43,15 @@ class FormTool(BaseTool):
     async def aupdate(
         self,
         *args: Any,
+        context: Optional[BaseModel],
         run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
-        context: Optional[BaseModel] = None,
     ):
         pass
 
     async def ais_form_complete(
         self,
+        context: Optional[BaseModel],
         run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
-        context: Optional[BaseModel] = None,
     ) -> bool:
         """
         The default implementation checks if all values except optional ones are set.
@@ -60,6 +61,19 @@ class FormTool(BaseTool):
                 if not getattr(context.form, field_name):
                     return False
         return True
+
+    def get_next_field_to_collect(
+        self,
+        context: Optional[BaseModel],
+        run_manager: Optional[CallbackManagerForToolRun] = None,
+    ) -> str:
+        """
+        The default implementation returns the first field that is not set.
+        """
+        for field_name, field_info in self.args_schema.__fields__.items():
+            if not getattr(context.form, field_name):
+                return field_name
+        return None
 
     def get_tool_start_message(self, input: dict) -> str:
         return "Creating form\n"
