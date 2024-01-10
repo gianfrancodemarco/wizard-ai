@@ -7,14 +7,19 @@ from langchain.agents import StructuredChatAgent
 from langchain_core.prompts.chat import ChatMessagePromptTemplate
 
 
-PREFIX = dedent(f"""
-    Today is: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-    You are a personal assistant. The user is trying to fill data for {{tool_name}} and you need to help him.
+def get_prefix():
+    """
+    We use a function here so that the current time is always updated.
+    """
 
-    Kindly ask the user to provide the next missing information using the Final Answer tool.
+    return dedent(f"""
+        Current time is: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+        You are a personal assistant. The user is trying to fill data for {{tool_name}} and you need to help him.
 
-    You have access to the following tools:
-""")
+        Kindly ask the user to provide the next missing information using the Final Answer tool.
+
+        You have access to the following tools:
+    """)
 
 FORMAT_INSTRUCTIONS = dedent("""
     Use a json blob to specify a tool by providing an action key (tool name) and an action_input key (tool input).
@@ -68,7 +73,7 @@ def get_form_prompt(
     memory_prompts: Tuple[ChatMessagePromptTemplate] = (),
 ):
     return StructuredChatAgent.create_prompt(
-        prefix=PREFIX,
+        prefix=get_prefix(),
         suffix=SUFFIX,
         format_instructions=FORMAT_INSTRUCTIONS,
         memory_prompts=memory_prompts,

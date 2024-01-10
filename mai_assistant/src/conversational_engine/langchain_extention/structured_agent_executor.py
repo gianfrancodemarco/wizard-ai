@@ -20,7 +20,7 @@ from .context_update import ContextUpdate
 from langchain.agents.agent import AgentExecutor, ExceptionTool
 from .form_tool import (FormStructuredChatExecutorContext, FormTool,
                         FormToolActivator)
-from .prompts import FORMAT_INSTRUCTIONS, PREFIX, SUFFIX, get_form_prompt
+from .prompts import FORMAT_INSTRUCTIONS, get_prefix, SUFFIX, get_form_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +47,7 @@ def make_optional_model(original_model: BaseModel) -> BaseModel:
 class FormStructuredChatExecutor(AgentExecutor):
 
     max_iterations: int = 5
+    handle_parsing_errors = True
 
     form_agent: Optional[Union[BaseSingleActionAgent, BaseMultiActionAgent]]
     context: FormStructuredChatExecutorContext
@@ -78,7 +79,7 @@ class FormStructuredChatExecutor(AgentExecutor):
 
         self.form_agent = StructuredChatAgent.from_llm_and_tools(
             self.agent.llm_chain.llm,
-            prefix=PREFIX,
+            prefix=get_prefix(),
             suffix=SUFFIX,
             format_instructions=FORMAT_INSTRUCTIONS,
             memory_prompts=memory_prompts,

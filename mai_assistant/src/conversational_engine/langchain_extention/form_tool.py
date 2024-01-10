@@ -13,7 +13,6 @@ class FormTool(BaseTool):
     FormTool methods should take context as FormStructuredChatExecutorContext, but this creates circular references
     So we use BaseModel instead
     """
-    handle_tool_error = True
 
     def is_form_complete(
         self,

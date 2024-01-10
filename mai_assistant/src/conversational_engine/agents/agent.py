@@ -75,21 +75,6 @@ class Agent(ABC):
             verbose=True
         )
 
-
-    def get_prefix(self):
-        """
-        We use a function here to avoid the prefix being cached in the module, so that the current time is always up to date.
-        """
-
-        return dedent(f"""
-            Respond to the human as helpfully and accurately as possible.
-            If the user request is not clear, ask for clarification (using the final answer tool).
-            Today is: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-            \n
-            You have access to the following tools:"""
-                    )
-
-
     def get_memory_prompts(self):
         return [
             ChatMessagePromptTemplate.from_template(
