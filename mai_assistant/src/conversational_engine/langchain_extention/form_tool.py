@@ -9,49 +9,15 @@ from .tool_dummy_payload import ToolDummyPayload
 
 
 class FormTool(BaseTool):
+    """
+    FormTool methods should take context as FormStructuredChatExecutorContext, but this creates circular references
+    So we use BaseModel instead
+    """
     handle_tool_error = True
-    # FormTool methods should take context as FormStructuredChatExecutorContext, but this creates circular references
-    # So we use BaseModel instead
-    def _run(
-        self,
-        *args: Any,
-        context: Optional[BaseModel],
-        run_manager: Optional[CallbackManagerForToolRun] = None,
-        **kwargs
-    ) -> str:
-        pass
 
-    def activate(
+    def is_form_complete(
         self,
         context: Optional[BaseModel],
-        run_manager: Optional[CallbackManagerForToolRun] = None,
-    ):
-        """
-        Function called when the tool is activated.
-        """
-
-        pass
-
-    async def aactivate(
-        self,
-        context: Optional[BaseModel],
-        run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
-    ):
-        pass
-
-    # TODO: using context.form as dict is wrong. We need to use a Pydantic model to enable validation etc
-    async def aupdate(
-        self,
-        *args: Any,
-        context: Optional[BaseModel],
-        run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
-    ):
-        pass
-
-    async def ais_form_complete(
-        self,
-        context: Optional[BaseModel],
-        run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
     ) -> bool:
         """
         The default implementation checks if all values except optional ones are set.
@@ -81,13 +47,9 @@ class FormTool(BaseTool):
     def get_information_to_collect(self) -> str:
         return str(list(self.args.keys()))
 
-
-
 class FormStructuredChatExecutorContext(BaseModel):
     active_form_tool: Optional[FormTool] = None
     form: BaseModel = None
-
-
 
 class FormToolActivator(BaseTool):
     args_schema: Type[BaseModel] = ToolDummyPayload
@@ -106,3 +68,6 @@ class FormToolActivator(BaseTool):
     def _parse_input(self, tool_input: str | Dict) -> str | Dict[str, Any]:
         """FormToolActivator shouldn't have any input, so we ovveride the default implementation."""
         return {}
+
+    def get_tool_start_message(self, input: dict) -> str:
+        return f"Starting form {self.form_tool.name}"

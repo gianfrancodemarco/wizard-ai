@@ -1,0 +1,1 @@
+../venv/bin/python -m pip install -r mai_assistant/requirements.txt

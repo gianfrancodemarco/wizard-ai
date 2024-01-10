@@ -25,7 +25,8 @@ def get_stored_memory(
             k=3,
             memory_key="history",
             human_prefix="Human",
-            ai_prefix="Answer"
+            ai_prefix="Answer",
+            input_key="input"
         )
     return memory
 

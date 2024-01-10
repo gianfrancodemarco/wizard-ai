@@ -1,14 +1,16 @@
+import json
 import pickle
-from datetime import datetime
-from typing import Optional, Type
 import textwrap
+from datetime import datetime
+from typing import Dict, Optional, Type, Union
 
 from langchain_core.callbacks import CallbackManagerForToolRun
 from pydantic import BaseModel
 
-from mai_assistant.src.clients import GoogleClient, CreateCalendarEventPayload, get_redis_client
-
-from mai_assistant.src.conversational_engine.langchain_extention import FormTool, FormToolActivator
+from mai_assistant.src.clients import (CreateCalendarEventPayload,
+                                       GoogleClient, get_redis_client)
+from mai_assistant.src.conversational_engine.langchain_extention import (
+    FormTool)
 
 
 class GoogleCalendarCreator(FormTool):
@@ -46,7 +48,11 @@ class GoogleCalendarCreator(FormTool):
         google_client.create_calendar_event(payload)
         return "The event was created successfully"
 
-    def get_tool_start_message(self, input: dict) -> str:
+    def get_tool_start_message(self, input: Union[Dict, str]) -> str:
+
+        if isinstance(input, str):
+            input = eval(input)
+
         payload = CreateCalendarEventPayload(**input)
 
         return "Creating event on Google Calendar\n" +\

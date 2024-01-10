@@ -2,39 +2,19 @@ import datetime
 import os
 from abc import ABC
 from textwrap import dedent
-from typing import List
 
 from langchain.agents import AgentExecutor, StructuredChatAgent
-from langchain.agents.structured_chat.prompt import SUFFIX
+from langchain.agents.structured_chat.base import *
 from langchain.chains import LLMChain
 from langchain.memory.chat_memory import BaseMemory
-from langchain_core.language_models.llms import LLM
 from langchain_core.prompts.chat import ChatMessagePromptTemplate
-from langchain_core.tools import Tool
 
 from mai_assistant.src.clients.llm import LLM_MODELS, LLMClientFactory
 from mai_assistant.src.conversational_engine.langchain_extention import (
-    FormStructuredChatExecutor, FormStructuredChatExecutorContext)
+    FormStructuredChatExecutor, FormStructuredChatExecutorContext,
+    get_form_prompt)
 from mai_assistant.src.conversational_engine.tools import *
 
-
-def get_prefix():
-    """
-    We use a function here to avoid the prefix being cached in the module, so that the current time is always up to date.
-    """
-
-    return dedent(f"""
-        Respond to the human as helpfully and accurately as possible.
-        If the user request is not clear, ask for clarification (using the final answer tool).
-        Today is: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-        \n
-        You have access to the following tools:"""
-                  )
-
-def get_suffix():
-    return dedent(f"""
-        {SUFFIX}. When calling a tool, use only inputs EXPLICITLY given by the user.
-    """)
 
 class Agent(ABC):
     """s
@@ -51,12 +31,12 @@ class Agent(ABC):
         memory: BaseMemory,
         chat_id: str,
         llm_model: str = LLM_MODELS.GPT3_5_TURBO.value,
-        **kwargs
+        context: FormStructuredChatExecutorContext = FormStructuredChatExecutorContext()
     ):
 
         self.memory = memory
 
-        self.tools = [
+        self.tools = FormStructuredChatExecutor.filter_active_tools([
             # Calculator(),
             # RandomNumberGenerator(),
             # GoogleSearch(),
@@ -64,61 +44,37 @@ class Agent(ABC):
             GoogleCalendarRetriever(chat_id=chat_id),
             # GmailRetriever(chat_id=chat_id),
             # DateCalculatorTool()
-        ]
+        ], context)
 
         self.llm = LLMClientFactory.create(
             llm_model,
             url=os.environ.get('LLM_URL')
         )
 
-        llm_chain_builder = lambda tools: Agent.llm_chain_builder(
+        self.llm_chain = LLMChain(
             llm=self.llm,
-            tools=tools,
-            memory_prompts=self.get_memory_prompts()
-        )
-
-        agent_builder = lambda llm_chain, tools: Agent.agent_builder(
-            llm_chain=llm_chain,
-            tools=tools
-        )
-
-        self.agent_chain = FormStructuredChatExecutor.from_tools_and_builders(
-            llm_chain_builder=llm_chain_builder,
-            agent_builder=agent_builder,
-            tools=self.tools,
-            memory=self.memory,
-            memory_prompts=self.get_memory_prompts(),
-            context=kwargs.get("context", FormStructuredChatExecutorContext()),
-            verbose=True
-        )
-
-    @staticmethod
-    def llm_chain_builder(
-        llm: LLM,
-        tools: List[Tool],
-        memory_prompts: List[ChatMessagePromptTemplate]
-    ):
-        return LLMChain(
-            llm=llm,
             prompt=StructuredChatAgent.create_prompt(
-                tools=tools,
-                prefix=get_prefix(),
-                suffix=get_suffix(),
-                memory_prompts=memory_prompts
+                tools=self.tools,
+                memory_prompts=self.get_memory_prompts()
             ),
             verbose=True
         )
 
-    @staticmethod
-    def agent_builder(
-        llm_chain: LLMChain,
-        tools: List[Tool],
-    ):
-        return StructuredChatAgent(
-            llm_chain=llm_chain,
-            tools=tools,
+        #TODO: deprecated, use create_structured_chat_agent
+        self.agent = StructuredChatAgent(
+            llm_chain=self.llm_chain,
+            tools=self.tools,
             verbose=True
         )
+
+        self.agent_chain = FormStructuredChatExecutor.from_agent_and_tools(
+            agent=self.agent,
+            tools=self.tools,
+            memory=self.memory,
+            context=context,
+            verbose=True
+        )
+
 
     def get_prefix(self):
         """
@@ -134,7 +90,7 @@ class Agent(ABC):
                     )
 
 
-    def get_memory_prompts(self) -> List[ChatMessagePromptTemplate]:
+    def get_memory_prompts(self):
         return [
             ChatMessagePromptTemplate.from_template(
                 role="Previous conversation",

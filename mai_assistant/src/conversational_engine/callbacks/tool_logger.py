@@ -1,13 +1,11 @@
 import json
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from langchain_core.callbacks import AsyncCallbackHandler
+from langchain_core.tools import Tool
 
 from mai_assistant.src.clients import RabbitMQProducer
 from mai_assistant.src.constants import MessageType
-
-from langchain_core.tools import Tool
-from typing import List
 
 
 class ToolLoggerCallback(AsyncCallbackHandler):
@@ -25,25 +23,13 @@ class ToolLoggerCallback(AsyncCallbackHandler):
         self.queue = queue
         self.tools = tools
 
-    def __get_tool_from_name(self, name: str) -> Tool:
-        for tool in self.tools:
-            if tool.name == name:
-                return tool
-            elif hasattr(tool, "form_tool"):
-                if tool.form_tool.name == name:
-                    return tool.form_tool
-
-    def __get_tool_start_message(self, tool: Tool, input_str: str) -> str:
-        return tool.get_tool_start_message(eval(input_str))
-
     async def on_tool_start(
         self, serialized: Dict[str, Any], input_str: str, **kwargs: Any
     ) -> Any:
         """Run when tool starts running."""
-
         try:
-            tool = self.__get_tool_from_name(serialized["name"])
-            tool_start_message = self.__get_tool_start_message(tool, input_str)
+            tool = next((tool for tool in self.tools if tool.name == serialized["name"]), None)
+            tool_start_message = tool.get_tool_start_message(input_str)
         except BaseException:
             tool_start_message = f"{serialized['name']}: {input_str}"
 

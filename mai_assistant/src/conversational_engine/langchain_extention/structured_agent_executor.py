@@ -1,23 +1,15 @@
-"""Chain that takes in an input and produces an action and action input."""
-from __future__ import annotations
-
-import asyncio
-import datetime
 import logging
 import re
 from textwrap import dedent
-from typing import (Any, AsyncIterator, Callable, Dict, Iterator, List,
-                    Optional, Sequence, Tuple, Union)
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Union
 
-from langchain.agents import (AgentExecutor, BaseMultiActionAgent,
-                              BaseSingleActionAgent, StructuredChatAgent)
-from langchain.agents.agent import AgentExecutor, ExceptionTool
+import yaml
+from langchain.agents import (BaseMultiActionAgent, BaseSingleActionAgent,
+                              StructuredChatAgent)
 from langchain.agents.tools import InvalidTool
 from langchain.callbacks.manager import (AsyncCallbackManagerForChainRun,
-                                         CallbackManagerForChainRun, Callbacks)
-from langchain.chains.llm import LLMChain
+                                         CallbackManagerForChainRun)
 from langchain_core.agents import AgentAction, AgentFinish, AgentStep
-from langchain_core.exceptions import OutputParserException
 from langchain_core.prompts.chat import ChatMessagePromptTemplate
 from langchain_core.pydantic_v1 import BaseModel
 from langchain_core.tools import BaseTool
@@ -25,10 +17,10 @@ from pydantic import BaseModel, create_model
 
 from .context_reset import ContextReset
 from .context_update import ContextUpdate
-from .forked_agent_executor import ForkedAgentExecutor
+from langchain.agents.agent import AgentExecutor, ExceptionTool
 from .form_tool import (FormStructuredChatExecutorContext, FormTool,
                         FormToolActivator)
-from .prompts import get_prompt_components
+from .prompts import FORMAT_INSTRUCTIONS, PREFIX, SUFFIX, get_form_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -51,11 +43,75 @@ def make_optional_model(original_model: BaseModel) -> BaseModel:
 
     return OptionalModel
 
-class FormStructuredChatExecutor(ForkedAgentExecutor):
 
+class FormStructuredChatExecutor(AgentExecutor):
+
+    max_iterations: int = 5
+
+    form_agent: Optional[Union[BaseSingleActionAgent, BaseMultiActionAgent]]
     context: FormStructuredChatExecutorContext
-    original_params: Dict[str, Any]
-    memory_prompts: List[ChatMessagePromptTemplate]
+
+    def __init__(
+        self,
+        *args,
+        **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+        if self.context.active_form_tool:
+            self._activate_form_agent()
+
+
+    def _activate_form_agent(
+        self
+    ):
+        # TODO: remove this
+        memory_prompts = [
+            ChatMessagePromptTemplate.from_template(
+                role="Previous conversation",
+                template=dedent("""
+                    \n\n
+                    {history}
+                    \n\n
+                """)
+            )
+        ]
+
+        self.form_agent = StructuredChatAgent.from_llm_and_tools(
+            self.agent.llm_chain.llm,
+            prefix=PREFIX,
+            suffix=SUFFIX,
+            format_instructions=FORMAT_INSTRUCTIONS,
+            memory_prompts=memory_prompts,
+            tools=FormStructuredChatExecutor.filter_active_tools(
+                self.tools, self.context),           
+        )
+        self.agent = self.form_agent
+
+
+    def _update_inputs(self, inputs: Dict[str, str]) -> Dict[str, str]:
+        if isinstance(inputs, str):
+            inputs = {"input": inputs}
+        
+        # If there is an active form tool, we need to update the inputs with those expected by the new prompt
+        if self.context.active_form_tool:
+            tool = self.context.active_form_tool
+            # information_to_collect = re.sub(
+            #     "}", "}}", re.sub("{", "{{", str(tool.args)))
+            information_to_collect = tool.get_next_field_to_collect(self.context)
+            information_collected = re.sub("}", "}}", re.sub("{", "{{", str(
+                {name: value for name, value in self.context.form.__dict__.items() if value})))
+
+            inputs.update({
+                "tool_name": tool.name,
+                "information_to_collect": information_to_collect,
+                "information_collected": information_collected
+            })
+        return inputs
+
+
+    def prep_inputs(self, inputs: Union[Dict[str, Any], Any]) -> Dict[str, str]:
+        inputs = self._update_inputs(inputs)
+        return super().prep_inputs(inputs)
 
     @classmethod
     def filter_active_tools(
@@ -91,91 +147,34 @@ class FormStructuredChatExecutor(ForkedAgentExecutor):
                 ContextReset(context=context)
             ]
         return tools
-
-    @classmethod
-    def from_tools_and_builders(cls,
-        llm_chain_builder: Callable[[Sequence[BaseTool]], LLMChain],
-        agent_builder: Callable[[LLMChain, Sequence[BaseTool]], Union[BaseSingleActionAgent, BaseMultiActionAgent]],
-        tools: Sequence[BaseTool],
-        context: FormStructuredChatExecutorContext,
-        memory_prompts: List[ChatMessagePromptTemplate],
-        callbacks: Callbacks = None,
-        **kwargs: Any,
-    ) -> AgentExecutor:
-        """Create from a list of tools. The tools will be used to create the LLMChain and the agent."""
-
-        original_params = {
-            "llm_chain_builder": llm_chain_builder,
-            "agent_builder": agent_builder,
-            "tools": tools
-        }
-        tools = cls.filter_active_tools(tools, context)
-        llm_chain = llm_chain_builder(tools)
-        agent = agent_builder(llm_chain, tools)
-
-        instance = cls(
-            agent=agent,
-            tools=tools,
-            context=context,
-            callbacks=callbacks,
-            original_params=original_params,
-            memory_prompts=memory_prompts,
-            **kwargs,
+    ##################### SYNC
+    def _iter_next_step(
+        self,
+        name_to_tool_map: Dict[str, BaseTool],
+        color_mapping: Dict[str, str],
+        inputs: Dict[str, str],
+        intermediate_steps: List[Tuple[AgentAction, str]],
+        run_manager: Optional[CallbackManagerForChainRun] = None,
+    ) -> Iterator[Union[AgentFinish, AgentAction, AgentStep]]:
+        inputs = self._update_inputs(inputs)
+        return super()._iter_next_step(
+            name_to_tool_map=name_to_tool_map,
+            color_mapping=color_mapping,
+            inputs=inputs,
+            intermediate_steps=intermediate_steps,
+            run_manager=run_manager
         )
-        if context.active_form_tool is not None:
-            instance._update_llm_chain()
-        return instance
+    
 
-    def _restore_llm_chain(self) -> LLMChain:
-        """Restore the llm_chain to the original state."""
-        tools = self.filter_active_tools(self.original_params["tools"], self.context)
-        self.agent.llm_chain = self.original_params["llm_chain_builder"](
-            tools
-        )
-
-    def _update_llm_chain(self) -> LLMChain:
-        """After the a form tool is activated, we need to update the llm_chain to include the new prompt."""
-
-        tool = self.context.active_form_tool
-        # information_to_collect = re.sub(
-        #     "}", "}}", re.sub("{", "{{", str(tool.args)))
-        information_to_collect = tool.get_next_field_to_collect(self.context)
-        information_collected = re.sub("}", "}}", re.sub("{", "{{", str(
-            {name: value for name, value in self.context.form.__dict__.items() if value})))
-
-        prefix, suffix, format_instructions = get_prompt_components(
-            tool.name,
-            information_to_collect,
-            information_collected
-        )
-
-        prompt = StructuredChatAgent.create_prompt(
-            prefix=prefix,
-            suffix=suffix,
-            memory_prompts=self.memory_prompts,
-            format_instructions=format_instructions,
-            tools=self.filter_active_tools(
-                self.original_params["tools"], self.context),
-            input_variables=["input"]
-        )
-
-        self.agent.llm_chain = LLMChain(
-            llm=self.agent.llm_chain.llm,
-            prompt=prompt,
-            verbose=True
-        )
-
-    async def _aperform_agent_action(
+    def _perform_agent_action(
         self,
         name_to_tool_map: Dict[str, BaseTool],
         color_mapping: Dict[str, str],
         agent_action: AgentAction,
-        run_manager: Optional[AsyncCallbackManagerForChainRun] = None,
-    ) -> AgentStep:
+        run_manager: Optional[CallbackManagerForChainRun] = None,
+    ):
         if run_manager:
-            await run_manager.on_agent_action(
-                agent_action, verbose=self.verbose, color="green"
-            )
+            run_manager.on_agent_action(agent_action, color="green")
         # Otherwise we lookup the tool
         if agent_action.tool in name_to_tool_map:
             tool = name_to_tool_map[agent_action.tool]
@@ -188,27 +187,104 @@ class FormStructuredChatExecutor(ForkedAgentExecutor):
             # We then call the tool on the tool input to get an observation
             is_form_tool_activator = isinstance(tool, FormToolActivator)
             if is_form_tool_activator:
+                agent_action.tool_input = ""
                 if self.context.active_form_tool != tool.form_tool:
                     self.context.active_form_tool = tool.form_tool
-                    await tool.form_tool.aactivate(
-                        run_manager=run_manager.get_child() if run_manager else None,
-                        context=self.context
-                    )
                     # Create a copy from the args_schema with all attributes optional, so that we can instantiate it in the context,
                     # provide partial updates, and still have all original validators
                     self.context.form = make_optional_model(
                         tool.form_tool.args_schema)()
-                await tool.form_tool.aupdate(
-                    agent_action.tool_input,
-                    run_manager=run_manager.get_child() if run_manager else None,
-                    context=self.context
-                )
-                is_form_tool_complete = await tool.form_tool.ais_form_complete(
-                    run_manager=run_manager.get_child() if run_manager else None,
+                is_form_tool_complete = tool.form_tool.is_form_complete(
                     context=self.context
                 )
                 if not is_form_tool_complete:
-                    self._update_llm_chain()
+                    self._activate_form_agent()
+            # We called the tool and was completed, we can reset the context
+            if isinstance(tool, FormTool) or isinstance(tool, ContextReset):
+                self.context = FormStructuredChatExecutorContext()
+                # self._restore_llm_chain()
+
+            observation = tool.run(
+                agent_action.tool_input,
+                verbose=self.verbose,
+                color=color,
+                callbacks=run_manager.get_child() if run_manager else None,
+                **tool_run_kwargs,
+            )
+        else:
+            tool_run_kwargs = self.agent.tool_run_logging_kwargs()
+            observation = InvalidTool().run(
+                {
+                    "requested_tool_name": agent_action.tool,
+                    "available_tool_names": list(name_to_tool_map.keys()),
+                },
+                verbose=self.verbose,
+                color=None,
+                callbacks=run_manager.get_child() if run_manager else None,
+                **tool_run_kwargs,
+            )
+        return AgentStep(action=agent_action, observation=observation)
+
+
+    ##################### ASYNC
+
+    def _aiter_next_step(
+        self,
+        name_to_tool_map: Dict[str, BaseTool],
+        color_mapping: Dict[str, str],
+        inputs: Dict[str, str],
+        intermediate_steps: List[Tuple[AgentAction, str]],
+        run_manager: Optional[CallbackManagerForChainRun] = None,
+    ) -> Iterator[Union[AgentFinish, AgentAction, AgentStep]]:
+        inputs = self._update_inputs(inputs)
+        return super()._aiter_next_step(
+            name_to_tool_map=name_to_tool_map,
+            color_mapping=color_mapping,
+            inputs=inputs,
+            intermediate_steps=intermediate_steps,
+            run_manager=run_manager
+        )
+        
+    async def _aperform_agent_action(
+        self,
+        name_to_tool_map: Dict[str, BaseTool],
+        color_mapping: Dict[str, str],
+        agent_action: AgentAction,
+        run_manager: Optional[AsyncCallbackManagerForChainRun] = None,
+    ) -> AgentStep:
+        if run_manager:
+            await run_manager.on_agent_action(
+                agent_action, verbose=self.verbose, color="green"
+            )
+        # Otherwise we lookup the tool
+        if agent_action.tool in name_to_tool_map:   
+            tool = name_to_tool_map[agent_action.tool]
+            return_direct = tool.return_direct
+            color = color_mapping[agent_action.tool]
+            tool_run_kwargs = self.agent.tool_run_logging_kwargs()
+            if return_direct:
+                tool_run_kwargs["llm_prefix"] = ""
+
+            # We then call the tool on the tool input to get an observation
+            is_form_tool_activator = isinstance(tool, FormToolActivator)
+            if is_form_tool_activator:
+                agent_action.tool_input = ""
+                if self.context.active_form_tool != tool.form_tool:
+                    self.context.active_form_tool = tool.form_tool
+                    # Create a copy from the args_schema with all attributes optional, so that we can instantiate it in the context,
+                    # provide partial updates, and still have all original validators
+                    self.context.form = make_optional_model(
+                        tool.form_tool.args_schema)()
+                is_form_tool_complete = tool.form_tool.is_form_complete(
+                    context=self.context
+                )
+                if not is_form_tool_complete:
+                    self._activate_form_agent()
+            # We called the tool and was completed, we can reset the context
+            if isinstance(tool, FormTool) or isinstance(tool, ContextReset):
+                self.context = FormStructuredChatExecutorContext()
+                # self._restore_llm_chain()
+
 
             observation = await tool.arun(
                 agent_action.tool_input,
@@ -218,11 +294,6 @@ class FormStructuredChatExecutor(ForkedAgentExecutor):
                 context=self.context,
                 **tool_run_kwargs,
             )
-
-            # We called the tool and was completed, we can reset the context
-            if isinstance(tool, FormTool) or isinstance(tool, ContextReset):
-                self.context = FormStructuredChatExecutorContext()
-                self._restore_llm_chain()
 
         else:
             tool_run_kwargs = self.agent.tool_run_logging_kwargs()
@@ -237,3 +308,4 @@ class FormStructuredChatExecutor(ForkedAgentExecutor):
                 **tool_run_kwargs,
             )
         return AgentStep(action=agent_action, observation=observation)
+

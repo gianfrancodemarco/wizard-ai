@@ -15,6 +15,7 @@ from mai_assistant.src.conversational_engine.callbacks import (
     LoggerCallbackHandler, ToolLoggerCallback)
 from mai_assistant.src.models.chat_payload import ChatPayload
 from mai_assistant.src.conversational_engine.langchain_extention.structured_agent_executor import FormStructuredChatExecutorContext
+from langchain.callbacks import StdOutCallbackHandler
 
 logger = logging.getLogger(__name__)
 
@@ -43,13 +44,15 @@ async def process_message(data: dict) -> None:
             queue=MessageQueues.MAI_ASSISTANT_OUT.value,
             tools=agent.tools,
         ),
-        # StdOutCallbackHandler(),
+        StdOutCallbackHandler(),
         LoggerCallbackHandler()
     ]
 
-    answer = await agent.agent_chain.arun(
+    # Deprecate, use ainvoke
+    answer = agent.agent_chain.run(
         input=data.content,
-        callbacks=callbacks
+        callbacks=callbacks,
+        verbose=True
     )
 
     __update_stored_context(redis_client, data.chat_id, agent.agent_chain.context)
