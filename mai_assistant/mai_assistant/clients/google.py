@@ -29,13 +29,13 @@ class CreateCalendarEventPayload(BaseModel):
         description="End date of the event",
     )
 
-
     @field_validator("start", "end", mode="before")
     def parse_date(cls, v, values):
         if isinstance(v, datetime):
             return v
         if isinstance(v, str):
             return parse(v)
+
 
 class GetCalendarEventsPayload(BaseModel):
     start: Optional[datetime] = Field(

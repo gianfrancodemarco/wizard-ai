@@ -9,6 +9,7 @@ from .form_tool import FormStructuredChatExecutorContext
 class ContextUpdatePayload(BaseModel):
     values: Dict[str, Any]
 
+
 class ContextUpdate(BaseTool):
     name = "ContextUpdate"
     description = """Useful to store the information given by the user."""
@@ -25,7 +26,8 @@ class ContextUpdate(BaseTool):
                 # build a string message with the error
                 messages = []
                 for error in e.errors():
-                    messages.append(f"Error at {error['loc'][0]}: {error['msg']}")
+                    messages.append(
+                        f"Error at {error['loc'][0]}: {error['msg']}")
                 message = "\n".join(messages)
                 raise ToolException(message)
         return "Context updated"

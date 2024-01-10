@@ -1,6 +1,4 @@
 import pickle
-import textwrap
-from datetime import datetime
 from typing import Optional, Type
 
 from langchain.tools.base import StructuredTool
@@ -8,7 +6,7 @@ from langchain_core.callbacks import CallbackManagerForToolRun
 from pydantic import BaseModel
 
 from mai_assistant.clients import (GetEmailsPayload, GoogleClient,
-                                       get_redis_client)
+                                   get_redis_client)
 
 
 class GmailRetriever(StructuredTool):

@@ -1,5 +1,6 @@
 from .agent import Agent
 
+
 class LLamaAgent(Agent):
     pass
 
@@ -23,7 +24,8 @@ class LLamaAgent(Agent):
 
 # # 2. Prompt
 # prompt = PromptTemplate.from_template("""
-# You are a professional personal assistant who helps people with their daily tasks.
+# You are a professional personal assistant who helps people with their
+# daily tasks.
 
 # Previous conversation:
 # {history}
