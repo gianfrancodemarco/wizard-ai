@@ -1,26 +1,25 @@
 import logging
 import re
-from textwrap import dedent
 from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Union
 
-import yaml
 from langchain.agents import (BaseMultiActionAgent, BaseSingleActionAgent,
                               StructuredChatAgent)
+from langchain.agents.agent import AgentExecutor
 from langchain.agents.tools import InvalidTool
 from langchain.callbacks.manager import (AsyncCallbackManagerForChainRun,
                                          CallbackManagerForChainRun)
+from langchain.chains import LLMChain
 from langchain_core.agents import AgentAction, AgentFinish, AgentStep
-from langchain_core.prompts.chat import ChatMessagePromptTemplate
+from langchain_core.language_models.llms import LLM
 from langchain_core.pydantic_v1 import BaseModel
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, create_model
 
 from .context_reset import ContextReset
 from .context_update import ContextUpdate
-from langchain.agents.agent import AgentExecutor, ExceptionTool
 from .form_tool import (FormStructuredChatExecutorContext, FormTool,
                         FormToolActivator)
-from .prompts import FORMAT_INSTRUCTIONS, get_prefix, SUFFIX, get_form_prompt
+from .prompts import FORMAT_INSTRUCTIONS, SUFFIX, MEMORY_PROMPTS, get_prefix
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +42,6 @@ def make_optional_model(original_model: BaseModel) -> BaseModel:
 
     return OptionalModel
 
-
 class FormStructuredChatExecutor(AgentExecutor):
 
     max_iterations: int = 5
@@ -61,28 +59,52 @@ class FormStructuredChatExecutor(AgentExecutor):
         if self.context.active_form_tool:
             self._activate_form_agent()
 
+    @classmethod
+    def from_llm_and_tools(
+        cls,
+        llm: LLM,
+        tools: Sequence[BaseTool],
+        context: FormStructuredChatExecutorContext,
+        **kwargs
+    ):        
+        if not context:
+            raise ValueError("Context cannot be None")
+
+        tools = cls.filter_active_tools(tools, context)
+        
+        llm_chain = LLMChain(
+            llm=llm,
+            prompt=StructuredChatAgent.create_prompt(
+                tools=tools,
+                memory_prompts=MEMORY_PROMPTS
+            ),
+            verbose=True
+        )
+
+        #TODO: deprecated, use create_structured_chat_agent
+        agent = StructuredChatAgent(
+            llm_chain=llm_chain,
+            tools=tools,
+            verbose=True
+        )
+
+        return cls(
+            agent=agent,
+            tools=tools,
+            context=context,
+            **kwargs
+        )
+
 
     def _activate_form_agent(
         self
     ):
-        # TODO: remove this
-        memory_prompts = [
-            ChatMessagePromptTemplate.from_template(
-                role="Previous conversation",
-                template=dedent("""
-                    \n\n
-                    {history}
-                    \n\n
-                """)
-            )
-        ]
-
         self.form_agent = StructuredChatAgent.from_llm_and_tools(
             self.agent.llm_chain.llm,
             prefix=get_prefix(),
             suffix=SUFFIX,
             format_instructions=FORMAT_INSTRUCTIONS,
-            memory_prompts=memory_prompts,
+            memory_prompts=MEMORY_PROMPTS,
             tools=FormStructuredChatExecutor.filter_active_tools(
                 self.tools, self.context),           
         )

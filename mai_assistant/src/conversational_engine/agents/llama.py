@@ -85,7 +85,7 @@ class LLamaAgent(Agent):
 #         return dedent(f"""
 #             Respond to the human as helpfully and accurately as possible.
 #             If the user request is not clear, ask for clarification (using the final answer tool).
-#             Today is: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+#             Current time is: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 #             \n
 #             You have access to the following tools:"""
 #                     )

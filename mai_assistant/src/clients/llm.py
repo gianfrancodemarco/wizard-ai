@@ -9,7 +9,6 @@ import requests
 from langchain_core.callbacks import CallbackManagerForLLMRun
 from langchain_core.language_models.llms import LLM
 from openai._client import OpenAI
-from pydantic import Field
 
 logger = getLogger(__name__)
 
@@ -178,7 +177,7 @@ class LLMClientFactory():
     def create(
         model_name: str,
         **kwargs
-    ):
+    ) -> LLMClient:
         if model_name in OPEN_AI_CHAT_COMPLETION_MODELS:
             return OpenAIChatCompletitionClient(
                 model_name=model_name

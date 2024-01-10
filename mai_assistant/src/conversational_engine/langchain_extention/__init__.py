@@ -4,4 +4,4 @@ from .form_tool import FormStructuredChatExecutorContext
 from .structured_agent_executor import (FormStructuredChatExecutor, FormTool,
                                         FormToolActivator)
 from .tool_dummy_payload import ToolDummyPayload
-from .prompts import get_form_prompt
+from .prompts import *

@@ -1,9 +1,7 @@
 import datetime
 from datetime import datetime
 from textwrap import dedent
-from typing import Tuple
 
-from langchain.agents import StructuredChatAgent
 from langchain_core.prompts.chat import ChatMessagePromptTemplate
 
 
@@ -68,15 +66,13 @@ SUFFIX = dedent("""
     When you have all the NEEDED information, call {tool_name} with the input data.
 """)
 
-
-def get_form_prompt(
-    memory_prompts: Tuple[ChatMessagePromptTemplate] = (),
-):
-    return StructuredChatAgent.create_prompt(
-        prefix=get_prefix(),
-        suffix=SUFFIX,
-        format_instructions=FORMAT_INSTRUCTIONS,
-        memory_prompts=memory_prompts,
-        tools = [], #TODO: this should be removed
-        input_variables=["input", "information_to_collect", "information_collected", "tool_name", "tool_names", "tools"]
+MEMORY_PROMPTS = [
+    ChatMessagePromptTemplate.from_template(
+        role="Previous conversation",
+        template=dedent("""
+            \n\n
+            {history}
+            \n\n
+        """)
     )
+]
