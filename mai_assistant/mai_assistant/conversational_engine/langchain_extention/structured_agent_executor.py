@@ -42,6 +42,7 @@ def make_optional_model(original_model: BaseModel) -> BaseModel:
 
     return OptionalModel
 
+
 class FormStructuredChatExecutor(AgentExecutor):
 
     max_iterations: int = 5
@@ -66,12 +67,12 @@ class FormStructuredChatExecutor(AgentExecutor):
         tools: Sequence[BaseTool],
         context: FormStructuredChatExecutorContext,
         **kwargs
-    ):        
+    ):
         if not context:
             raise ValueError("Context cannot be None")
 
         tools = cls.filter_active_tools(tools, context)
-        
+
         llm_chain = LLMChain(
             llm=llm,
             prompt=StructuredChatAgent.create_prompt(
@@ -81,7 +82,7 @@ class FormStructuredChatExecutor(AgentExecutor):
             verbose=True
         )
 
-        #TODO: deprecated, use create_structured_chat_agent
+        # TODO: deprecated, use create_structured_chat_agent
         agent = StructuredChatAgent(
             llm_chain=llm_chain,
             tools=tools,
@@ -95,7 +96,6 @@ class FormStructuredChatExecutor(AgentExecutor):
             **kwargs
         )
 
-
     def _activate_form_agent(
         self
     ):
@@ -106,21 +106,22 @@ class FormStructuredChatExecutor(AgentExecutor):
             format_instructions=FORMAT_INSTRUCTIONS,
             memory_prompts=MEMORY_PROMPTS,
             tools=FormStructuredChatExecutor.filter_active_tools(
-                self.tools, self.context),           
+                self.tools, self.context),
         )
         self.agent = self.form_agent
-
 
     def _update_inputs(self, inputs: Dict[str, str]) -> Dict[str, str]:
         if isinstance(inputs, str):
             inputs = {"input": inputs}
-        
-        # If there is an active form tool, we need to update the inputs with those expected by the new prompt
+
+        # If there is an active form tool, we need to update the inputs with
+        # those expected by the new prompt
         if self.context.active_form_tool:
             tool = self.context.active_form_tool
             # information_to_collect = re.sub(
             #     "}", "}}", re.sub("{", "{{", str(tool.args)))
-            information_to_collect = tool.get_next_field_to_collect(self.context)
+            information_to_collect = tool.get_next_field_to_collect(
+                self.context)
             information_collected = re.sub("}", "}}", re.sub("{", "{{", str(
                 {name: value for name, value in self.context.form.__dict__.items() if value})))
 
@@ -131,8 +132,8 @@ class FormStructuredChatExecutor(AgentExecutor):
             })
         return inputs
 
-
-    def prep_inputs(self, inputs: Union[Dict[str, Any], Any]) -> Dict[str, str]:
+    def prep_inputs(
+            self, inputs: Union[Dict[str, Any], Any]) -> Dict[str, str]:
         inputs = self._update_inputs(inputs)
         return super().prep_inputs(inputs)
 
@@ -162,7 +163,8 @@ class FormStructuredChatExecutor(AgentExecutor):
                 *activator_tools
             ]
         else:
-            # If a form_tool is active, remove the Activators and add the form tool and the context update tool
+            # If a form_tool is active, remove the Activators and add the form
+            # tool and the context update tool
             tools = [
                 context.active_form_tool,
                 *base_tools,
@@ -170,7 +172,8 @@ class FormStructuredChatExecutor(AgentExecutor):
                 ContextReset(context=context)
             ]
         return tools
-    ##################### SYNC
+    # SYNC
+
     def _iter_next_step(
         self,
         name_to_tool_map: Dict[str, BaseTool],
@@ -187,7 +190,6 @@ class FormStructuredChatExecutor(AgentExecutor):
             intermediate_steps=intermediate_steps,
             run_manager=run_manager
         )
-    
 
     def _perform_agent_action(
         self,
@@ -214,7 +216,8 @@ class FormStructuredChatExecutor(AgentExecutor):
                 if self.context.active_form_tool != tool.form_tool:
                     self.context.active_form_tool = tool.form_tool
                     # Create a copy from the args_schema with all attributes optional, so that we can instantiate it in the context,
-                    # provide partial updates, and still have all original validators
+                    # provide partial updates, and still have all original
+                    # validators
                     self.context.form = make_optional_model(
                         tool.form_tool.args_schema)()
                 is_form_tool_complete = tool.form_tool.is_form_complete(
@@ -248,8 +251,7 @@ class FormStructuredChatExecutor(AgentExecutor):
             )
         return AgentStep(action=agent_action, observation=observation)
 
-
-    ##################### ASYNC
+    # ASYNC
 
     def _aiter_next_step(
         self,
@@ -267,7 +269,7 @@ class FormStructuredChatExecutor(AgentExecutor):
             intermediate_steps=intermediate_steps,
             run_manager=run_manager
         )
-        
+
     async def _aperform_agent_action(
         self,
         name_to_tool_map: Dict[str, BaseTool],
@@ -280,7 +282,7 @@ class FormStructuredChatExecutor(AgentExecutor):
                 agent_action, verbose=self.verbose, color="green"
             )
         # Otherwise we lookup the tool
-        if agent_action.tool in name_to_tool_map:   
+        if agent_action.tool in name_to_tool_map:
             tool = name_to_tool_map[agent_action.tool]
             return_direct = tool.return_direct
             color = color_mapping[agent_action.tool]
@@ -295,7 +297,8 @@ class FormStructuredChatExecutor(AgentExecutor):
                 if self.context.active_form_tool != tool.form_tool:
                     self.context.active_form_tool = tool.form_tool
                     # Create a copy from the args_schema with all attributes optional, so that we can instantiate it in the context,
-                    # provide partial updates, and still have all original validators
+                    # provide partial updates, and still have all original
+                    # validators
                     self.context.form = make_optional_model(
                         tool.form_tool.args_schema)()
                 is_form_tool_complete = tool.form_tool.is_form_complete(
@@ -307,7 +310,6 @@ class FormStructuredChatExecutor(AgentExecutor):
             if isinstance(tool, FormTool) or isinstance(tool, ContextReset):
                 self.context = FormStructuredChatExecutorContext()
                 # self._restore_llm_chain()
-
 
             observation = await tool.arun(
                 agent_action.tool_input,
@@ -331,4 +333,3 @@ class FormStructuredChatExecutor(AgentExecutor):
                 **tool_run_kwargs,
             )
         return AgentStep(action=agent_action, observation=observation)
-

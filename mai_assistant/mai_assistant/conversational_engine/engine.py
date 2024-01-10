@@ -7,10 +7,10 @@ import redis
 from fastapi.responses import JSONResponse
 
 from mai_assistant.clients import (RabbitMQProducer, get_rabbitmq_producer,
-                                       get_redis_client)
+                                   get_redis_client)
 from mai_assistant.constants import MessageQueues, MessageType
 from mai_assistant.conversational_engine.agents import (AgentFactory,
-                                                            get_stored_memory, get_stored_context)
+                                                        get_stored_memory, get_stored_context)
 from mai_assistant.conversational_engine.callbacks import ToolLoggerCallback
 from mai_assistant.models.chat_payload import ChatPayload
 from mai_assistant.conversational_engine.langchain_extention.structured_agent_executor import FormStructuredChatExecutorContext
@@ -53,11 +53,15 @@ async def process_message(data: dict) -> None:
         verbose=True
     )
 
-    __update_stored_context(redis_client, data.chat_id, agent.agent_chain.context)
+    __update_stored_context(
+        redis_client,
+        data.chat_id,
+        agent.agent_chain.context)
     __update_stored_memory(redis_client, data.chat_id, memory)
     __publish_answer(rabbitmq_producer, data.chat_id, answer)
 
     return JSONResponse({"content": answer})
+
 
 def __update_stored_context(
         redis_client: redis.Redis,
@@ -67,7 +71,7 @@ def __update_stored_context(
     # this shouldn't be here
     if context.active_form_tool:
         context.form = context.form.model_dump_json()
-    
+
     redis_client.hset(
         chat_id,
         "context",

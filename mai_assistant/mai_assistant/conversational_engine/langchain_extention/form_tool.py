@@ -42,13 +42,15 @@ class FormTool(BaseTool):
 
     def get_tool_start_message(self, input: dict) -> str:
         return "Creating form\n"
-    
+
     def get_information_to_collect(self) -> str:
         return str(list(self.args.keys()))
+
 
 class FormStructuredChatExecutorContext(BaseModel):
     active_form_tool: Optional[FormTool] = None
     form: BaseModel = None
+
 
 class FormToolActivator(BaseTool):
     args_schema: Type[BaseModel] = ToolDummyPayload

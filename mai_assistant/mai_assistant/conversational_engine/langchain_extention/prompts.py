@@ -19,6 +19,7 @@ def get_prefix():
         You have access to the following tools:
     """)
 
+
 FORMAT_INSTRUCTIONS = dedent("""
     Use a json blob to specify a tool by providing an action key (tool name) and an action_input key (tool input).
 
@@ -50,7 +51,7 @@ FORMAT_INSTRUCTIONS = dedent("""
     {{{{
         "action": "Final Answer",
         "action_input": "Final response to human"
-    }}}}                                     
+    }}}}
     ```
 """)
 

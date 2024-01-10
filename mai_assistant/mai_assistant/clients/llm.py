@@ -161,7 +161,8 @@ class LlamaChatCompletitionClient(LLMClient):
 
         # Tools compatibility adjustments
         response = response.split("\nObservation:")[0]
-        response = "\n".join(list(map(lambda x: x.replace("[", "").replace("]", "") if x.startswith("Action:") else x ,response.split("\n"))))
+        response = "\n".join(list(map(lambda x: x.replace("[", "").replace(
+            "]", "") if x.startswith("Action:") else x, response.split("\n"))))
 
         # Update token counts
         self.input_tokens += response['input_tokens']

@@ -1,5 +1,4 @@
 import os
-from textwrap import dedent
 
 from langchain.agents.structured_chat.base import *
 from langchain.memory.chat_memory import BaseMemory
@@ -42,7 +41,7 @@ class Agent:
         ]
 
         self.agent_chain = FormStructuredChatExecutor.from_llm_and_tools(
-                llm=LLMClientFactory.create(
+            llm=LLMClientFactory.create(
                 llm_model,
                 url=os.environ.get('LLM_URL')
             ),

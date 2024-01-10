@@ -6,12 +6,13 @@ from langchain_core.callbacks import CallbackManagerForToolRun
 from pydantic import BaseModel
 
 from mai_assistant.clients import (GetCalendarEventsPayload, GoogleClient,
-                                       get_redis_client)
+                                   get_redis_client)
 from mai_assistant.conversational_engine.langchain_extention import \
     FormTool, FormToolActivator
 
 from langchain_core.callbacks import AsyncCallbackManagerForToolRun
 from mai_assistant.conversational_engine.langchain_extention import FormStructuredChatExecutorContext
+
 
 class GoogleCalendarRetriever(FormTool):
 
@@ -54,7 +55,6 @@ class GoogleCalendarRetriever(FormTool):
         elif payload.number_of_events:
             return f"Retrieving next {payload.number_of_events} from Google Calendar"
 
-
     async def ais_form_complete(
         self,
         run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
@@ -69,6 +69,6 @@ class GoogleCalendarRetriever(FormTool):
             return True
         else:
             return False
-    
+
     def get_information_to_collect(self) -> str:
         return ["number_of_events OR (start and end dates)"]
