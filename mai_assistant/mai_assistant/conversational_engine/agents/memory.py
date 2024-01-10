@@ -45,7 +45,8 @@ def get_stored_context(
         if context.active_form_tool:
             loaded = json.loads(context.form)
             loaded = {key: value for key, value in loaded.items() if value}
-            context_form_class = make_optional_model(context.active_form_tool.args_schema)
+            context_form_class = make_optional_model(
+                context.active_form_tool.args_schema)
             context.form = context_form_class(**loaded)
         logger.info("Loaded context from redis")
     else:

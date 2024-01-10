@@ -28,7 +28,8 @@ class ToolLoggerCallback(AsyncCallbackHandler):
     ) -> Any:
         """Run when tool starts running."""
         try:
-            tool = next((tool for tool in self.tools if tool.name == serialized["name"]), None)
+            tool = next(
+                (tool for tool in self.tools if tool.name == serialized["name"]), None)
             tool_start_message = tool.get_tool_start_message(input_str)
         except BaseException:
             tool_start_message = f"{serialized['name']}: {input_str}"

@@ -3,7 +3,7 @@ import os
 from langchain.memory.chat_memory import BaseMemory
 
 from mai_assistant.clients.llm import (LLM_MODELS,
-                                           OPEN_AI_CHAT_COMPLETION_MODELS)
+                                       OPEN_AI_CHAT_COMPLETION_MODELS)
 
 from .agent import Agent
 from .gpt import GPTAgent
@@ -15,7 +15,8 @@ class AgentFactory():
     def create(
         memory: BaseMemory,
         chat_id: str,
-        model_name: str = os.getenv("model_name", LLM_MODELS.GPT3_5_TURBO.value),
+        model_name: str = os.getenv(
+            "model_name", LLM_MODELS.GPT3_5_TURBO.value),
         **kwargs
     ) -> Agent:
         if model_name in OPEN_AI_CHAT_COMPLETION_MODELS:

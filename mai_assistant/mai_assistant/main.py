@@ -6,8 +6,8 @@ from fastapi import FastAPI
 from mai_assistant.clients.rabbitmq import RabbitMQConsumer
 from mai_assistant.constants import MessageQueues
 from mai_assistant.controllers import (conversations_router,
-                                           google_actions_router,
-                                           google_login_router)
+                                       google_actions_router,
+                                       google_login_router)
 from mai_assistant.conversational_engine.engine import process_message
 
 # Add stream and file handlers to logger. Use basic config
