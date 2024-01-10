@@ -1,1 +1,1 @@
-skaffold run -m=mai-assistant-redis,mai-assistant-rabbitmq && skaffold dev -m=mai-assistant,mai-assistant-telegram-bot
+skaffold run -m=mai-assistant-redis,mai-assistant-rabbitmq && skaffold dev -m=mai-assistant,mai-assistant-telegram-bot --cleanup=false

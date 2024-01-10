@@ -11,8 +11,7 @@ from mai_assistant.clients import (RabbitMQProducer, get_rabbitmq_producer,
 from mai_assistant.constants import MessageQueues, MessageType
 from mai_assistant.conversational_engine.agents import (AgentFactory,
                                                             get_stored_memory, get_stored_context)
-from mai_assistant.conversational_engine.callbacks import (
-    LoggerCallbackHandler, ToolLoggerCallback)
+from mai_assistant.conversational_engine.callbacks import ToolLoggerCallback
 from mai_assistant.models.chat_payload import ChatPayload
 from mai_assistant.conversational_engine.langchain_extention.structured_agent_executor import FormStructuredChatExecutorContext
 from langchain.callbacks import StdOutCallbackHandler
@@ -38,14 +37,13 @@ async def process_message(data: dict) -> None:
         context=context
     )
     callbacks = [
+        StdOutCallbackHandler(),
         ToolLoggerCallback(
             chat_id=data.chat_id,
             rabbitmq_client=rabbitmq_producer,
             queue=MessageQueues.MAI_ASSISTANT_OUT.value,
             tools=agent.tools,
-        ),
-        StdOutCallbackHandler(),
-        LoggerCallbackHandler()
+        )
     ]
 
     # Deprecate, use ainvoke

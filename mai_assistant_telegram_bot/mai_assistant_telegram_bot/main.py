@@ -3,12 +3,12 @@ import logging
 import os
 import sys
 
-from mai_assistant_telegram_bot.src.clients import (
+from mai_assistant_telegram_bot.clients import (
     get_rabbitmq_consumer, get_redis_client)
-from mai_assistant_telegram_bot.src.constants import MessageQueues
+from mai_assistant_telegram_bot.constants import MessageQueues
 
-from mai_assistant_telegram_bot.src.bot.bot import MaiAssistantTelegramBot
-from mai_assistant_telegram_bot.src.consumer import MAIAssistantConsumer
+from mai_assistant_telegram_bot.bot.bot import MaiAssistantTelegramBot
+from mai_assistant_telegram_bot.consumer import MAIAssistantConsumer
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 

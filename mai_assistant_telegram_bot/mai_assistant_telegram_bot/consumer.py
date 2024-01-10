@@ -5,8 +5,8 @@ import re
 from telegram import Bot
 from telegram.constants import ParseMode
 
-from mai_assistant_telegram_bot.src.clients import get_redis_client
-from mai_assistant_telegram_bot.src.constants import Emojis, MessageType
+from mai_assistant_telegram_bot.clients import get_redis_client
+from mai_assistant_telegram_bot.constants import Emojis, MessageType
 
 
 class MAIAssistantConsumer:

@@ -5,9 +5,9 @@ from telegram import Bot, Update
 from telegram.constants import ChatAction
 from telegram.ext import ContextTypes
 
-from mai_assistant_telegram_bot.src.clients import (
+from mai_assistant_telegram_bot.clients import (
     MAIAssistantClient, get_rabbitmq_producer)
-from mai_assistant_telegram_bot.src.constants import MessageQueues, MessageType
+from mai_assistant_telegram_bot.constants import MessageQueues, MessageType
 
 from openai import OpenAI
 import asyncio
