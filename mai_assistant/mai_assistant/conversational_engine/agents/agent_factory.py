@@ -2,7 +2,7 @@ import os
 
 from langchain.memory.chat_memory import BaseMemory
 
-from mai_assistant.src.clients.llm import (LLM_MODELS,
+from mai_assistant.clients.llm import (LLM_MODELS,
                                            OPEN_AI_CHAT_COMPLETION_MODELS)
 
 from .agent import Agent

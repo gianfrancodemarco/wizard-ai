@@ -6,7 +6,7 @@ import requests
 from parsel import Selector
 from pydantic import BaseModel
 
-from mai_assistant.src.html_processor import HtmlProcessor
+from mai_assistant.html_processor import HtmlProcessor
 
 logger = logging.getLogger(__name__)
 

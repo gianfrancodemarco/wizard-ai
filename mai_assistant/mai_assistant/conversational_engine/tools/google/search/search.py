@@ -4,7 +4,7 @@ from langchain.tools.base import BaseTool
 from langchain_core.callbacks import CallbackManagerForToolRun
 from pydantic import BaseModel
 
-from mai_assistant.src.clients.google_search import (GoogleSearchClient,
+from mai_assistant.clients.google_search import (GoogleSearchClient,
                                                      GoogleSearchClientPayload)
 
 

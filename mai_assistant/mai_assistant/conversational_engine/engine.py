@@ -6,15 +6,15 @@ import pickle
 import redis
 from fastapi.responses import JSONResponse
 
-from mai_assistant.src.clients import (RabbitMQProducer, get_rabbitmq_producer,
+from mai_assistant.clients import (RabbitMQProducer, get_rabbitmq_producer,
                                        get_redis_client)
-from mai_assistant.src.constants import MessageQueues, MessageType
-from mai_assistant.src.conversational_engine.agents import (AgentFactory,
+from mai_assistant.constants import MessageQueues, MessageType
+from mai_assistant.conversational_engine.agents import (AgentFactory,
                                                             get_stored_memory, get_stored_context)
-from mai_assistant.src.conversational_engine.callbacks import (
+from mai_assistant.conversational_engine.callbacks import (
     LoggerCallbackHandler, ToolLoggerCallback)
-from mai_assistant.src.models.chat_payload import ChatPayload
-from mai_assistant.src.conversational_engine.langchain_extention.structured_agent_executor import FormStructuredChatExecutorContext
+from mai_assistant.models.chat_payload import ChatPayload
+from mai_assistant.conversational_engine.langchain_extention.structured_agent_executor import FormStructuredChatExecutorContext
 from langchain.callbacks import StdOutCallbackHandler
 
 logger = logging.getLogger(__name__)

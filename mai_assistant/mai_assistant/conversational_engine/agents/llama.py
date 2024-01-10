@@ -9,8 +9,8 @@ class LLamaAgent(Agent):
 
 # from langchain.agents import AgentType, initialize_agent
 
-# from mai_assistant.src.tools.calculator import Calculator
-# from mai_assistant.src.tools.random_number_generator import \
+# from mai_assistant.tools.calculator import Calculator
+# from mai_assistant.tools.random_number_generator import \
 #     RandomNumberGenerator
 
 
@@ -63,8 +63,8 @@ class LLamaAgent(Agent):
 # from langchain.memory.chat_memory import BaseMemory
 # from langchain_core.prompts.chat import ChatMessagePromptTemplate
 
-# from mai_assistant.src.clients.llm import LLM_MODELS, LLMClientFactory
-# from mai_assistant.src.conversational_engine.tools import *
+# from mai_assistant.clients.llm import LLM_MODELS, LLMClientFactory
+# from mai_assistant.conversational_engine.tools import *
 
 # from .agent import Agent
 

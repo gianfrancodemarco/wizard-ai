@@ -4,7 +4,7 @@ import pickle
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from mai_assistant.src.clients import GoogleClient, RedisClientDep, CreateCalendarEventPayload, GetCalendarEventsPayload
+from mai_assistant.clients import GoogleClient, RedisClientDep, CreateCalendarEventPayload, GetCalendarEventsPayload
 
 logger = logging.getLogger(__name__)
 google_actions_router = APIRouter(prefix="/google")

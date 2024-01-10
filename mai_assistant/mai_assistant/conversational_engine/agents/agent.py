@@ -5,10 +5,10 @@ from langchain.agents.structured_chat.base import *
 from langchain.memory.chat_memory import BaseMemory
 from langchain_core.prompts.chat import ChatMessagePromptTemplate
 
-from mai_assistant.src.clients.llm import LLM_MODELS, LLMClientFactory
-from mai_assistant.src.conversational_engine.langchain_extention import (
+from mai_assistant.clients.llm import LLM_MODELS, LLMClientFactory
+from mai_assistant.conversational_engine.langchain_extention import (
     FormStructuredChatExecutor, FormStructuredChatExecutorContext)
-from mai_assistant.src.conversational_engine.tools import *
+from mai_assistant.conversational_engine.tools import *
 
 
 class Agent:

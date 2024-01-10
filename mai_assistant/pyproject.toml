@@ -1,0 +1,31 @@
+# FILEPATH: /home/gianfranco/Desktop/uni/masters-thesis/mai_assistant/pyproject.toml
+
+[tool.poetry]
+name = "mai_assistant"
+version = "0.1.0"
+description = "Artificial Intelligence assistant"
+authors = ["Gianfranco Demarco <gianfrademarco@gmail.com>"]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dependencies]
+python = ">=3.10, <4.0"
+
+aio_pika = "9.3.1"
+fastapi = "0.108.0"
+google-api-python-client = "2.111.0"
+google-auth-httplib2 = "0.2.0"
+google-auth-oauthlib = "1.2.0"
+google-search-results = "2.4.2"
+langchain = { git = "https://github.com/gianfrancodemarco/langchain.git", subdirectory="libs/langchain" }
+langserve = "0.0.36"
+openai = "1.3.6"
+pika = "1.3.2"
+redis = "5.0.1"
+sse_starlette = "1.8.2"
+beautifulsoup4 = "4.12.2"
+parsel = "1.8.1"
+python-dateutil = "2.8.2"
+readability-lxml = "0.8.1"

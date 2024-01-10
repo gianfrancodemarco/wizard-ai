@@ -7,7 +7,7 @@ from langchain.tools.base import StructuredTool
 from langchain_core.callbacks import CallbackManagerForToolRun
 from pydantic import BaseModel
 
-from mai_assistant.src.clients import (GetEmailsPayload, GoogleClient,
+from mai_assistant.clients import (GetEmailsPayload, GoogleClient,
                                        get_redis_client)
 
 

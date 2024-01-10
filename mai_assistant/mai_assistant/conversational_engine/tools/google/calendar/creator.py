@@ -7,9 +7,9 @@ from typing import Dict, Optional, Type, Union
 from langchain_core.callbacks import CallbackManagerForToolRun
 from pydantic import BaseModel
 
-from mai_assistant.src.clients import (CreateCalendarEventPayload,
+from mai_assistant.clients import (CreateCalendarEventPayload,
                                        GoogleClient, get_redis_client)
-from mai_assistant.src.conversational_engine.langchain_extention import (
+from mai_assistant.conversational_engine.langchain_extention import (
     FormTool)
 
 

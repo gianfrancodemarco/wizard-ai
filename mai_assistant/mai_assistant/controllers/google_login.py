@@ -12,8 +12,8 @@ from fastapi import APIRouter
 from google_auth_oauthlib.flow import Flow
 from starlette.exceptions import HTTPException
 
-from mai_assistant.src.clients import RabbitMQProducerDep, RedisClientDep
-from mai_assistant.src.constants import MessageQueues, MessageType
+from mai_assistant.clients import RabbitMQProducerDep, RedisClientDep
+from mai_assistant.constants import MessageQueues, MessageType
 
 logger = logging.getLogger(__name__)
 google_login_router = APIRouter(prefix="/google")

@@ -4,8 +4,8 @@ from typing import Any, Dict, List
 from langchain_core.callbacks import AsyncCallbackHandler
 from langchain_core.tools import Tool
 
-from mai_assistant.src.clients import RabbitMQProducer
-from mai_assistant.src.constants import MessageType
+from mai_assistant.clients import RabbitMQProducer
+from mai_assistant.constants import MessageType
 
 
 class ToolLoggerCallback(AsyncCallbackHandler):

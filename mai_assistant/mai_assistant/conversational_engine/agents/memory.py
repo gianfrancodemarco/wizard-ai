@@ -4,7 +4,7 @@ import pickle
 import redis
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.memory.chat_memory import BaseChatMemory
-from mai_assistant.src.conversational_engine.langchain_extention.structured_agent_executor import FormStructuredChatExecutorContext, make_optional_model
+from mai_assistant.conversational_engine.langchain_extention.structured_agent_executor import FormStructuredChatExecutorContext, make_optional_model
 import json
 
 logger = logging.getLogger(__name__)
