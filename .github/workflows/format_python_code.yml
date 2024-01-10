@@ -11,6 +11,14 @@ jobs:
         uses: peter-evans/autopep8@v2
         with:
           args: --recursive --in-place --aggressive --aggressive .
+        # install autoflake
+      - name: Install autoflake
+        run: pip install autoflake
+        # remove unused imports
+      - name: Remove unused imports
+        run: 
+          autoflake --ignore-init-module-imports --recursive --in-place mai_assistant &&
+          autoflake --ignore-init-module-imports --recursive --in-place mai_assistant_telegram_bot
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
