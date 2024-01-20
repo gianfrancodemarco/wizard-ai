@@ -9,6 +9,7 @@ import json
 
 logger = logging.getLogger(__name__)
 
+MEMORY_LIMIT = 20
 
 def get_stored_memory(
         redis_client: redis.Redis,
@@ -22,7 +23,7 @@ def get_stored_memory(
         logger.info("Loaded memory from redis")
     else:
         memory = ConversationBufferWindowMemory(
-            k=3,
+            k=20,
             memory_key="history",
             human_prefix="Human",
             ai_prefix="Answer",

@@ -13,9 +13,7 @@ def get_prefix():
     return dedent(f"""
         Current time is: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
         You are a personal assistant. The user is trying to fill data for {{tool_name}} and you need to help him.
-
         Kindly ask the user to provide the next missing information using the Final Answer tool.
-
         You have access to the following tools:
     """)
 
@@ -56,24 +54,18 @@ FORMAT_INSTRUCTIONS = dedent("""
 """)
 
 SUFFIX = dedent("""
-    Begin! Reminder to ALWAYS respond with a valid json blob of a single action. Use tools if necessary. Respond directly if appropriate. Format is Action:```$JSON_BLOB```then Observation:.
-    Thought:
-
     The information you have collected is the following:
     {information_collected}
 
-    Ask the user to provide a value for {information_to_collect}.
+    {information_to_collect}
 
-    When you have all the NEEDED information, call {tool_name} with the input data.
+    Begin! Reminder to ALWAYS respond with a valid json blob of a single action. Use tools if necessary. Respond directly if appropriate. Format is Action:```$JSON_BLOB```then Observation:.
+    Thought:
 """)
 
 MEMORY_PROMPTS = [
     ChatMessagePromptTemplate.from_template(
         role="Previous conversation",
-        template=dedent("""
-            \n\n
-            {history}
-            \n\n
-        """)
+        template=dedent("""\n\n{history}\n\n""")
     )
 ]
