@@ -15,7 +15,8 @@ from mai_assistant.conversational_engine.callbacks import ToolLoggerCallback
 from mai_assistant.models.chat_payload import ChatPayload
 from mai_assistant.conversational_engine.langchain_extention.structured_agent_executor import FormStructuredChatExecutorContext
 from langchain.callbacks import StdOutCallbackHandler
-
+from mai_assistant.conversational_engine.langchain_extention.graph import Graph
+from mai_assistant.conversational_engine.tools.google.calendar import GoogleCalendarCreator, GoogleCalendarRetriever
 logger = logging.getLogger(__name__)
 
 rabbitmq_producer = get_rabbitmq_producer()
@@ -25,39 +26,66 @@ redis_client = get_redis_client()
 async def process_message(data: dict) -> None:
 
     data: ChatPayload = ChatPayload.model_validate(data)
+    
+    config = {
+        "callbacks": [
+            StdOutCallbackHandler()
+        ]
+    }
 
-    # Prepare input and memory
-    memory = get_stored_memory(redis_client, data.chat_id)
-    context = get_stored_context(redis_client, data.chat_id)
-
-    # Run agent
-    agent = AgentFactory.create(
-        memory=memory,
-        chat_id=data.chat_id,
-        context=context
-    )
-    callbacks = [
-        StdOutCallbackHandler(),
-        ToolLoggerCallback(
-            chat_id=data.chat_id,
-            rabbitmq_client=rabbitmq_producer,
-            queue=MessageQueues.MAI_ASSISTANT_OUT.value,
-            tools=agent.tools,
-        )
+    chat_id = data.chat_id
+    tools = [
+        # Calculator(),
+        # RandomNumberGenerator(),
+        # GoogleSearch(),
+        GoogleCalendarCreator(chat_id=chat_id),
+        GoogleCalendarRetriever(chat_id=chat_id),
+        # GmailRetriever(chat_id=chat_id),
+        # DateCalculatorTool()
     ]
 
-    # Deprecate, use ainvoke
-    answer = agent.agent_chain.run(
-        input=data.content,
-        callbacks=callbacks,
-        verbose=True
-    )
 
-    __update_stored_context(
-        redis_client,
-        data.chat_id,
-        agent.agent_chain.context)
-    __update_stored_memory(redis_client, data.chat_id, memory)
+    from langchain_core.messages import HumanMessage
+
+    inputs = {"messages": [HumanMessage(content=data.content)]}
+
+    graph = Graph(
+        tools=tools
+    )
+    answer = graph.app.invoke(inputs, config=config)['messages'][-1].content
+
+    # Prepare input and memory
+    # memory = get_stored_memory(redis_client, data.chat_id)
+    # context = get_stored_context(redis_client, data.chat_id)
+
+    # # Run agent
+    # agent = AgentFactory.create(
+    #     memory=memory,
+    #     chat_id=data.chat_id,
+    #     context=context
+    # )
+    # callbacks = [
+    #     StdOutCallbackHandler(),
+    #     ToolLoggerCallback(
+    #         chat_id=data.chat_id,
+    #         rabbitmq_client=rabbitmq_producer,
+    #         queue=MessageQueues.MAI_ASSISTANT_OUT.value,
+    #         tools=agent.tools,
+    #     )
+    # ]
+
+    # # Deprecate, use ainvoke
+    # answer = agent.agent_chain.run(
+    #     input=data.content,
+    #     callbacks=callbacks,
+    #     verbose=True
+    # )
+
+    # __update_stored_context(
+    #     redis_client,
+    #     data.chat_id,
+    #     agent.agent_chain.context)
+    # __update_stored_memory(redis_client, data.chat_id, memory)
     __publish_answer(rabbitmq_producer, data.chat_id, answer)
 
     return JSONResponse({"content": answer})

@@ -14,7 +14,7 @@ RUN pip install poetry && \
 RUN poetry add debugpy --dev
 
 COPY mai_assistant .
-COPY client_secret.json .
+COPY client_secret.json /
 
 # Install the project
 RUN poetry install --only-root
