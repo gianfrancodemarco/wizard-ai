@@ -2,36 +2,90 @@
 import json
 import logging
 import pickle
+from typing import Any
 
 import redis
 from fastapi.responses import JSONResponse
-
 from mai_assistant.clients import (RabbitMQProducer, get_rabbitmq_producer,
                                    get_redis_client)
+from mai_assistant.clients.rabbitmq import RabbitMQProducer
 from mai_assistant.constants import MessageQueues, MessageType
-from mai_assistant.conversational_engine.agents import (AgentFactory,
-                                                        get_stored_memory, get_stored_context)
-from mai_assistant.conversational_engine.callbacks import ToolLoggerCallback
-from mai_assistant.models.chat_payload import ChatPayload
-from mai_assistant.conversational_engine.langchain_extention.structured_agent_executor import FormStructuredChatExecutorContext
-from langchain.callbacks import StdOutCallbackHandler
+from mai_assistant.constants.message_queues import MessageQueues
+from mai_assistant.constants.message_type import MessageType
 from mai_assistant.conversational_engine.langchain_extention.graph import Graph
-from mai_assistant.conversational_engine.tools.google.calendar import GoogleCalendarCreator, GoogleCalendarRetriever
+from mai_assistant.conversational_engine.langchain_extention.structured_agent_executor import \
+    FormStructuredChatExecutorContext
+from mai_assistant.conversational_engine.tools.google.calendar import (
+    GoogleCalendarCreator, GoogleCalendarRetriever)
+from mai_assistant.models.chat_payload import ChatPayload
+
 logger = logging.getLogger(__name__)
 
 rabbitmq_producer = get_rabbitmq_producer()
 redis_client = get_redis_client()
 
 
+class TelegramConnector:
+    
+    def __init__(
+        self,
+        chat_id: str,
+        tools: list = None,
+        rabbitmq_producer: RabbitMQProducer = None,
+        queue: MessageQueues = None
+    ) -> None:
+        self.chat_id = chat_id
+        self.tools = tools
+        self.rabbitmq_client = rabbitmq_producer
+        self.queue = queue
+        
+            
+    def on_tool_start(
+        self,
+        tool_name: str,
+        tool_input: str
+    ) -> Any:
+        """Run when tool starts running."""
+        if not self.rabbitmq_client:
+            return
+        
+        try:
+            tool = next((tool for tool in self.tools if tool.name == tool_name), None)
+            tool_start_message = tool.get_tool_start_message(tool_input)
+        except BaseException:
+            tool_start_message = f"{tool}: {tool_input}"
+
+        self.rabbitmq_client.publish(
+            queue=self.queue,
+            message=json.dumps({
+                "chat_id": self.chat_id,
+                "type": MessageType.TOOL_START.value,
+                "content": tool_start_message
+            })
+        )
+
+    def on_tool_end(
+        self,
+        tool_name: str,
+        tool_output: str
+    ) -> Any:
+        """Run when tool ends running."""
+
+        if not self.rabbitmq_client:
+            return
+
+        self.rabbitmq_client.publish(
+            queue=self.queue,
+            message=json.dumps({
+                "chat_id": self.chat_id,
+                "type": MessageType.TOOL_END.value,
+                "content": tool_output
+            })
+        )
+
 async def process_message(data: dict) -> None:
 
     data: ChatPayload = ChatPayload.model_validate(data)
-    
-    config = {
-        "callbacks": [
-            StdOutCallbackHandler()
-        ]
-    }
 
     chat_id = data.chat_id
     tools = [
@@ -43,16 +97,35 @@ async def process_message(data: dict) -> None:
         # GmailRetriever(chat_id=chat_id),
         # DateCalculatorTool()
     ]
-
-
+    
     from langchain_core.messages import HumanMessage
 
     inputs = {"messages": [HumanMessage(content=data.content)]}
 
-    graph = Graph(
-        tools=tools
+    telegram_connector = TelegramConnector(
+        chat_id=chat_id,
+        tools=tools,
+        rabbitmq_producer=rabbitmq_producer,
+        queue=MessageQueues.MAI_ASSISTANT_OUT.value
     )
-    answer = graph.app.invoke(inputs, config=config)['messages'][-1].content
+
+    graph = Graph(
+        tools=tools,
+        on_tool_start=telegram_connector.on_tool_start,
+        on_tool_end=telegram_connector.on_tool_end
+
+    )
+
+    logger.info("---")
+    logger.info(f"Executing graph with inputs: {inputs}")
+    logger.info("---")
+    for output in graph.app.stream(inputs):
+        # stream() yields dictionaries with output keyed by node name
+        for key, value in output.items():
+            logger.info(f"Output from node '{key}':")
+            logger.info("---")
+            logger.info(value)
+    answer = value['messages'][-1].content
 
     # Prepare input and memory
     # memory = get_stored_memory(redis_client, data.chat_id)

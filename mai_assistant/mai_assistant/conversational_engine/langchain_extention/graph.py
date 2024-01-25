@@ -1,21 +1,17 @@
-import getpass
 import json
 import operator
-import os
-from typing import Annotated, Sequence, Type, TypedDict
+from typing import Annotated, Any, Sequence, Type, TypedDict
 
 from langchain.tools.render import format_tool_to_openai_function
-from langchain_core.messages import BaseMessage, FunctionMessage, HumanMessage
+from langchain_core.messages import BaseMessage, FunctionMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
 from langgraph.prebuilt import ToolExecutor, ToolInvocation
-from langchain_core.callbacks.stdout import StdOutCallbackHandler
 
-from mai_assistant.conversational_engine.tools.google.search import \
-    GoogleSearch
-from typing import Any
+from mai_assistant.constants.message_type import MessageType
 
-os.environ["OPENAI_API_KEY"] = "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"
+from mai_assistant.clients.rabbitmq import RabbitMQProducer
+from mai_assistant.constants.message_queues import MessageQueues
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], operator.add]
@@ -25,6 +21,8 @@ class Graph(StateGraph):
     def __init__(
         self,
         tools: Sequence[Type[Any]] = [],
+        on_tool_start: callable = None,
+        on_tool_end: callable = None,
     ) -> None:
         super().__init__(AgentState)
 
@@ -32,6 +30,8 @@ class Graph(StateGraph):
         self.tool_executor = ToolExecutor(self.tools)
         self.functions = [format_tool_to_openai_function(t) for t in self.tools]
         self.model = ChatOpenAI(temperature=0, verbose=True).bind_functions(self.functions)
+        self.on_tool_start = on_tool_start
+        self.on_tool_end = on_tool_end
 
         # Define the two nodes we will cycle between
         self.add_node("agent", self.call_model)
@@ -95,25 +95,21 @@ class Graph(StateGraph):
         # Based on the continue condition
         # we know the last message involves a function call
         last_message = messages[-1]
+
         # We construct an ToolInvocation from the function_call
         action = ToolInvocation(
             tool=last_message.additional_kwargs["function_call"]["name"],
             tool_input=json.loads(last_message.additional_kwargs["function_call"]["arguments"]),
         )
+
+
+        self.on_tool_start(tool_name=action.tool, tool_input=action.tool_input)
         # We call the tool_executor and get back a response
         response = self.tool_executor.invoke(action)
+        self.on_tool_end(tool_name=action.tool, tool_output=response)
+
         # We use the response to create a FunctionMessage
         function_message = FunctionMessage(content=str(response), name=action.tool)
+        
         # We return a list, because this will get added to the existing list
         return {"messages": [function_message]}
-
-
-# config = {
-#     "callbacks": [
-#         StdOutCallbackHandler()
-#     ]
-# }
-
-# while True:
-#     inputs = {"messages": [HumanMessage(content=input())]}
-#     print(Graph().app.invoke(inputs, config=config)['messages'][-1])
