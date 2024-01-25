@@ -99,10 +99,13 @@ class Graph(StateGraph):
         )
 
 
-        self.on_tool_start(tool_name=action.tool, tool_input=action.tool_input)
-        # We call the tool_executor and get back a response
-        response = self.tool_executor.invoke(action)
-        self.on_tool_end(tool_name=action.tool, tool_output=response)
+        try:
+            self.on_tool_start(tool_name=action.tool, tool_input=action.tool_input)
+            # We call the tool_executor and get back a response
+            response = self.tool_executor.invoke(action)
+            self.on_tool_end(tool_name=action.tool, tool_output=response)
+        except Exception as e:
+            response = str(e)
 
         # We use the response to create a FunctionMessage
         function_message = FunctionMessage(content=str(response), name=action.tool)
