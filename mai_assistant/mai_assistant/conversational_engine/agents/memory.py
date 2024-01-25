@@ -1,18 +1,21 @@
+import json
 import logging
 import pickle
 
 import redis
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.memory.chat_memory import BaseChatMemory
-from mai_assistant.conversational_engine.langchain_extention.structured_agent_executor import FormStructuredChatExecutorContext, make_optional_model
-import json
+
+from mai_assistant.conversational_engine.langchain_extention.structured_agent_executor import (
+    FormStructuredChatExecutorContext, make_optional_model)
 
 logger = logging.getLogger(__name__)
 
 
 def get_stored_memory(
         redis_client: redis.Redis,
-        chat_id: str) -> BaseChatMemory:
+        chat_id: str
+) -> BaseChatMemory:
     memory = redis_client.hget(
         chat_id,
         "memory"
@@ -26,7 +29,8 @@ def get_stored_memory(
             memory_key="history",
             human_prefix="Human",
             ai_prefix="Answer",
-            input_key="input"
+            input_key="messages",
+            return_messages=True
         )
     return memory
 

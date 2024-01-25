@@ -6,12 +6,15 @@ from typing import Any
 
 import redis
 from fastapi.responses import JSONResponse
+from langchain_core.messages import HumanMessage, SystemMessage
+
 from mai_assistant.clients import (RabbitMQProducer, get_rabbitmq_producer,
                                    get_redis_client)
 from mai_assistant.clients.rabbitmq import RabbitMQProducer
 from mai_assistant.constants import MessageQueues, MessageType
 from mai_assistant.constants.message_queues import MessageQueues
 from mai_assistant.constants.message_type import MessageType
+from mai_assistant.conversational_engine.agents import get_stored_memory
 from mai_assistant.conversational_engine.langchain_extention.graph import Graph
 from mai_assistant.conversational_engine.langchain_extention.structured_agent_executor import \
     FormStructuredChatExecutorContext
@@ -97,10 +100,18 @@ async def process_message(data: dict) -> None:
         # GmailRetriever(chat_id=chat_id),
         # DateCalculatorTool()
     ]
-    
-    from langchain_core.messages import HumanMessage
 
-    inputs = {"messages": [HumanMessage(content=data.content)]}
+
+    # Prepare input and memory
+    memory = get_stored_memory(redis_client, data.chat_id)
+    
+    inputs = {
+        "messages": [
+            SystemMessage(content="You are MAI Assistant, a virtual assistant."),
+            *memory.buffer,
+            HumanMessage(content=data.content)
+        ]
+    }
 
     telegram_connector = TelegramConnector(
         chat_id=chat_id,
@@ -128,37 +139,17 @@ async def process_message(data: dict) -> None:
     answer = value['messages'][-1].content
 
     # Prepare input and memory
-    # memory = get_stored_memory(redis_client, data.chat_id)
+    memory.save_context(
+        inputs={"messages": data.content},
+        outputs={"output": answer}
+    )
     # context = get_stored_context(redis_client, data.chat_id)
-
-    # # Run agent
-    # agent = AgentFactory.create(
-    #     memory=memory,
-    #     chat_id=data.chat_id,
-    #     context=context
-    # )
-    # callbacks = [
-    #     StdOutCallbackHandler(),
-    #     ToolLoggerCallback(
-    #         chat_id=data.chat_id,
-    #         rabbitmq_client=rabbitmq_producer,
-    #         queue=MessageQueues.MAI_ASSISTANT_OUT.value,
-    #         tools=agent.tools,
-    #     )
-    # ]
-
-    # # Deprecate, use ainvoke
-    # answer = agent.agent_chain.run(
-    #     input=data.content,
-    #     callbacks=callbacks,
-    #     verbose=True
-    # )
 
     # __update_stored_context(
     #     redis_client,
     #     data.chat_id,
     #     agent.agent_chain.context)
-    # __update_stored_memory(redis_client, data.chat_id, memory)
+    __update_stored_memory(redis_client, data.chat_id, memory)
     __publish_answer(rabbitmq_producer, data.chat_id, answer)
 
     return JSONResponse({"content": answer})

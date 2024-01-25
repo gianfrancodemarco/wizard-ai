@@ -8,10 +8,6 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
 from langgraph.prebuilt import ToolExecutor, ToolInvocation
 
-from mai_assistant.constants.message_type import MessageType
-
-from mai_assistant.clients.rabbitmq import RabbitMQProducer
-from mai_assistant.constants.message_queues import MessageQueues
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], operator.add]
