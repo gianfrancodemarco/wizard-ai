@@ -60,7 +60,14 @@ class Graph(StateGraph):
 
         # We now add a normal edge from `tools` to `agent`.
         # This means that after `tools` is called, `agent` node is called next.
-        self.add_edge('action', 'agent')
+        self.add_conditional_edges(
+            "action",
+            self.should_continue_after_tool,
+            {
+                "continue": "agent",
+                "end": END
+            }
+        )
 
         # Finally, we compile it!
         # This compiles it into a LangChain Runnable,
@@ -73,6 +80,16 @@ class Graph(StateGraph):
         last_message = messages[-1]
         # If there is no function call, then we finish
         if "function_call" not in last_message.additional_kwargs:
+            return "end"
+        # Otherwise if there is, we continue
+        else:
+            return "continue"
+        
+    def should_continue_after_tool(self, state):
+        messages = state['messages']
+        last_message = messages[-1]
+        # If there is no function call, then we finish
+        if last_message.additional_kwargs.get("return_direct", False):
             return "end"
         # Otherwise if there is, we continue
         else:
@@ -98,17 +115,34 @@ class Graph(StateGraph):
             tool_input=json.loads(last_message.additional_kwargs["function_call"]["arguments"]),
         )
 
-
         try:
             self.on_tool_start(tool_name=action.tool, tool_input=action.tool_input)
             # We call the tool_executor and get back a response
             response = self.tool_executor.invoke(action)
             self.on_tool_end(tool_name=action.tool, tool_output=response)
+            
+            # TODO: after the tool execution, if it was OK and the tool has a return_direct, then we set return_direct to True
+            # The tool should be able to decide whether it wants to return directly or not instead of the graph deciding
+            return_direct = False
+            tool = next((tool for tool in self.tools if tool.name == action.tool), None)
+            if tool:
+                return_direct = tool.return_direct
+
+            function_message = FunctionMessage(
+                content=str(response),
+                name=action.tool,
+                additional_kwargs={
+                    **last_message.additional_kwargs,
+                    "return_direct": return_direct
+                }
+            )
+
         except Exception as e:
             response = str(e)
-
-        # We use the response to create a FunctionMessage
-        function_message = FunctionMessage(content=str(response), name=action.tool)
+            function_message = FunctionMessage(
+                content=response,
+                name=action.tool
+            )
         
         # We return a list, because this will get added to the existing list
         return {"messages": [function_message]}

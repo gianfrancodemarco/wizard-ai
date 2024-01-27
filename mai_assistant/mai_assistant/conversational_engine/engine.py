@@ -18,8 +18,7 @@ from mai_assistant.conversational_engine.agents import get_stored_memory
 from mai_assistant.conversational_engine.langchain_extention.graph import Graph
 from mai_assistant.conversational_engine.langchain_extention.structured_agent_executor import \
     FormStructuredChatExecutorContext
-from mai_assistant.conversational_engine.tools.google.calendar import (
-    GoogleCalendarCreator, GoogleCalendarRetriever)
+from mai_assistant.conversational_engine.tools import *
 from mai_assistant.models.chat_payload import ChatPayload
 
 logger = logging.getLogger(__name__)
@@ -56,7 +55,7 @@ class TelegramConnector:
             tool = next((tool for tool in self.tools if tool.name == tool_name), None)
             tool_start_message = tool.get_tool_start_message(tool_input)
         except BaseException:
-            tool_start_message = f"{tool}: {tool_input}"
+            tool_start_message = f"{tool_name}: {tool_input}"
 
         self.rabbitmq_client.publish(
             queue=self.queue,
@@ -93,11 +92,12 @@ async def process_message(data: dict) -> None:
     chat_id = data.chat_id
     tools = [
         # Calculator(),
-        # RandomNumberGenerator(),
-        # GoogleSearch(),
+        RandomNumberGenerator(),
+        GoogleSearch(),
         GoogleCalendarCreator(chat_id=chat_id),
         GoogleCalendarRetriever(chat_id=chat_id),
-        # GmailRetriever(chat_id=chat_id),
+        GmailRetriever(chat_id=chat_id),
+        Python(),
         # DateCalculatorTool()
     ]
 
