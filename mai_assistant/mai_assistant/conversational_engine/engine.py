@@ -107,7 +107,7 @@ async def process_message(data: dict) -> None:
     
     inputs = {
         "messages": [
-            SystemMessage(content="You are MAI Assistant, a virtual assistant."),
+            SystemMessage(content="You are MAI Assistant, a virtual assistant. You don't about updated information, so use tools to get it."),
             *memory.buffer,
             HumanMessage(content=data.content)
         ]

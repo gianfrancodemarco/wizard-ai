@@ -109,11 +109,19 @@ class Graph(StateGraph):
         # we know the last message involves a function call
         last_message = messages[-1]
 
-        # We construct an ToolInvocation from the function_call
-        action = ToolInvocation(
-            tool=last_message.additional_kwargs["function_call"]["name"],
-            tool_input=json.loads(last_message.additional_kwargs["function_call"]["arguments"]),
-        )
+        try:
+            # We construct an ToolInvocation from the function_call
+            action = ToolInvocation(
+                tool=last_message.additional_kwargs["function_call"]["name"],
+                tool_input=json.loads(last_message.additional_kwargs["function_call"]["arguments"]),
+            )
+        except Exception as e:
+            error = str(e)
+            function_message = FunctionMessage(
+                content=f"Invalid function call, try again. \nError: {error}",
+                name=last_message.additional_kwargs["function_call"]["name"]
+            )
+            return {"messages": [function_message]}
 
         try:
             self.on_tool_start(tool_name=action.tool, tool_input=action.tool_input)
