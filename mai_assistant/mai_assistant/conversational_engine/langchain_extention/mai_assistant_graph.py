@@ -12,7 +12,11 @@ from langgraph.prebuilt import ToolExecutor, ToolInvocation
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], operator.add]
 
-class Graph(StateGraph):
+
+class StateGraphWithGraphPng(StateGraph):
+    pass
+
+class MAIAssistantGraph(StateGraphWithGraphPng):
 
     def __init__(
         self,
@@ -28,14 +32,13 @@ class Graph(StateGraph):
         self.model = ChatOpenAI(temperature=0, verbose=True).bind_functions(self.functions)
         self.on_tool_start = on_tool_start
         self.on_tool_end = on_tool_end
+        self.__build_graph()
+    
+    def __build_graph(self):
 
         # Define the two nodes we will cycle between
-        self.add_node("agent", self.call_model)
-        self.add_node("action", self.call_tool)
-
-        # Set the entrypoint as `agent`
-        # This means that this node is the first one called
-        self.set_entry_point("agent")
+        self.add_node("agent", self.call_agent)
+        self.add_node("tool", self.call_tool)
 
         # We now add a conditional edge
         self.add_conditional_edges(
@@ -52,22 +55,24 @@ class Graph(StateGraph):
             # Based on which one it matches, that node will then be called.
             {
                 # If `tools`, then we call the tool node.
-                "continue": "action",
+                "continue": "tool",
                 # Otherwise we finish.
                 "end": END
             }
         )
 
-        # We now add a normal edge from `tools` to `agent`.
-        # This means that after `tools` is called, `agent` node is called next.
         self.add_conditional_edges(
-            "action",
+            "tool",
             self.should_continue_after_tool,
             {
                 "continue": "agent",
                 "end": END
             }
         )
+
+        # Set the entrypoint as `agent`
+        # This means that this node is the first one called
+        self.set_entry_point("agent")
 
         # Finally, we compile it!
         # This compiles it into a LangChain Runnable,
@@ -96,7 +101,7 @@ class Graph(StateGraph):
             return "continue"
 
     # Define the function that calls the model
-    def call_model(self, state):
+    def call_agent(self, state):
         messages = state['messages']
         response = self.model.invoke(messages)
         # We return a list, because this will get added to the existing list

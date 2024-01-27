@@ -15,7 +15,7 @@ from mai_assistant.constants import MessageQueues, MessageType
 from mai_assistant.constants.message_queues import MessageQueues
 from mai_assistant.constants.message_type import MessageType
 from mai_assistant.conversational_engine.agents import get_stored_memory
-from mai_assistant.conversational_engine.langchain_extention.graph import Graph
+from mai_assistant.conversational_engine.langchain_extention.mai_assistant_graph import MAIAssistantGraph
 from mai_assistant.conversational_engine.langchain_extention.structured_agent_executor import \
     FormStructuredChatExecutorContext
 from mai_assistant.conversational_engine.tools import *
@@ -120,11 +120,10 @@ async def process_message(data: dict) -> None:
         queue=MessageQueues.MAI_ASSISTANT_OUT.value
     )
 
-    graph = Graph(
+    graph = MAIAssistantGraph(
         tools=tools,
         on_tool_start=telegram_connector.on_tool_start,
         on_tool_end=telegram_connector.on_tool_end
-
     )
 
     logger.info("---")
