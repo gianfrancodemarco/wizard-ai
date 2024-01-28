@@ -20,6 +20,7 @@ jobs:
         pip install pytest poetry
         cd mai_assistant
         poetry install
+        cd ..
     - name: Execute unit tests
       run: |
         pytest mai_assistant/tests
