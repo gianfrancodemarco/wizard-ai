@@ -6,7 +6,7 @@ from langchain_core.prompts.chat import ChatMessagePromptTemplate
 
 from mai_assistant.clients.llm import LLM_MODELS, LLMClientFactory
 from mai_assistant.conversational_engine.langchain_extention import (
-    FormStructuredChatExecutor, FormStructuredChatExecutorContext)
+    FormStructuredChatExecutor, AgentState)
 from mai_assistant.conversational_engine.tools import *
 
 
@@ -25,7 +25,7 @@ class Agent:
         memory: BaseMemory,
         chat_id: str,
         llm_model: str = LLM_MODELS.GPT3_5_TURBO.value,
-        context: FormStructuredChatExecutorContext = FormStructuredChatExecutorContext()
+        context: AgentState = AgentState()
     ):
 
         self.memory = memory

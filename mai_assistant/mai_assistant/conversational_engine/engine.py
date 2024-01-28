@@ -17,7 +17,7 @@ from mai_assistant.constants.message_type import MessageType
 from mai_assistant.conversational_engine.agents import get_stored_memory
 from mai_assistant.conversational_engine.langchain_extention.mai_assistant_graph import MAIAssistantGraph
 from mai_assistant.conversational_engine.langchain_extention.structured_agent_executor import \
-    FormStructuredChatExecutorContext
+    AgentState
 from mai_assistant.conversational_engine.tools import *
 from mai_assistant.models.chat_payload import ChatPayload
 
@@ -157,10 +157,10 @@ async def process_message(data: dict) -> None:
 def __update_stored_context(
         redis_client: redis.Redis,
         chat_id: str,
-        context: FormStructuredChatExecutorContext):
+        context: AgentState):
 
     # this shouldn't be here
-    if context.active_form_tool:
+    if context.get("active_form_tool"):
         context.form = context.form.model_dump_json()
 
     redis_client.hset(

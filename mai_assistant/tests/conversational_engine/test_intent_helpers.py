@@ -53,7 +53,7 @@ def test_filter_active_tools_with_active_form_tool():
         MockFormTool(),
     ]
     context = AgentState()
-    context.active_form_tool = active_form_tool
+    context.get("active_form_tool") = active_form_tool
 
     filtered_tools = filter_active_tools(tools, context)
 

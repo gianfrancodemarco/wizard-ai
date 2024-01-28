@@ -17,7 +17,7 @@ from pydantic import BaseModel, create_model
 
 from .context_reset import ContextReset
 from .context_update import ContextUpdate
-from .form_tool import (FormStructuredChatExecutorContext, FormTool,
+from .form_tool import (AgentState, FormTool,
                         FormToolActivator)
 from .prompts import FORMAT_INSTRUCTIONS, SUFFIX, MEMORY_PROMPTS, get_prefix
 
@@ -49,7 +49,7 @@ class FormStructuredChatExecutor(AgentExecutor):
     handle_parsing_errors = True
 
     form_agent: Optional[Union[BaseSingleActionAgent, BaseMultiActionAgent]]
-    context: FormStructuredChatExecutorContext
+    context: AgentState
 
     def __init__(
         self,
@@ -57,7 +57,7 @@ class FormStructuredChatExecutor(AgentExecutor):
         **kwargs
     ):
         super().__init__(*args, **kwargs)
-        if self.context.active_form_tool:
+        if self.context.get("active_form_tool"):
             self._activate_form_agent()
 
     @classmethod
@@ -65,7 +65,7 @@ class FormStructuredChatExecutor(AgentExecutor):
         cls,
         llm: LLM,
         tools: Sequence[BaseTool],
-        context: FormStructuredChatExecutorContext,
+        context: AgentState,
         **kwargs
     ):
         if not context:
@@ -116,8 +116,8 @@ class FormStructuredChatExecutor(AgentExecutor):
 
         # If there is an active form tool, we need to update the inputs with
         # those expected by the new prompt
-        if self.context.active_form_tool:
-            tool = self.context.active_form_tool
+        if self.context.get("active_form_tool"):
+            tool = self.context.get("active_form_tool")
             # information_to_collect = re.sub(
             #     "}", "}}", re.sub("{", "{{", str(tool.args)))
             information_to_collect = tool.get_next_field_to_collect(
@@ -141,13 +141,13 @@ class FormStructuredChatExecutor(AgentExecutor):
     def filter_active_tools(
         cls,
         tools: Sequence[BaseTool],
-        context: FormStructuredChatExecutorContext
+        context: AgentState
     ):
 
         base_tools = list(filter(lambda tool: not isinstance(
             tool, FormToolActivator) and not isinstance(tool, FormTool), tools))
 
-        if context.active_form_tool is None:
+        if context.get("active_form_tool") is None:
             activator_tools = [
                 FormToolActivator(
                     form_tool_class=tool.__class__,
@@ -166,14 +166,14 @@ class FormStructuredChatExecutor(AgentExecutor):
             # If a form_tool is active, remove the Activators and add the form
             # tool and the context update tool
             tools = [
-                context.active_form_tool,
+                context.get("active_form_tool"),
                 *base_tools,
                 ContextUpdate(context=context),
                 ContextReset(context=context)
             ]
         return tools
+    
     # SYNC
-
     def _iter_next_step(
         self,
         name_to_tool_map: Dict[str, BaseTool],
@@ -213,8 +213,8 @@ class FormStructuredChatExecutor(AgentExecutor):
             is_form_tool_activator = isinstance(tool, FormToolActivator)
             if is_form_tool_activator:
                 agent_action.tool_input = ""
-                if self.context.active_form_tool != tool.form_tool:
-                    self.context.active_form_tool = tool.form_tool
+                if self.context.get("active_form_tool") != tool.form_tool:
+                    self.context["active_form_tool"] = tool.form_tool
                     # Create a copy from the args_schema with all attributes optional, so that we can instantiate it in the context,
                     # provide partial updates, and still have all original
                     # validators
@@ -227,7 +227,7 @@ class FormStructuredChatExecutor(AgentExecutor):
                     self._activate_form_agent()
             # We called the tool and was completed, we can reset the context
             if isinstance(tool, FormTool) or isinstance(tool, ContextReset):
-                self.context = FormStructuredChatExecutorContext()
+                self.context = AgentState()
                 # self._restore_llm_chain()
 
             observation = tool.run(
@@ -294,8 +294,8 @@ class FormStructuredChatExecutor(AgentExecutor):
             is_form_tool_activator = isinstance(tool, FormToolActivator)
             if is_form_tool_activator:
                 agent_action.tool_input = ""
-                if self.context.active_form_tool != tool.form_tool:
-                    self.context.active_form_tool = tool.form_tool
+                if self.context.get("active_form_tool") != tool.form_tool:
+                    self.context["active_form_tool"] = tool.form_tool
                     # Create a copy from the args_schema with all attributes optional, so that we can instantiate it in the context,
                     # provide partial updates, and still have all original
                     # validators
@@ -308,7 +308,7 @@ class FormStructuredChatExecutor(AgentExecutor):
                     self._activate_form_agent()
             # We called the tool and was completed, we can reset the context
             if isinstance(tool, FormTool) or isinstance(tool, ContextReset):
-                self.context = FormStructuredChatExecutorContext()
+                self.context = AgentState()
                 # self._restore_llm_chain()
 
             observation = await tool.arun(

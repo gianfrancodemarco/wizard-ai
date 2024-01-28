@@ -7,7 +7,7 @@ from langchain.memory import ConversationBufferWindowMemory
 from langchain.memory.chat_memory import BaseChatMemory
 
 from mai_assistant.conversational_engine.langchain_extention.structured_agent_executor import (
-    FormStructuredChatExecutorContext, make_optional_model)
+    AgentState, make_optional_model)
 
 logger = logging.getLogger(__name__)
 
@@ -44,15 +44,15 @@ def get_stored_context(
         "context"
     )
     if context is not None:
-        context: FormStructuredChatExecutorContext = pickle.loads(context)
+        context: AgentState = pickle.loads(context)
+        active_form_tool = context.get("active_form_tool")
 
-        if context.active_form_tool:
+        if active_form_tool:
             loaded = json.loads(context.form)
             loaded = {key: value for key, value in loaded.items() if value}
-            context_form_class = make_optional_model(
-                context.active_form_tool.args_schema)
+            context_form_class = make_optional_model(active_form_tool.args_schema)
             context.form = context_form_class(**loaded)
         logger.info("Loaded context from redis")
     else:
-        context = FormStructuredChatExecutorContext()
+        context = AgentState()
     return context

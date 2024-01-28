@@ -1,32 +1,29 @@
 import json
-import operator
-from typing import Annotated, Any, Sequence, Type, TypedDict
+from typing import Any, Sequence, Type
 
 from langchain.tools.render import format_tool_to_openai_function
-from langchain_core.messages import BaseMessage, FunctionMessage
+from langchain_core.messages import FunctionMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
 from langgraph.prebuilt import ToolExecutor, ToolInvocation
 
+from mai_assistant.conversational_engine.langchain_extention.form_tool import \
+    AgentState
+from mai_assistant.conversational_engine.langchain_extention.intent_helpers import \
+    filter_active_tools
 
-class AgentState(TypedDict):
-    messages: Annotated[Sequence[BaseMessage], operator.add]
-
-
-class StateGraphWithGraphPng(StateGraph):
-    pass
-
-class MAIAssistantGraph(StateGraphWithGraphPng):
+class MAIAssistantGraph(StateGraph):
 
     def __init__(
         self,
+        state: Type[AgentState] = AgentState(),
         tools: Sequence[Type[Any]] = [],
         on_tool_start: callable = None,
         on_tool_end: callable = None,
     ) -> None:
         super().__init__(AgentState)
 
-        self.tools = tools
+        self.tools = filter_active_tools(tools, state)
         self.tool_executor = ToolExecutor(self.tools)
         self.functions = [format_tool_to_openai_function(t) for t in self.tools]
         self.model = ChatOpenAI(temperature=0, verbose=True).bind_functions(self.functions)
@@ -159,3 +156,13 @@ class MAIAssistantGraph(StateGraphWithGraphPng):
         
         # We return a list, because this will get added to the existing list
         return {"messages": [function_message]}
+    
+
+if __name__ == "__main__":
+    import os
+
+    from mai_assistant.conversational_engine.langchain_extention.helpers import \
+        StateGraphDrawer
+    os.environ["OPENAI_API_KEY"] = "sk-..."
+    graph = MAIAssistantGraph()
+    StateGraphDrawer().draw(graph)

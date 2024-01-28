@@ -1,7 +1,9 @@
-from typing import Any, Dict, Optional, Type
+import operator
+from typing import Annotated, Any, Dict, Optional, Sequence, Type
+from typing import Annotated, Any, Sequence, Type, TypedDict
 
-from langchain.callbacks.manager import (AsyncCallbackManagerForToolRun,
-                                         CallbackManagerForToolRun)
+from langchain.callbacks.manager import CallbackManagerForToolRun
+from langchain_core.messages import BaseMessage, FunctionMessage
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel
 
@@ -10,7 +12,7 @@ from .tool_dummy_payload import ToolDummyPayload
 
 class FormTool(BaseTool):
     """
-    FormTool methods should take context as FormStructuredChatExecutorContext, but this creates circular references
+    FormTool methods should take context as AgentState, but this creates circular references
     So we use BaseModel instead
     """
 
@@ -46,11 +48,10 @@ class FormTool(BaseTool):
     def get_information_to_collect(self) -> str:
         return str(list(self.args.keys()))
 
-
-class FormStructuredChatExecutorContext(BaseModel):
+class AgentState(TypedDict):
+    messages: Annotated[Sequence[BaseMessage], operator.add] = []
     active_form_tool: Optional[FormTool] = None
     form: BaseModel = None
-
 
 class FormToolActivator(BaseTool):
     args_schema: Type[BaseModel] = ToolDummyPayload
@@ -61,7 +62,7 @@ class FormToolActivator(BaseTool):
         self,
         *args: Any,
         run_manager: Optional[CallbackManagerForToolRun] = None,
-        context: Optional[FormStructuredChatExecutorContext] = None,
+        state: Optional[AgentState] = None,
         **kwargs
     ) -> str:
         return f"Entered in {self.form_tool.name} context"

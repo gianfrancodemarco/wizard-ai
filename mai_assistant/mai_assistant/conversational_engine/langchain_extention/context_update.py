@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional, Type
 from langchain_core.tools import BaseTool, ToolException
 from pydantic import BaseModel, ValidationError
 
-from .form_tool import FormStructuredChatExecutorContext
+from .form_tool import AgentState
 
 
 class ContextUpdatePayload(BaseModel):
@@ -16,7 +16,7 @@ class ContextUpdate(BaseTool):
     args_schema: Type[BaseModel] = ContextUpdatePayload
     handle_tool_error = True
 
-    context: Optional[FormStructuredChatExecutorContext] = None
+    context: Optional[AgentState] = None
 
     def _run(self, *args: Any, **kwargs: Any) -> Any:
         for key, value in kwargs['values'].items():

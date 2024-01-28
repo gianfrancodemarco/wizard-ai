@@ -11,7 +11,7 @@ from mai_assistant.conversational_engine.langchain_extention import \
     FormTool, FormToolActivator
 
 from langchain_core.callbacks import AsyncCallbackManagerForToolRun
-from mai_assistant.conversational_engine.langchain_extention import FormStructuredChatExecutorContext
+from mai_assistant.conversational_engine.langchain_extention import AgentState
 
 
 class GoogleCalendarRetriever(FormTool):
@@ -58,7 +58,7 @@ class GoogleCalendarRetriever(FormTool):
     async def ais_form_complete(
         self,
         run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
-        context: Optional[FormStructuredChatExecutorContext] = None,
+        context: Optional[AgentState] = None,
     ) -> bool:
         """
         User should provide number_of_events or start and end dates
