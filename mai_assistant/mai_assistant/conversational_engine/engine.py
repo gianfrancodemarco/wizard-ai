@@ -91,26 +91,20 @@ async def process_message(data: dict) -> None:
 
     chat_id = data.chat_id
     tools = [
-        # Calculator(),
-        RandomNumberGenerator(),
         GoogleSearch(),
         GoogleCalendarCreator(chat_id=chat_id),
         GoogleCalendarRetriever(chat_id=chat_id),
         GmailRetriever(chat_id=chat_id),
         Python(),
-        # DateCalculatorTool()
     ]
-
 
     # Prepare input and memory
     memory = get_stored_memory(redis_client, data.chat_id)
     
     inputs = {
-        "messages": [
-            SystemMessage(content="You are MAI Assistant, a virtual assistant. You don't about updated information, so use tools to get it."),
-            *memory.buffer,
-            HumanMessage(content=data.content)
-        ]
+        "input": [HumanMessage(content=data.content)],
+        "chat_history": [*memory.buffer],
+        "intermediate_steps": []
     }
 
     telegram_connector = TelegramConnector(
@@ -135,7 +129,7 @@ async def process_message(data: dict) -> None:
             logger.info(f"Output from node '{key}':")
             logger.info("---")
             logger.info(value)
-    answer = value['messages'][-1].content
+    answer = value["agent_outcome"].return_values["output"]
 
     # Prepare input and memory
     memory.save_context(

@@ -8,8 +8,5 @@ venv
 
 .env
 
-old/ToolQA/data
-old/StructGPT/datasets
-
 **/secrets.yaml
 client_secret*.json

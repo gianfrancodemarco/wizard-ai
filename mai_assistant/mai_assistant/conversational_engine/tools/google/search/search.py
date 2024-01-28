@@ -13,6 +13,11 @@ class GoogleSearch(BaseTool):
     name: str = "GoogleSearch"
     description: str = "Useful for searching the internet with Google to retrieve up to date information."
     args_schema: Type[BaseModel] = GoogleSearchClientPayload
+    google_search_client: Optional[GoogleSearchClient] = None
+
+    def __init__(self):
+        super().__init__()
+        self.google_search_client = GoogleSearchClient()
 
     def _run(
         self,
@@ -22,12 +27,11 @@ class GoogleSearch(BaseTool):
     ) -> str:
         """Use the tool."""
 
-        google_search_client = GoogleSearchClient()
         payload = GoogleSearchClientPayload(
             query=query,
             num_expanded_results=num_expanded_results
         )
-        results = google_search_client.search(payload)
+        results = self.google_search_client.search(payload)
         return results
 
     def get_tool_start_message(self, input: dict) -> str:

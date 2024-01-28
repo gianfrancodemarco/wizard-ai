@@ -52,17 +52,14 @@ class GoogleSearchClient:
         logging.info(f"Searching the internet with query: {payload.query}")
         params = {'q': payload.query}
 
-        try:
-            response = self.make_request(
-                'https://www.google.com/search', params=params)
+        response = self.make_request(
+            'https://www.google.com/search', params=params)
 
-            if response:
-                selector = Selector(response.text)
-                result = self.parse_search_results(selector, payload=payload)
-                self.previous_searches.append(payload.query)
-                return result
-        except Exception as e:
-            logging.exception(f"Error searching the internet: {e}")
+        if response:
+            selector = Selector(response.text)
+            result = self.parse_search_results(selector, payload=payload)
+            self.previous_searches.append(payload.query)
+            return result
 
     def make_request(self, url, params=None):
         params = params or {}
@@ -108,6 +105,9 @@ class GoogleSearchClient:
             texts = []
             logging.info(
                 f"First time executing query: {payload.query}, no expanded results")
+
+        if not financial_data and not info_box and not texts:
+            raise ValueError("No results found, try again adjusting your query.")
 
         return dedent(f"""
             {financial_data or ""}
