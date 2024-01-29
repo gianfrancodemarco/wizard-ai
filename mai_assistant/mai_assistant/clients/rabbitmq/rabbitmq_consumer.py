@@ -26,7 +26,7 @@ class RabbitMQConsumer:
         async with message.process():
             async with self.lock:
                 body = json.loads(message.body.decode())
-                logging.info(f" [x] Received {body}")
+                logging.debug(f" [x] Received {body}")
                 await self.on_message_callback(body)
                 # Your processing logic here
                 # For example, you can call an async function:
@@ -41,9 +41,7 @@ class RabbitMQConsumer:
             reconnect_interval=15
         )
         channel = await self.connection.channel()
-
         queue = await channel.declare_queue(self.queue_name, durable=True)
-
         await queue.consume(self.on_message)
 
     async def run_consumer(self):

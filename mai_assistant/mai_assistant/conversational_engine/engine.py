@@ -1,12 +1,11 @@
 
 import json
 import logging
-import pickle
+import pprint
+from textwrap import dedent
 from typing import Any
 
-import redis
 from fastapi.responses import JSONResponse
-from langchain_core.messages import HumanMessage, SystemMessage
 
 from mai_assistant.clients import (RabbitMQProducer, get_rabbitmq_producer,
                                    get_redis_client)
@@ -14,12 +13,13 @@ from mai_assistant.clients.rabbitmq import RabbitMQProducer
 from mai_assistant.constants import MessageQueues, MessageType
 from mai_assistant.constants.message_queues import MessageQueues
 from mai_assistant.constants.message_type import MessageType
-from mai_assistant.conversational_engine.agents import get_stored_memory
-from mai_assistant.conversational_engine.langchain_extention.mai_assistant_graph import MAIAssistantGraph
-from mai_assistant.conversational_engine.langchain_extention.structured_agent_executor import \
-    AgentState
+from mai_assistant.conversational_engine.agents import get_stored_agent_state, store_agent_state
+from mai_assistant.conversational_engine.langchain_extention.mai_assistant_graph import \
+    MAIAssistantGraph
 from mai_assistant.conversational_engine.tools import *
 from mai_assistant.models.chat_payload import ChatPayload
+
+pp = pprint.PrettyPrinter(indent=4)
 
 logger = logging.getLogger(__name__)
 
@@ -98,13 +98,14 @@ async def process_message(data: dict) -> None:
         Python(),
     ]
 
-    # Prepare input and memory
-    memory = get_stored_memory(redis_client, data.chat_id)
+    stored_agent_state = get_stored_agent_state(redis_client, data.chat_id)
     
     inputs = {
-        "input": [HumanMessage(content=data.content)],
-        "chat_history": [*memory.buffer],
-        "intermediate_steps": []
+        "input": data.content,
+        "chat_history": [*stored_agent_state.memory.buffer],
+        "intermediate_steps": [],
+        "form": stored_agent_state.form,
+        "active_form_tool": stored_agent_state.active_form_tool
     }
 
     telegram_connector = TelegramConnector(
@@ -120,62 +121,33 @@ async def process_message(data: dict) -> None:
         on_tool_end=telegram_connector.on_tool_end
     )
 
-    logger.info("---")
-    logger.info(f"Executing graph with inputs: {inputs}")
-    logger.info("---")
+    logger.info(dedent(f"""
+        ---
+        Executing graph with inputs: {inputs}"
+        ---
+    """))
     for output in graph.app.stream(inputs):
         # stream() yields dictionaries with output keyed by node name
         for key, value in output.items():
-            logger.info(f"Output from node '{key}':")
-            logger.info("---")
-            logger.info(value)
+            logger.info(dedent(f"""
+                Output from node '{key}':"
+                ---
+                {pp.pprint(value)}
+            """))
     answer = value["agent_outcome"].return_values["output"]
 
     # Prepare input and memory
-    memory.save_context(
+    stored_agent_state.memory.save_context(
         inputs={"messages": data.content},
         outputs={"output": answer}
     )
-    # context = get_stored_context(redis_client, data.chat_id)
-
-    # __update_stored_context(
-    #     redis_client,
-    #     data.chat_id,
-    #     agent.agent_chain.context)
-    __update_stored_memory(redis_client, data.chat_id, memory)
+    stored_agent_state.active_form_tool = value["active_form_tool"]
+    stored_agent_state.form = value["form"] 
+    
+    store_agent_state(redis_client, data.chat_id, stored_agent_state)
     __publish_answer(rabbitmq_producer, data.chat_id, answer)
 
     return JSONResponse({"content": answer})
-
-
-def __update_stored_context(
-        redis_client: redis.Redis,
-        chat_id: str,
-        context: AgentState):
-
-    # this shouldn't be here
-    if context.get("active_form_tool"):
-        context.form = context.form.model_dump_json()
-
-    redis_client.hset(
-        chat_id,
-        "context",
-        pickle.dumps(context)
-    )
-    logger.info("Saved memory to redis")
-
-
-def __update_stored_memory(
-        redis_client: redis.Redis,
-        chat_id: str,
-        memory: dict):
-
-    redis_client.hset(
-        chat_id,
-        "memory",
-        pickle.dumps(memory)
-    )
-    logger.info("Saved memory to redis")
 
 
 def __publish_answer(

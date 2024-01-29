@@ -247,6 +247,7 @@ class GoogleSearchClient:
         The first time a query is executed, we try to answer it with quick information (e.g. financial data, info box).
         If the user asks the same question again, we try to answer it with information from websites.
         """
+        return True
         return query in self.previous_searches
 
 

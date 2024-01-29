@@ -4,15 +4,15 @@ from langchain_core.tools import BaseTool, ToolException
 from pydantic import BaseModel, ValidationError
 
 from .form_tool import AgentState
-
+from pydantic import BaseModel, Field
 
 class ContextUpdatePayload(BaseModel):
-    values: Dict[str, Any]
+    values: Dict[str, Any] = Field(description="A dict with the values to update. The keys must match those if the form.")
 
 
 class ContextUpdate(BaseTool):
     name = "ContextUpdate"
-    description = """Useful to store the information given by the user."""
+    description = """Stores information given by the user in the form."""
     args_schema: Type[BaseModel] = ContextUpdatePayload
     handle_tool_error = True
 

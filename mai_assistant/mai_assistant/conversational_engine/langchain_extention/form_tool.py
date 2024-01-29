@@ -1,10 +1,9 @@
 import operator
-from typing import (Annotated, Any, Dict, Optional, Type,
-                    TypedDict, Union)
+from typing import Annotated, Any, Dict, Optional, Type, TypedDict, Union
 
 from langchain.callbacks.manager import CallbackManagerForToolRun
 from langchain_core.agents import AgentAction, AgentFinish
-from langchain_core.messages import BaseMessage
+from langchain_core.messages import BaseMessage, FunctionMessage, HumanMessage
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel
 
@@ -32,14 +31,14 @@ class FormTool(BaseTool):
 
     def get_next_field_to_collect(
         self,
-        context: Optional[BaseModel],
+        form: Optional[BaseModel],
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
         """
         The default implementation returns the first field that is not set.
         """
         for field_name, field_info in self.args_schema.__fields__.items():
-            if not getattr(context.form, field_name):
+            if not getattr(form, field_name):
                 return field_name
         return None
 
@@ -60,7 +59,7 @@ class AgentState(TypedDict):
     # List of actions and corresponding observations
     # Here we annotate this with `operator.add` to indicate that operations to
     # this state should be ADDED to the existing values (not overwrite it)
-    intermediate_steps: Annotated[list[tuple[AgentAction, str]], operator.add]
+    intermediate_steps: Annotated[list[tuple[AgentAction, FunctionMessage]], operator.add]
     
     active_form_tool: Optional[FormTool] = None
     form: BaseModel = None
