@@ -1,20 +1,21 @@
-import json
 from typing import Any, Sequence, Type
 
 from langchain import hub
 from langchain.agents import create_openai_functions_agent
-from langchain.tools.render import format_tool_to_openai_tool
-from langchain_core.agents import AgentAction, AgentFinish
+from langchain_core.agents import AgentFinish, AgentAction
 from langchain_core.messages import FunctionMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
-from langgraph.prebuilt import ToolExecutor, ToolInvocation
+from langgraph.prebuilt import ToolExecutor
+from langchain_core.load.serializable import Serializable
 
 from mai_assistant.conversational_engine.langchain_extention.form_tool import \
     AgentState
 from mai_assistant.conversational_engine.langchain_extention.intent_helpers import \
     filter_active_tools
 
+class AgentError(Serializable):
+    error: str
 
 class MAIAssistantGraph(StateGraph):
 
@@ -27,39 +28,26 @@ class MAIAssistantGraph(StateGraph):
     ) -> None:
         super().__init__(AgentState)
 
-        self.tools = filter_active_tools(tools, state)
-        self.tool_executor = ToolExecutor(self.tools)
         self.on_tool_start = on_tool_start
         self.on_tool_end = on_tool_end
         self.__build_graph()
         
+        self.tools = filter_active_tools(tools, state)
+        self.tool_executor = ToolExecutor(self.tools)
         self.prompt = hub.pull("hwchase17/openai-functions-agent")
         self.llm = ChatOpenAI(temperature=0, verbose=True)
         self.model = create_openai_functions_agent(self.llm, self.tools, self.prompt)
         
     def __build_graph(self):
 
-        # Define the two nodes we will cycle between
         self.add_node("agent", self.call_agent)
         self.add_node("tool", self.call_tool)
-
-        # We now add a conditional edge
         self.add_conditional_edges(
-            # First, we define the start node. We use `agent`.
-            # This means these are the edges taken after the `agent` node is called.
             "agent",
-            # Next, we pass in the function that will determine which node is called next.
             self.should_continue,
-            # Finally we pass in a mapping.
-            # The keys are strings, and the values are other nodes.
-            # END is a special node marking that the graph should finish.
-            # What will happen is we will call `should_continue`, and then the output of that
-            # will be matched against the keys in this mapping.
-            # Based on which one it matches, that node will then be called.
             {
-                # If `tools`, then we call the tool node.
                 "continue": "tool",
-                # Otherwise we finish.
+                "error": "agent",
                 "end": END
             }
         )
@@ -73,23 +61,16 @@ class MAIAssistantGraph(StateGraph):
             }
         )
 
-        # Set the entrypoint as `agent`
-        # This means that this node is the first one called
         self.set_entry_point("agent")
-
-        # Finally, we compile it!
-        # This compiles it into a LangChain Runnable,
-        # meaning you can use it as you would any other runnable
         self.app = self.compile()
 
-    # Define the function that determines whether to continue or not
     def should_continue(self, state: AgentState):
-        
         if isinstance(state['agent_outcome'], AgentFinish):
             return "end"
-        # Otherwise if there is, we continue
-        else:
+        elif isinstance(state['agent_outcome'], AgentAction):
             return "continue"
+        elif isinstance(state['agent_outcome'], AgentError):
+            return "error"
 
     def should_continue_after_tool(self, state: AgentState):
         action, result = state['intermediate_steps'][-1]
@@ -110,35 +91,33 @@ class MAIAssistantGraph(StateGraph):
         if len(state['intermediate_steps']) > 5:
             state['intermediate_steps'] = state['intermediate_steps'][-5:]
 
-        response = self.model.invoke({
-            "input": state["input"],
-            "chat_history": state["chat_history"],
-            "intermediate_steps": state["intermediate_steps"],
-        })
+        import langchain_core
+        try:
+            response = self.model.invoke({
+                "input": state["input"],
+                "chat_history": state["chat_history"],
+                "intermediate_steps": state["intermediate_steps"],
+            })
+        except langchain_core.exceptions.OutputParserException as e:
+            # TODO: Dirty trick to handle the case where the agent response cannot be parsed
+            # To be improved and handled with retries
+            response = AgentError(error=str(e))
+            error = FunctionMessage(
+                content=f"Invalid function call, try again. \nError: {str(e)}",
+                name="error"
+            )
+            return {
+                "agent_outcome": response,
+                "intermediate_steps": [(AgentAction("unknown", "unknown", "unknown"), error)]
+            }
 
-        # We return a list, because this will get added to the existing list
         return {"agent_outcome": response}
 
-    # Define the function to execute tools
     def call_tool(self, state: AgentState):
 
         action = state["agent_outcome"]
 
         try:
-            # We construct an ToolInvocation from the function_call
-                # action = ToolInvocation(
-                #     tool=action.tool,
-                #     tool_input=action.tool_input
-                # )
-        # except Exception as e:
-        #     error = str(e)
-        #     function_message = FunctionMessage(
-        #         content=f"Invalid function call, try again. \nError: {error}",
-        #         name=action.additional_kwargs["function_call"]["name"]
-        #     )
-        #     return {"intermediate_steps": [(action, function_message)]}
-
-        # try:
             self.on_tool_start(tool_name=action.tool,
                                tool_input=action.tool_input)
             # We call the tool_executor and get back a response
@@ -147,11 +126,7 @@ class MAIAssistantGraph(StateGraph):
 
             function_message = FunctionMessage(
                 content=str(response),
-                name=action.tool,
-                # additional_kwargs={
-                #     **action.additional_kwargs,
-                #     "return_direct": return_direct
-                # }
+                name=action.tool
             )
 
         except Exception as e:
@@ -161,7 +136,6 @@ class MAIAssistantGraph(StateGraph):
                 name=action.tool
             )
 
-        # We return a list, because this will get added to the existing list
         return {"intermediate_steps": [(action, function_message)]}
 
 
