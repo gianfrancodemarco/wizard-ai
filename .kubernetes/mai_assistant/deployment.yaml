@@ -65,3 +65,14 @@ spec:
                 secretKeyRef:
                   name: mai-assistant-secret
                   key: SERPAPI_API_KEY
+            - name: LANGCHAIN_TRACING_V2
+              value: "true"
+            - name: LANGCHAIN_ENDPOINT
+              value: "https://api.smith.langchain.com"
+            - name: LANGCHAIN_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mai-assistant-secret
+                  key: LANGCHAIN_API_KEY
+            - name: LANGCHAIN_PROJECT
+              value: "mai-assistant"
