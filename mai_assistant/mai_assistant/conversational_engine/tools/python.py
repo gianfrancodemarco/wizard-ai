@@ -24,7 +24,7 @@ class Python(BaseTool):
         result_value = local_vars.get('result')
 
         if not result_value:
-            raise ValueError("The final value of the snippet must be stored in a variable called `result`.")
+            raise ValueError("The last operation of the code provided must store the output of the code in a variable called result.")
         
         return str(result_value)
 

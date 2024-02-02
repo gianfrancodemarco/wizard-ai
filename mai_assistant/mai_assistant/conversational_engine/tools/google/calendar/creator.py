@@ -11,17 +11,20 @@ from mai_assistant.clients import (CreateCalendarEventPayload,
 from mai_assistant.conversational_engine.langchain_extention import (
     FormTool)
 
+from mai_assistant.conversational_engine.langchain_extention.intent_helpers import make_optional_model
 
 class GoogleCalendarCreator(FormTool):
 
     name = "GoogleCalendarCreator"
     description = """Useful to create events on Google Calendar."""
-    return_direct = True
     args_schema: Type[BaseModel] = CreateCalendarEventPayload
-
+    
+    # _args_schema: Type[BaseModel] = CreateCalendarEventPayload
+    #return_direct = True
+    
     chat_id: Optional[str] = None
 
-    def _run(
+    def run_when_complete(
         self,
         summary: str,
         description: str,

@@ -104,7 +104,7 @@ async def process_message(data: dict) -> None:
         "input": data.content,
         "chat_history": [*stored_agent_state.memory.buffer],
         "intermediate_steps": [],
-        "form": stored_agent_state.form,
+        #"form": stored_agent_state.form,
         "active_form_tool": stored_agent_state.active_form_tool
     }
 
@@ -126,7 +126,8 @@ async def process_message(data: dict) -> None:
         Executing graph with inputs: {inputs}"
         ---
     """))
-    for output in graph.app.stream(inputs):
+    nodes = []
+    for output in graph.app.stream(inputs, config={"recursion_limit": 25}):
         # stream() yields dictionaries with output keyed by node name
         for key, value in output.items():
             logger.info(dedent(f"""
@@ -134,6 +135,21 @@ async def process_message(data: dict) -> None:
                 ---
                 {pp.pprint(value)}
             """))
+            nodes.append(key)
+    logger.info(dedent(f"""
+        ---
+                       
+
+
+        Executed nodes:
+        {" -> ".join(nodes)}
+
+
+
+
+        ---
+    """))
+
     answer = value["agent_outcome"].return_values["output"]
 
     # Prepare input and memory
@@ -142,7 +158,7 @@ async def process_message(data: dict) -> None:
         outputs={"output": answer}
     )
     stored_agent_state.active_form_tool = value["active_form_tool"]
-    stored_agent_state.form = value["form"] 
+    #stored_agent_state.form = value["form"] 
     
     store_agent_state(redis_client, data.chat_id, stored_agent_state)
     __publish_answer(rabbitmq_producer, data.chat_id, answer)
