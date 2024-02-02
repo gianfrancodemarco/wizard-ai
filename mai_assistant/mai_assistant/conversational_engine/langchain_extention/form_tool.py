@@ -35,9 +35,9 @@ class FormTool(BaseTool, ABC):
     ) -> str:
 
         if self.is_form_complete():
-            self.run_when_complete(**kwargs)
+            return self.run_when_complete(**kwargs)
         else:
-            self.update_form(**kwargs)
+            return self.update_form(**kwargs)
 
     def update_form(self, **kwargs):
         for key, value in kwargs.items():

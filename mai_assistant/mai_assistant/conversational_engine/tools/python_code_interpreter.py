@@ -6,11 +6,20 @@ from pydantic import BaseModel, Field
 
 
 class PythonInput(BaseModel):
-    code: str = Field(description="A valid snippet of Python code to be executed using exec(). Must store the final value in a variable called `result`")
+    code: str = Field(description="A valid Python script. The last operation must store the output value in a variable called `result`")
 
-class Python(BaseTool):
-    name = "Python"
-    description = "Python code execution tool"
+class PythonCodeInterpreter(BaseTool):
+    name = "PythonCodeInterpreter"
+    description = """
+    Execute Python code. Useful to do computations and get fresh data (for example the current date and time).
+    
+    Examples:
+
+    - {"code": \"\"\"import datetime\nresult = datetime.datetime.now()\n\"\"\"}
+    - {"code": \"\"\"a = 5\nb = 3\nresult = a + b\n\"\"\"}
+    - {"code": \"\"\"import math\nresult = math.sqrt(25)\n\"\"\"}    
+    """
+
     args_schema: Type[BaseModel] = PythonInput
 
     def _run(

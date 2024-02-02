@@ -3,4 +3,4 @@ from .google import (GmailRetriever, GoogleCalendarCreator,
 from .google.calendar.creator import GoogleCalendarCreator
 from .google.calendar.retriever import GoogleCalendarRetriever
 from .google.search.search import GoogleSearch
-from .python import Python
+from .python_code_interpreter import PythonCodeInterpreter

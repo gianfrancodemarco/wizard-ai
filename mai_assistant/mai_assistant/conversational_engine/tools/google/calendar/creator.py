@@ -54,10 +54,14 @@ class GoogleCalendarCreator(FormTool):
 
         payload = CreateCalendarEventPayload(**input)
 
-        return "Creating event on Google Calendar\n" +\
-            textwrap.dedent(f"""
-                Summary: {payload.summary}
-                Description: {payload.description}
-                Start: {payload.start}
-                End: {payload.end}
-            """)
+        head_string = "Updated form with the following information:" 
+        if self.is_form_complete():
+            head_string = "Form is complete."
+
+        return textwrap.dedent(f"""
+            {head_string}
+            Summary: {payload.summary}
+            Description: {payload.description}
+            Start: {payload.start}
+            End: {payload.end}
+        """)
