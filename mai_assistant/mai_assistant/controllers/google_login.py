@@ -60,7 +60,7 @@ def login(
     # Also, set the state token as the key and the user ID as the value in the
     # mapping for lookup later
     redis_client.hset(
-        "google_state_token",
+        RedisKeys.GOOGLE_STATE_TOKEN.value,
         state_token,
         chat_id
     )
