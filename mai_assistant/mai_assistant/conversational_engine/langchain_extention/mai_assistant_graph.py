@@ -82,7 +82,7 @@ class MAIAssistantGraph(StateGraph):
 
             ask_info = SystemMessagePromptTemplate.from_template(dedent(f"""
                 You need to ask the user to provide the needed information.
-                Now you MUST ask the user to provide a value for {information_to_collect}.
+                Now you MUST ask the user to provide a value for the field "{information_to_collect}".
                 When the user provides a value, use the {form_tool.name} tool to update the form.
             """))
 

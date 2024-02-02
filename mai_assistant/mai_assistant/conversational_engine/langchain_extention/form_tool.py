@@ -32,21 +32,16 @@ class FormTool(BaseTool, ABC):
         **kwargs
     ) -> str:
         if self.is_form_complete():
-            return self._run_when_complete(**kwargs)
+            result = self._run_when_complete(**kwargs)
+            # if no exception is raised, the form is complete and the tool is done, so reset the active form tool
+            return {
+                "state_update": {
+                    "active_form_tool": None
+                },
+                "output": result
+            }
         else:
             return self._update_form(**kwargs)
-
-    # @abstractmethod
-    def _run_when_complete(
-        self,
-        *args,
-        run_manager: Optional[CallbackManagerForToolRun] = None
-    ) -> str:
-        """
-        Should raise an exception if something goes wrong. 
-        The message should describe the error and will be sent back to the agent to try to fix it.
-        """
-        pass
 
     def is_form_complete(self) -> bool:
         """
@@ -58,18 +53,17 @@ class FormTool(BaseTool, ABC):
                 return False
         return True
 
-    def get_next_field_to_collect(
+    #TODO: @abstractmethod
+    def _run_when_complete(
         self,
-        form: Optional[BaseModel],
-        run_manager: Optional[CallbackManagerForToolRun] = None,
+        *args,
+        run_manager: Optional[CallbackManagerForToolRun] = None
     ) -> str:
         """
-        The default implementation returns the first field that is not set.
+        Should raise an exception if something goes wrong. 
+        The message should describe the error and will be sent back to the agent to try to fix it.
         """
-        for field_name, field_info in self.args_schema.__fields__.items():
-            if not getattr(form, field_name):
-                return field_name
-        return None
+        pass
 
     def _update_form(self, **kwargs):
         for key, value in kwargs.items():
@@ -87,8 +81,21 @@ class FormTool(BaseTool, ABC):
             "state_update": {
                 "active_form_tool": self
             },
-            "output": "Form updated",
+            "output": "Form updated with the provided information. Ask the user for the next field.",
         }
+
+    def get_next_field_to_collect(
+        self,
+        form: Optional[BaseModel],
+        run_manager: Optional[CallbackManagerForToolRun] = None,
+    ) -> str:
+        """
+        The default implementation returns the first field that is not set.
+        """
+        for field_name, field_info in self.args_schema.__fields__.items():
+            if not getattr(form, field_name):
+                return field_name
+        return None
 
     def get_tool_start_message(self, input: dict) -> str:
         return "Creating form\n"
