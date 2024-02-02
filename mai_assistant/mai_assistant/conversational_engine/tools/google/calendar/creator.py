@@ -12,7 +12,7 @@ from mai_assistant.conversational_engine.langchain_extention import (
     FormTool)
 
 from mai_assistant.conversational_engine.langchain_extention.intent_helpers import make_optional_model
-
+from mai_assistant.constants.redis_keys import RedisKeys
 class GoogleCalendarCreator(FormTool):
 
     name = "GoogleCalendarCreator"
@@ -26,26 +26,23 @@ class GoogleCalendarCreator(FormTool):
 
     def run_when_complete(
         self,
-        summary: str,
-        description: str,
-        start: datetime,
-        end: datetime,
-        run_manager: Optional[CallbackManagerForToolRun] = None
+        run_manager: Optional[CallbackManagerForToolRun] = None,
+        **kwargs
     ) -> str:
         """Use the tool."""
 
         credentials = get_redis_client().hget(
             self.chat_id,
-            "google_credentials"
+            RedisKeys.GOOGLE_CREDENTIALS.value
         )
         credentials = pickle.loads(credentials)
 
         google_client = GoogleClient(credentials)
         payload = CreateCalendarEventPayload(
-            summary=summary,
-            description=description,
-            start=start,
-            end=end
+            summary=kwargs["summary"],
+            description=kwargs["description"],
+            start=kwargs["start"],
+            end=kwargs["end"]
         )
         google_client.create_calendar_event(payload)
         return "The event was created successfully"

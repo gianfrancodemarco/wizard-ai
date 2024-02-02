@@ -34,6 +34,12 @@ class FormTool(BaseTool, ABC):
         **kwargs
     ) -> str:
 
+        if self.is_form_complete():
+            self.run_when_complete(**kwargs)
+        else:
+            self.update_form(**kwargs)
+
+    def update_form(self, **kwargs):
         for key, value in kwargs.items():
             try:
                 setattr(self.form, key, value)
@@ -60,17 +66,14 @@ class FormTool(BaseTool, ABC):
     ) -> str:
         pass
 
-    def is_form_complete(
-        self,
-        context: Optional[BaseModel],
-    ) -> bool:
+    def is_form_complete(self) -> bool:
         """
         The default implementation checks if all values except optional ones are set.
         """
         for field_name, field_info in self.args_schema.__fields__.items():
-            if field_info.is_required():
-                if not getattr(context.form, field_name):
-                    return False
+            #if field_info.is_required():
+            if not getattr(self.form, field_name):
+                return False
         return True
 
     def get_next_field_to_collect(

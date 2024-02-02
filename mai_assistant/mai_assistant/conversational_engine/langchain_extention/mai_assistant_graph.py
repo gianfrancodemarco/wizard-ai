@@ -114,15 +114,26 @@ class MAIAssistantGraph(StateGraph):
                 {name: value for name, value in form_tool.form.__dict__.items() if value})))
             information_to_collect = form_tool.get_next_field_to_collect(
                 form_tool.form)
+            
+            ask_info = SystemMessagePromptTemplate.from_template(dedent(f"""
+                You need to ask the user to provide the needed information.
+                Now you MUST ask the user to provide a value for {information_to_collect}.
+                When the user provides a value, use the {form_tool.name} tool to update the form.
+            """))
+
+            ask_confirm = SystemMessagePromptTemplate.from_template(dedent(f"""
+                You have all the information you need. 
+                Show the user all of the information and ask for confirmation.
+                If he agrees, call the {form_tool.name} tool one more time with all of the information.
+            """))
+
             messages = [
                 SystemMessagePromptTemplate.from_template(dedent(f"""
                 You are a personal assistant and you always answer in English.
                 You are trying to to help the user fill data for {form_tool.name}.
-                You need to ask the user to provide the needed information.
                 So far, you have collected the following information: {information_collected}
-                Now you MUST ask the user to provide a value for "{information_to_collect}".
-                When the user provides a value, use the {form_tool.name} tool to update the form.
                 """)),
+                ask_info if information_to_collect else ask_confirm,                
                 *variable_messages
             ]
             prompt = ChatPromptTemplate(messages=messages)
