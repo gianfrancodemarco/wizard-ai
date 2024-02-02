@@ -1,24 +1,23 @@
 import operator
-from typing import (Annotated, Any, Dict, Optional, Sequence, Type, TypedDict,
+from abc import ABC
+from typing import (Annotated, Any, Dict, Optional, Sequence, Type, TypedDict, List,
                     Union)
 
 from langchain.callbacks.manager import CallbackManagerForToolRun
 from langchain_core.agents import AgentAction, AgentFinish
 from langchain_core.messages import BaseMessage, FunctionMessage
 from langchain_core.pydantic_v1 import BaseModel
-from langchain_core.tools import BaseTool, ToolException
+from langchain_core.tools import BaseTool, StructuredTool, ToolException
 from pydantic import BaseModel, ValidationError
 
-from abc import ABC
 from .tool_dummy_payload import ToolDummyPayload
 
 
-class FormTool(BaseTool, ABC):
+class FormTool(StructuredTool):
     """
     FormTool methods should take context as AgentState, but this creates circular references
     So we use BaseModel instead
     """
-
     form: BaseModel = None
 
     def __init__(self, *args, **kwargs):
@@ -53,7 +52,7 @@ class FormTool(BaseTool, ABC):
                 return False
         return True
 
-    #TODO: @abstractmethod
+    # TODO: @abstractmethod
     def _run_when_complete(
         self,
         *args,
@@ -108,16 +107,16 @@ class AgentState(TypedDict):
     # The input string
     input: str
     # The list of previous messages in the conversation
-    chat_history: Annotated[list[BaseMessage], operator.setitem]
+    chat_history: Annotated[Optional[list[BaseMessage]], operator.setitem]
     # The outcome of a given call to the agent
     # Needs `None` as a valid type, since this is what this will start as
-    agent_outcome: Annotated[Union[AgentAction,
-                                   AgentFinish, None], operator.setitem]
+    agent_outcome: Annotated[Optional[Union[AgentAction,
+                                   AgentFinish, None]], operator.setitem]
     # List of actions and corresponding observations
     # Here we annotate this with `operator.add` to indicate that operations to
     # this state should be ADDED to the existing values (not overwrite it)
-    intermediate_steps: Annotated[list[tuple[AgentAction,
-                                             FunctionMessage]], operator.add]
+    intermediate_steps: Annotated[Optional[list[tuple[AgentAction,
+                                             FunctionMessage]]], operator.add]
     error: Annotated[Optional[str], operator.setitem]
 
     active_form_tool: Annotated[Optional[FormTool], operator.setitem]
@@ -154,8 +153,7 @@ def filter_active_tools(
                 form_tool_class=tool.__class__,
                 form_tool=tool,
                 name=f"{tool.name}Activator",
-                description=tool.description,
-                context=context
+                description=tool.description
             )
             for tool in tools
             if isinstance(tool, FormTool)
@@ -179,7 +177,6 @@ class FormToolActivator(BaseTool):
     args_schema: Type[BaseModel] = ToolDummyPayload
     form_tool_class: Type[FormTool]
     form_tool: FormTool
-    context: AgentState
 
     def _run(
         self,

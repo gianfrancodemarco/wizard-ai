@@ -1,8 +1,13 @@
 from typing import Any
 
-from mai_assistant.conversational_engine.langchain_extention.intent_helpers import (
-    BaseTool, AgentState, FormTool, FormToolActivator, ContextReset, ContextUpdate,
-    filter_active_tools)
+from pydantic import BaseModel
+
+from mai_assistant.conversational_engine.langchain_extention.form_tool import (
+    AgentState, ContextReset, FormTool, FormToolActivator, filter_active_tools)
+from mai_assistant.conversational_engine.langchain_extention.intent_helpers import \
+    BaseTool
+from typing import Dict, Optional, Type, Union
+
 
 class MockBaseTool(BaseTool):
     name = "MockBaseTool"
@@ -14,33 +19,34 @@ class MockBaseTool(BaseTool):
     ) -> Any:
         pass
 
+
+class _DummyPayload(BaseModel):
+    pass
+
+
 class MockFormTool(FormTool):
     name = "MockFormTool"
     description = "MockFormTool description"
-
-    def _run(
-        self,
-        **kwargs: Any,
-    ) -> Any:
-        pass
+    args_schema: Type[BaseModel] = _DummyPayload
 
 
 def test_filter_active_tools_no_active_form_tool():
     tools = [
         MockBaseTool(),
         MockBaseTool(),
-        MockFormTool(),   
+        MockFormTool(),
         MockFormTool(),
     ]
-    context = AgentState(active_form_tool=None)
+    agent_state = AgentState()
 
-    filtered_tools = filter_active_tools(tools, context)
+    filtered_tools = filter_active_tools(tools, agent_state)
 
     assert len(filtered_tools) == 4
     assert isinstance(filtered_tools[0], BaseTool)
     assert isinstance(filtered_tools[1], BaseTool)
     assert isinstance(filtered_tools[2], FormToolActivator)
     assert isinstance(filtered_tools[3], FormToolActivator)
+
 
 def test_filter_active_tools_with_active_form_tool():
 
@@ -49,17 +55,16 @@ def test_filter_active_tools_with_active_form_tool():
     tools = [
         MockBaseTool(),
         MockBaseTool(),
-        active_form_tool,   
+        active_form_tool,
         MockFormTool(),
     ]
-    context = AgentState()
-    context.get("active_form_tool") = active_form_tool
+    agent_state = AgentState()
+    agent_state["active_form_tool"] = active_form_tool
 
-    filtered_tools = filter_active_tools(tools, context)
+    filtered_tools = filter_active_tools(tools, agent_state)
 
-    assert len(filtered_tools) == 5
-    assert isinstance(filtered_tools[0], FormTool)
+    assert len(filtered_tools) == 4
+    assert isinstance(filtered_tools[0], BaseTool)
     assert isinstance(filtered_tools[1], BaseTool)
-    assert isinstance(filtered_tools[2], BaseTool)
-    assert isinstance(filtered_tools[3], ContextUpdate)
-    assert isinstance(filtered_tools[4], ContextReset)
+    assert filtered_tools[2] == active_form_tool
+    assert isinstance(filtered_tools[3], ContextReset)
