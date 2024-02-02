@@ -2,16 +2,15 @@ import pickle
 from datetime import datetime
 from typing import Optional, Type
 
-from langchain_core.callbacks import CallbackManagerForToolRun
+from langchain_core.callbacks import (AsyncCallbackManagerForToolRun,
+                                      CallbackManagerForToolRun)
 from pydantic import BaseModel
 
 from mai_assistant.clients import (GetCalendarEventsPayload, GoogleClient,
                                    get_redis_client)
-from mai_assistant.conversational_engine.langchain_extention import \
-    FormTool, FormToolActivator
-
-from langchain_core.callbacks import AsyncCallbackManagerForToolRun
-from mai_assistant.conversational_engine.langchain_extention import FormStructuredChatExecutorContext
+from mai_assistant.constants import RedisKeys
+from mai_assistant.conversational_engine.langchain_extention import (
+    AgentState, FormTool)
 
 
 class GoogleCalendarRetriever(FormTool):
@@ -34,7 +33,7 @@ class GoogleCalendarRetriever(FormTool):
 
         credentials = get_redis_client().hget(
             self.chat_id,
-            "google_credentials"
+            RedisKeys.GOOGLE_CREDENTIALS.value
         )
         credentials = pickle.loads(credentials)
 
@@ -53,12 +52,12 @@ class GoogleCalendarRetriever(FormTool):
         if payload.start and payload.end:
             return f"Retrieving events from Google Calendar between {payload.start} and {payload.end}"
         elif payload.number_of_events:
-            return f"Retrieving next {payload.number_of_events} from Google Calendar"
+            return f"Retrieving next {payload.number_of_events} events from Google Calendar"
 
     async def ais_form_complete(
         self,
         run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
-        context: Optional[FormStructuredChatExecutorContext] = None,
+        context: Optional[AgentState] = None,
     ) -> bool:
         """
         User should provide number_of_events or start and end dates

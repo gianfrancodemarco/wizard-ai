@@ -14,7 +14,6 @@ RUN pip install poetry && \
 RUN poetry add debugpy --dev
 
 COPY mai_assistant_telegram_bot .
-COPY client_secret.json .
 
 # Install the project
 RUN poetry install --only-root

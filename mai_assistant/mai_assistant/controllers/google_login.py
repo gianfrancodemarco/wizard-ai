@@ -13,7 +13,7 @@ from google_auth_oauthlib.flow import Flow
 from starlette.exceptions import HTTPException
 
 from mai_assistant.clients import RabbitMQProducerDep, RedisClientDep
-from mai_assistant.constants import MessageQueues, MessageType
+from mai_assistant.constants import MessageQueues, MessageType, RedisKeys
 
 logger = logging.getLogger(__name__)
 google_login_router = APIRouter(prefix="/google")
@@ -53,14 +53,14 @@ def login(
     # Store the state token in the user credentials mapping
     redis_client.hset(
         chat_id,
-        "google_state_token",
+        RedisKeys.GOOGLE_STATE_TOKEN.value,
         state_token
     )
 
     # Also, set the state token as the key and the user ID as the value in the
     # mapping for lookup later
     redis_client.hset(
-        "google_state_token",
+        RedisKeys.GOOGLE_STATE_TOKEN.value,
         state_token,
         chat_id
     )
@@ -99,7 +99,7 @@ def callback(
 
     # Verify that the state token is valid
     chat_id = redis_client.hget(
-        "google_state_token",
+        RedisKeys.GOOGLE_STATE_TOKEN.value,
         state_token
     )
 
@@ -111,7 +111,7 @@ def callback(
     # Get the stored user and compare the state tokens
     stored_conversation_google_state_token = redis_client.hget(
         chat_id,
-        "google_state_token"
+        RedisKeys.GOOGLE_STATE_TOKEN.value
     )
 
     if not stored_conversation_google_state_token:
@@ -138,14 +138,15 @@ def callback(
     credentials = flow.credentials
     redis_client.hset(
         chat_id,
-        "google_credentials",
+        RedisKeys.GOOGLE_CREDENTIALS.value,
         pickle.dumps(credentials)
     )
 
-    redis_client.hdel(
-        "google_state_token_mapping",
-        state_token
-    )
+    # TODO: Shouldn't be needed, delete this
+    # redis_client.hdel(
+    #     "google_state_token_mapping",
+    #     state_token
+    # )
 
     # Publish a message to the RabbitMQ queue
     rabbitmq_client.publish(

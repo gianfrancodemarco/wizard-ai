@@ -1,6 +1,5 @@
 import pickle
 import textwrap
-from datetime import datetime
 from typing import Dict, Optional, Type, Union
 
 from langchain_core.callbacks import CallbackManagerForToolRun
@@ -11,38 +10,36 @@ from mai_assistant.clients import (CreateCalendarEventPayload,
 from mai_assistant.conversational_engine.langchain_extention import (
     FormTool)
 
+from mai_assistant.constants.redis_keys import RedisKeys
+
 
 class GoogleCalendarCreator(FormTool):
 
     name = "GoogleCalendarCreator"
     description = """Useful to create events on Google Calendar."""
-    return_direct = True
     args_schema: Type[BaseModel] = CreateCalendarEventPayload
 
     chat_id: Optional[str] = None
 
-    def _run(
+    def _run_when_complete(
         self,
-        summary: str,
-        description: str,
-        start: datetime,
-        end: datetime,
-        run_manager: Optional[CallbackManagerForToolRun] = None
+        run_manager: Optional[CallbackManagerForToolRun] = None,
+        **kwargs
     ) -> str:
         """Use the tool."""
 
         credentials = get_redis_client().hget(
             self.chat_id,
-            "google_credentials"
+            RedisKeys.GOOGLE_CREDENTIALS.value
         )
         credentials = pickle.loads(credentials)
 
         google_client = GoogleClient(credentials)
         payload = CreateCalendarEventPayload(
-            summary=summary,
-            description=description,
-            start=start,
-            end=end
+            summary=kwargs["summary"],
+            description=kwargs["description"],
+            start=kwargs["start"],
+            end=kwargs["end"]
         )
         google_client.create_calendar_event(payload)
         return "The event was created successfully"
@@ -54,7 +51,11 @@ class GoogleCalendarCreator(FormTool):
 
         payload = CreateCalendarEventPayload(**input)
 
-        return "Creating event on Google Calendar\n" +\
+        head_string = "Updated form with the following information:"
+        if self.is_form_complete():
+            head_string = "Form is complete."
+
+        return f"{head_string}\n" +\
             textwrap.dedent(f"""
                 Summary: {payload.summary}
                 Description: {payload.description}

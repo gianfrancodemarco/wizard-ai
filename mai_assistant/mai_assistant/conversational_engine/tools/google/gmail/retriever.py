@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 from mai_assistant.clients import (GetEmailsPayload, GoogleClient,
                                    get_redis_client)
+from mai_assistant.constants import RedisKeys
 
 
 class GmailRetriever(StructuredTool):
@@ -26,7 +27,7 @@ class GmailRetriever(StructuredTool):
 
         credentials = get_redis_client().hget(
             self.chat_id,
-            "google_credentials"
+            RedisKeys.GOOGLE_CREDENTIALS.value
         )
         credentials = pickle.loads(credentials)
 

@@ -3,6 +3,7 @@ import logging
 from fastapi import APIRouter, HTTPException
 
 from mai_assistant.clients import RedisClientDep
+from mai_assistant.constants import RedisKeys
 
 logger = logging.getLogger(__name__)
 
@@ -26,11 +27,7 @@ async def chat(chat_id: str, redis_client: RedisClientDep):
 
     redis_client.hdel(
         chat_id,
-        "memory"
-    )
-    redis_client.hdel(
-        chat_id,
-        "context"
+        RedisKeys.AGENT_STATE.value
     )
     logger.info(f"Deleted conversation {chat_id}")
     return {"content": "Conversation deleted"}

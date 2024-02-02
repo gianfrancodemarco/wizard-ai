@@ -25,8 +25,7 @@ class Handler:
         self.bot = bot
         self.mai_assistant_client = MAIAssistantClient()
         self.rabbitmq_producer = get_rabbitmq_producer()
-        self.openai_client = OpenAI(
-            api_key='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')
+        self.openai_client = OpenAI()
 
     async def reset_conversation_handler(
         self,

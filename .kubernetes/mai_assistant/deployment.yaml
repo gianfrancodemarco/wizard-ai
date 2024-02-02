@@ -38,11 +38,11 @@ spec:
                 secretKeyRef:
                   name: mai-assistant-secret
                   key: REDIS_PASSWORD
-            - name: LLM_URL
-              value: https://f22d-35-197-99-107.ngrok-free.app/
-            - name: LLM_MODEL
-              #value: llama-2-7B-chat-hf
-              value: gpt-3.5-turbo-1106
+            # - name: LLM_URL
+            #   value: https://f22d-35-197-99-107.ngrok-free.app/
+            # - name: LLM_MODEL
+            #   #value: llama-2-7B-chat-hf
+            #   value: gpt-3.5-turbo-1106
             - name: PIKA_URL
               valueFrom:
                 secretKeyRef:
@@ -65,3 +65,14 @@ spec:
                 secretKeyRef:
                   name: mai-assistant-secret
                   key: SERPAPI_API_KEY
+            - name: LANGCHAIN_TRACING_V2
+              value: "true"
+            - name: LANGCHAIN_ENDPOINT
+              value: "https://api.smith.langchain.com"
+            - name: LANGCHAIN_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mai-assistant-secret
+                  key: LANGCHAIN_API_KEY
+            - name: LANGCHAIN_PROJECT
+              value: "mai-assistant"
