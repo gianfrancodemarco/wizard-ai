@@ -158,13 +158,13 @@ class GoogleSearchClient:
         variation = self._get_xpath_with_alternatives(
             financial_data,
             [
+                '//span[@class="iXabQc vgpkr"]',
                 '//span[@class="iXabQc ASafz"]',
                 '//span[contains(@class, "WlRRw") and contains(@class, "IsqQVc")]'])
 
         absolute_variation = self._get_xpath_with_alternatives(
             variation,
             [
-                '//span[@class="iXabQc vgpkr"]',
                 '//span[@jsname="SwWl3d"]//text()',
                 '//span[@jsname="qRSVye"]//text()'
             ],
