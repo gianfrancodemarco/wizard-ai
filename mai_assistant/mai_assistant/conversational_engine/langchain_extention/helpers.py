@@ -28,22 +28,25 @@ class StateGraphDrawer:
         }
 
         The keys are the original labels, and the values are the new labels.
-        
+
     Usage:
         drawer = StateGraphDrawer()
-        drawer.draw(state_graph, 'graph.png')    
+        drawer.draw(state_graph, 'graph.png')
     """
 
     def __init__(self, fontname="calibri", label_overrides=None):
         self.fontname = fontname
-        self.label_overrides = defaultdict(dict) if not label_overrides else label_overrides
+        self.label_overrides = defaultdict(
+            dict) if not label_overrides else label_overrides
 
     def get_node_label(self, label: str) -> str:
         label = self.label_overrides.get('nodes', {}).get(label, label)
         return f"<<B>{label}</B>>"
 
     def get_conditional_edge_label(self, label: str) -> str:
-        label = self.label_overrides.get('conditional_edges', {}).get(label, label)
+        label = self.label_overrides.get(
+            'conditional_edges', {}).get(
+            label, label)
         return f"<<I>{label}</I>>"
 
     def get_edge_label(self, label: str) -> str:
@@ -57,7 +60,7 @@ class StateGraphDrawer:
         label: str = None
     ):
         if not label:
-            label = node 
+            label = node
 
         graphviz_graph.add_node(
             node,
@@ -115,7 +118,7 @@ class StateGraphDrawer:
         :param state_graph: The state graph to draw
         :param output_file_path: The path to the output file
         """
-                
+
         try:
             import pygraphviz as pgv
         except ImportError:
@@ -159,5 +162,7 @@ class StateGraphDrawer:
             self.add_edge(graph, start, end)
 
     def update_styles(self, graph, state_graph):
-        graph.get_node(state_graph.entry_point).attr.update(fillcolor='lightblue')
+        graph.get_node(
+            state_graph.entry_point).attr.update(
+            fillcolor='lightblue')
         graph.get_node("__end__").attr.update(fillcolor='orange')

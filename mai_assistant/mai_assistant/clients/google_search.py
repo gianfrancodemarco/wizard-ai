@@ -107,7 +107,8 @@ class GoogleSearchClient:
                 f"First time executing query: {payload.query}, no expanded results")
 
         if not financial_data and not info_box and not texts:
-            raise ValueError("No results found, try again adjusting your query.")
+            raise ValueError(
+                "No results found, try again adjusting your query.")
 
         return dedent(f"""
             {financial_data or ""}

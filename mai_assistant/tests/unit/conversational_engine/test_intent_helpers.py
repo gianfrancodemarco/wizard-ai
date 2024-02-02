@@ -6,7 +6,7 @@ from mai_assistant.conversational_engine.langchain_extention.form_tool import (
     AgentState, ContextReset, FormTool, FormToolActivator, filter_active_tools)
 from mai_assistant.conversational_engine.langchain_extention.intent_helpers import \
     BaseTool
-from typing import Dict, Optional, Type, Union
+from typing import Type
 
 
 class MockBaseTool(BaseTool):

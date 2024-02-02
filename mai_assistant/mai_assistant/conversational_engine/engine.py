@@ -28,7 +28,7 @@ redis_client = get_redis_client()
 
 
 class RabbitMQConnector:
-    
+
     def __init__(
         self,
         chat_id: str,
@@ -40,8 +40,7 @@ class RabbitMQConnector:
         self.tools = tools
         self.rabbitmq_client = rabbitmq_producer
         self.queue = queue
-        
-            
+
     def on_tool_start(
         self,
         tool_name: str,
@@ -50,9 +49,10 @@ class RabbitMQConnector:
         """Run when tool starts running."""
         if not self.rabbitmq_client:
             return
-        
+
         try:
-            tool = next((tool for tool in self.tools if tool.name == tool_name), None)
+            tool = next(
+                (tool for tool in self.tools if tool.name == tool_name), None)
             tool_start_message = tool.get_tool_start_message(tool_input)
         except BaseException:
             tool_start_message = f"{tool_name}: {tool_input}"
@@ -85,6 +85,7 @@ class RabbitMQConnector:
             })
         )
 
+
 async def process_message(data: dict) -> None:
 
     data: ChatPayload = ChatPayload.model_validate(data)
@@ -99,7 +100,7 @@ async def process_message(data: dict) -> None:
     ]
 
     stored_agent_state = get_stored_agent_state(redis_client, data.chat_id)
-    
+
     inputs = {
         "input": data.content,
         "chat_history": [*stored_agent_state.memory.buffer],
@@ -137,7 +138,7 @@ async def process_message(data: dict) -> None:
             nodes.append(key)
     logger.info(dedent(f"""
         ---
-                       
+
 
 
         Executed nodes:
@@ -157,7 +158,7 @@ async def process_message(data: dict) -> None:
         outputs={"output": answer}
     )
     stored_agent_state.active_form_tool = value["active_form_tool"]
-    
+
     store_agent_state(redis_client, data.chat_id, stored_agent_state)
     __publish_answer(rabbitmq_producer, data.chat_id, answer)
 

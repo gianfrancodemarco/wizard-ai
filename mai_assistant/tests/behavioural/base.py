@@ -1,3 +1,4 @@
+from langchain_community.tools.convert_to_openai import format_tool_to_openai_function
 import os
 
 import langsmith
@@ -21,11 +22,10 @@ tools = [
     PythonCodeInterpreter(),
 ]
 
-from langchain_community.tools.convert_to_openai import format_tool_to_openai_function
 _llm = ChatOpenAI(temperature=0)
 llm_with_tools = _llm.bind(
-        functions=[format_tool_to_openai_function(t) for t in tools]
-    ).bound
+    functions=[format_tool_to_openai_function(t) for t in tools]
+).bound
 
 eval_config = smith.RunEvalConfig(
     evaluators=[

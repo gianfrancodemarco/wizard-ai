@@ -1,7 +1,5 @@
 import operator
-from abc import ABC
-from typing import (Annotated, Any, Dict, Optional, Sequence, Type, TypedDict, List,
-                    Union)
+from typing import (Annotated, Any, Dict, Optional, Sequence, Type, TypedDict, Union)
 
 from langchain.callbacks.manager import CallbackManagerForToolRun
 from langchain_core.agents import AgentAction, AgentFinish
@@ -32,7 +30,8 @@ class FormTool(StructuredTool):
     ) -> str:
         if self.is_form_complete():
             result = self._run_when_complete(**kwargs)
-            # if no exception is raised, the form is complete and the tool is done, so reset the active form tool
+            # if no exception is raised, the form is complete and the tool is
+            # done, so reset the active form tool
             return {
                 "state_update": {
                     "active_form_tool": None
@@ -59,10 +58,9 @@ class FormTool(StructuredTool):
         run_manager: Optional[CallbackManagerForToolRun] = None
     ) -> str:
         """
-        Should raise an exception if something goes wrong. 
+        Should raise an exception if something goes wrong.
         The message should describe the error and will be sent back to the agent to try to fix it.
         """
-        pass
 
     def _update_form(self, **kwargs):
         for key, value in kwargs.items():
@@ -111,12 +109,12 @@ class AgentState(TypedDict):
     # The outcome of a given call to the agent
     # Needs `None` as a valid type, since this is what this will start as
     agent_outcome: Annotated[Optional[Union[AgentAction,
-                                   AgentFinish, None]], operator.setitem]
+                                            AgentFinish, None]], operator.setitem]
     # List of actions and corresponding observations
     # Here we annotate this with `operator.add` to indicate that operations to
     # this state should be ADDED to the existing values (not overwrite it)
     intermediate_steps: Annotated[Optional[list[tuple[AgentAction,
-                                             FunctionMessage]]], operator.add]
+                                                      FunctionMessage]]], operator.add]
     error: Annotated[Optional[str], operator.setitem]
 
     active_form_tool: Annotated[Optional[FormTool], operator.setitem]

@@ -19,5 +19,7 @@ class ToolExecutorWithState(ToolExecutor):
             )
         else:
             tool = self.tool_map[tool_invocation.tool]
-            output = tool.invoke(tool_invocation.tool_input, agent_state=agent_state)
+            output = tool.invoke(
+                tool_invocation.tool_input,
+                agent_state=agent_state)
             return output
