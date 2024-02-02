@@ -14,7 +14,6 @@ RUN pip install poetry && \
 RUN poetry add debugpy --dev
 
 COPY mai_assistant .
-COPY client_secret.json /
 
 # Install the project
 RUN poetry install --only-root
@@ -24,12 +23,12 @@ ENV PYTHONPATH=/app
 ARG BUILD_TYPE
 RUN echo "Building for ${BUILD_TYPE}"
 
-FROM base AS build_development
-
-# Doing it manually because skaffold debug is not working
+# Setting debug manually because skaffold debug is not working
 # Set env for container
+FROM base AS build_development
 ENV PYTHONUNBUFFERED=1
 ENTRYPOINT ["python", "-m", "debugpy", "--listen", "0.0.0.0:5678", "-m", "uvicorn", "mai_assistant.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+COPY client_secret.json /
 
 FROM base AS build_testing
 ENTRYPOINT ["python", "-m", "uvicorn", "mai_assistant.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]

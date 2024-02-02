@@ -14,15 +14,21 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
+    - name: Install dependencies [mai-assistant]
       run: |
         python -m pip install --upgrade pip
-        pip install pylint poetry
+        pip install poetry
         cd mai_assistant
-        poetry install
-        cd ../mai_assistant_telegram_bot
-        poetry install
-        cd ..
+        poetry install --with lint
     - name: Analysing the code with pylint
       run: |
-        pylint $(git ls-files '*.py') --rcfile=pylint.rc
+        cd mai_assistant
+        poetry run python -m pylint $(git ls-files '*.py') --rcfile=../pylint.rc --fail-under=8
+    - name: Installing dependencies [mai-assistant-telegram-bot]
+      run: |
+        cd mai_assistant_telegram_bot
+        poetry install --with lint
+    - name: Analysing the code with pylint [mai-assistant-telegram-bot]
+      run: |
+        cd mai_assistant_telegram_bot
+        poetry run python -m pylint $(git ls-files '*.py') --rcfile=../pylint.rc --fail-under=8
