@@ -164,6 +164,7 @@ class GoogleSearchClient:
         absolute_variation = self._get_xpath_with_alternatives(
             variation,
             [
+                '//span[@class="iXabQc vgpkr"]',
                 '//span[@jsname="SwWl3d"]//text()',
                 '//span[@jsname="qRSVye"]//text()'
             ],

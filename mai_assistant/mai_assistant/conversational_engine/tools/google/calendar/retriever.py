@@ -2,16 +2,15 @@ import pickle
 from datetime import datetime
 from typing import Optional, Type
 
-from langchain_core.callbacks import CallbackManagerForToolRun
+from langchain_core.callbacks import (AsyncCallbackManagerForToolRun,
+                                      CallbackManagerForToolRun)
 from pydantic import BaseModel
 
 from mai_assistant.clients import (GetCalendarEventsPayload, GoogleClient,
                                    get_redis_client)
-from mai_assistant.conversational_engine.langchain_extention import \
-    FormTool
-
-from langchain_core.callbacks import AsyncCallbackManagerForToolRun
-from mai_assistant.conversational_engine.langchain_extention import AgentState
+from mai_assistant.constants import RedisKeys
+from mai_assistant.conversational_engine.langchain_extention import (
+    AgentState, FormTool)
 
 
 class GoogleCalendarRetriever(FormTool):
@@ -34,7 +33,7 @@ class GoogleCalendarRetriever(FormTool):
 
         credentials = get_redis_client().hget(
             self.chat_id,
-            "google_credentials"
+            RedisKeys.GOOGLE_CREDENTIALS.value
         )
         credentials = pickle.loads(credentials)
 

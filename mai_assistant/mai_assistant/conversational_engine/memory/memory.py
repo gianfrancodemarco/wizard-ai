@@ -41,7 +41,7 @@ def get_stored_agent_state(
     else:
         stored_agent_state = StoredAgentState(
             memory=ConversationBufferWindowMemory(
-                k=3,
+                k=5,
                 memory_key="history",
                 human_prefix="Human",
                 ai_prefix="Answer",
