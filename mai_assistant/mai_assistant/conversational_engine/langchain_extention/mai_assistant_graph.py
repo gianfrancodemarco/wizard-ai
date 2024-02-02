@@ -22,6 +22,8 @@ from mai_assistant.conversational_engine.langchain_extention.form_tool import (
 
 logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)
+
+
 class MAIAssistantGraph(StateGraph):
 
     def __init__(
@@ -62,7 +64,7 @@ class MAIAssistantGraph(StateGraph):
                 SystemMessagePromptTemplate.from_template(dedent(f"""
                 There was an error with your last action.
                 Please fix it and try again.
-                
+
                 Error:
                 {{error}}.
 
@@ -87,7 +89,7 @@ class MAIAssistantGraph(StateGraph):
             """))
 
             ask_confirm = SystemMessagePromptTemplate.from_template(dedent(f"""
-                You have all the information you need. 
+                You have all the information you need.
                 Show the user all of the information and ask for confirmation.
                 If he agrees, call the {form_tool.name} tool one more time with all of the information.
             """))
@@ -156,7 +158,8 @@ class MAIAssistantGraph(StateGraph):
         action, result = state['intermediate_steps'][-1]
         tool = self.get_tool_by_name(action.tool, state)
         # If tool returns direct, stop here
-        # TODO: the tool should be able to dinamically return if return direct or not each time
+        # TODO: the tool should be able to dinamically return if return direct
+        # or not each time
         if tool and tool.return_direct:
             return "end"
         # Else let the agent use the tool response
