@@ -5,13 +5,11 @@ from typing import (Annotated, Any, Dict, Optional, Sequence, Type, TypedDict,
 from langchain.callbacks.manager import CallbackManagerForToolRun
 from langchain_core.agents import AgentAction, AgentFinish
 from langchain_core.messages import BaseMessage, FunctionMessage
-from langchain_core.pydantic_v1 import BaseModel, ConfigDict
-from langchain_core.tools import BaseTool, ToolException, SchemaAnnotationError
-from pydantic import BaseModel, Field, ValidationError
+from langchain_core.pydantic_v1 import BaseModel
+from langchain_core.tools import BaseTool, ToolException
+from pydantic import BaseModel, ValidationError
 
-from mai_assistant.conversational_engine.langchain_extention.intent_helpers import \
-    make_optional_model
-from abc import abstractmethod, ABC
+from abc import ABC
 from .tool_dummy_payload import ToolDummyPayload
 
 
@@ -33,13 +31,47 @@ class FormTool(BaseTool, ABC):
         run_manager: Optional[CallbackManagerForToolRun] = None,
         **kwargs
     ) -> str:
-
         if self.is_form_complete():
-            return self.run_when_complete(**kwargs)
+            return self._run_when_complete(**kwargs)
         else:
-            return self.update_form(**kwargs)
+            return self._update_form(**kwargs)
 
-    def update_form(self, **kwargs):
+    # @abstractmethod
+    def _run_when_complete(
+        self,
+        *args,
+        run_manager: Optional[CallbackManagerForToolRun] = None
+    ) -> str:
+        """
+        Should raise an exception if something goes wrong. 
+        The message should describe the error and will be sent back to the agent to try to fix it.
+        """
+        pass
+
+    def is_form_complete(self) -> bool:
+        """
+        The default implementation checks if all values except optional ones are set.
+        """
+        for field_name, field_info in self.args_schema.__fields__.items():
+            # if field_info.is_required():
+            if not getattr(self.form, field_name):
+                return False
+        return True
+
+    def get_next_field_to_collect(
+        self,
+        form: Optional[BaseModel],
+        run_manager: Optional[CallbackManagerForToolRun] = None,
+    ) -> str:
+        """
+        The default implementation returns the first field that is not set.
+        """
+        for field_name, field_info in self.args_schema.__fields__.items():
+            if not getattr(form, field_name):
+                return field_name
+        return None
+
+    def _update_form(self, **kwargs):
         for key, value in kwargs.items():
             try:
                 setattr(self.form, key, value)
@@ -57,37 +89,6 @@ class FormTool(BaseTool, ABC):
             },
             "output": "Form updated",
         }
-
-    #@abstractmethod
-    def run_when_complete(
-        self,
-        *args,
-        run_manager: Optional[CallbackManagerForToolRun] = None
-    ) -> str:
-        pass
-
-    def is_form_complete(self) -> bool:
-        """
-        The default implementation checks if all values except optional ones are set.
-        """
-        for field_name, field_info in self.args_schema.__fields__.items():
-            #if field_info.is_required():
-            if not getattr(self.form, field_name):
-                return False
-        return True
-
-    def get_next_field_to_collect(
-        self,
-        form: Optional[BaseModel],
-        run_manager: Optional[CallbackManagerForToolRun] = None,
-    ) -> str:
-        """
-        The default implementation returns the first field that is not set.
-        """
-        for field_name, field_info in self.args_schema.__fields__.items():
-            if not getattr(form, field_name):
-                return field_name
-        return None
 
     def get_tool_start_message(self, input: dict) -> str:
         return "Creating form\n"
@@ -113,7 +114,6 @@ class AgentState(TypedDict):
     error: Annotated[Optional[str], operator.setitem]
 
     active_form_tool: Annotated[Optional[FormTool], operator.setitem]
-    #form: Annotated[Optional[BaseModel], operator.setitem]
 
 
 class ContextReset(BaseTool):
@@ -128,36 +128,6 @@ class ContextReset(BaseTool):
             },
             "output": "Context reset. Form cleared. Ask the user what he wants to do next."
         }
-
-# class ContextUpdatePayload(BaseModel):
-#     model_config = ConfigDict(extra='allow')
-
-# class ContextUpdate(BaseTool):
-#     name = "ContextUpdate"
-#     description = """Stores information given by the user in the form."""
-#     args_schema: Type[BaseModel] = ContextUpdatePayload
-#     handle_tool_error = True
-
-#     context: Optional[AgentState] = None
-
-#     def _run(self, *args: Any, **kwargs: Any) -> Any:
-#         for key, value in kwargs['values'].items():
-#             try:
-#                 setattr(self.context.form, key, value)
-#             except ValidationError as e:
-#                 # build a string message with the error
-#                 messages = []
-#                 for error in e.errors():
-#                     messages.append(
-#                         f"Error at {error['loc'][0]}: {error['msg']}")
-#                 message = "\n".join(messages)
-#                 raise ToolException(message)
-#         return {
-#             "state_update": {
-#                 "form": self.context.form
-#             },
-#             "output": "Form updated",
-#         }
 
 
 def filter_active_tools(
@@ -191,12 +161,8 @@ def filter_active_tools(
         # If a form_tool is active, remove the Activators and add the form
         # tool and the context update tool
         tools = [
-            # context.get("active_form_tool"),
             *base_tools,
             context.get("active_form_tool"),
-            # ContextUpdate(
-            #     context=context
-            # ),
             ContextReset(context=context)
         ]
     return tools
@@ -217,7 +183,6 @@ class FormToolActivator(BaseTool):
         return {
             "state_update": {
                 "active_form_tool": self.form_tool,
-                #"form": make_optional_model(self.form_tool.args_schema)()
             },
             "output": f"Activating form {self.form_tool.name}"
         }

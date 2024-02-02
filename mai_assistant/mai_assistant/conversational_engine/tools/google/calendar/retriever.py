@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from mai_assistant.clients import (GetCalendarEventsPayload, GoogleClient,
                                    get_redis_client)
 from mai_assistant.conversational_engine.langchain_extention import \
-    FormTool, FormToolActivator
+    FormTool
 
 from langchain_core.callbacks import AsyncCallbackManagerForToolRun
 from mai_assistant.conversational_engine.langchain_extention import AgentState

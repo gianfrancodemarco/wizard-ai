@@ -8,8 +8,7 @@ from langchain import hub
 from langchain.agents import create_openai_functions_agent
 from langchain_core.agents import AgentAction, AgentFinish
 from langchain_core.language_models.chat_models import *
-from langchain_core.load.serializable import Serializable
-from langchain_core.messages import FunctionMessage, SystemMessage
+from langchain_core.messages import FunctionMessage
 from langchain_core.prompts.chat import (ChatPromptTemplate,
                                          HumanMessagePromptTemplate,
                                          MessagesPlaceholder,
@@ -17,46 +16,12 @@ from langchain_core.prompts.chat import (ChatPromptTemplate,
 from langchain_core.prompts.prompt import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
-from mai_assistant.conversational_engine.langchain_extention.tool_executor_with_state import ToolExecutorWithState, ToolExecutor
+from mai_assistant.conversational_engine.langchain_extention.tool_executor_with_state import ToolExecutor
 from mai_assistant.conversational_engine.langchain_extention.form_tool import (
-    AgentState, FormTool, FormToolActivator, filter_active_tools)
+    AgentState, filter_active_tools)
 
 logger = logging.getLogger(__name__)
-
-# CONTEXT_UPDATE = "ContextUpdate"
-
 pp = pprint.PrettyPrinter(indent=4)
-
-
-# class AgentError(Serializable):
-#     error: str
-
-
-# class ChatOpenAIVerbose(ChatOpenAI):
-#     def generate_prompt(
-#         self,
-#         prompts: List[PromptValue],
-#         stop: Optional[List[str]] = None,
-#         callbacks: Callbacks = None,
-#         **kwargs: Any,
-#     ) -> LLMResult:
-
-#         logger.info(dedent(f"""
-
-#             Generating prompt with 
-                           
-#             Prompt:   
-#             {pp.pprint(prompts)}
-
-#             Functions:
-#             {pp.pprint(kwargs["functions"]) }
-
-
-#         """))
-#         prompt_messages = [p.to_messages() for p in prompts]
-#         return self.generate(prompt_messages, stop=stop, callbacks=callbacks, **kwargs)
-
-
 class MAIAssistantGraph(StateGraph):
 
     def __init__(
@@ -109,12 +74,12 @@ class MAIAssistantGraph(StateGraph):
         elif state["active_form_tool"]:
 
             form_tool = state["active_form_tool"]
-            #form = state["form"]
+            # form = state["form"]
             information_collected = re.sub("}", "}}", re.sub("{", "{{", str(
                 {name: value for name, value in form_tool.form.__dict__.items() if value})))
             information_to_collect = form_tool.get_next_field_to_collect(
                 form_tool.form)
-            
+
             ask_info = SystemMessagePromptTemplate.from_template(dedent(f"""
                 You need to ask the user to provide the needed information.
                 Now you MUST ask the user to provide a value for {information_to_collect}.
@@ -133,7 +98,7 @@ class MAIAssistantGraph(StateGraph):
                 You are trying to to help the user fill data for {form_tool.name}.
                 So far, you have collected the following information: {information_collected}
                 """)),
-                ask_info if information_to_collect else ask_confirm,                
+                ask_info if information_to_collect else ask_confirm,
                 *variable_messages
             ]
             prompt = ChatPromptTemplate(messages=messages)
@@ -152,7 +117,7 @@ class MAIAssistantGraph(StateGraph):
 
         self.add_node("agent", self.call_agent)
         self.add_node("tool", self.call_tool)
-        
+
         self.add_conditional_edges(
             "agent",
             self.should_continue,
@@ -162,7 +127,7 @@ class MAIAssistantGraph(StateGraph):
                 "end": END
             }
         )
-        
+
         self.add_conditional_edges(
             "tool",
             self.should_continue_after_tool,

@@ -13,7 +13,7 @@ from mai_assistant.clients.rabbitmq import RabbitMQProducer
 from mai_assistant.constants import MessageQueues, MessageType
 from mai_assistant.constants.message_queues import MessageQueues
 from mai_assistant.constants.message_type import MessageType
-from mai_assistant.conversational_engine.agents import get_stored_agent_state, store_agent_state
+from mai_assistant.conversational_engine.memory import get_stored_agent_state, store_agent_state
 from mai_assistant.conversational_engine.langchain_extention.mai_assistant_graph import \
     MAIAssistantGraph
 from mai_assistant.conversational_engine.tools import *
@@ -27,7 +27,7 @@ rabbitmq_producer = get_rabbitmq_producer()
 redis_client = get_redis_client()
 
 
-class TelegramConnector:
+class RabbitMQConnector:
     
     def __init__(
         self,
@@ -104,11 +104,10 @@ async def process_message(data: dict) -> None:
         "input": data.content,
         "chat_history": [*stored_agent_state.memory.buffer],
         "intermediate_steps": [],
-        #"form": stored_agent_state.form,
         "active_form_tool": stored_agent_state.active_form_tool
     }
 
-    telegram_connector = TelegramConnector(
+    rabbitmq_connector = RabbitMQConnector(
         chat_id=chat_id,
         tools=tools,
         rabbitmq_producer=rabbitmq_producer,
@@ -117,8 +116,8 @@ async def process_message(data: dict) -> None:
 
     graph = MAIAssistantGraph(
         tools=tools,
-        on_tool_start=telegram_connector.on_tool_start,
-        on_tool_end=telegram_connector.on_tool_end
+        on_tool_start=rabbitmq_connector.on_tool_start,
+        on_tool_end=rabbitmq_connector.on_tool_end
     )
 
     logger.info(dedent(f"""
@@ -158,7 +157,6 @@ async def process_message(data: dict) -> None:
         outputs={"output": answer}
     )
     stored_agent_state.active_form_tool = value["active_form_tool"]
-    #stored_agent_state.form = value["form"] 
     
     store_agent_state(redis_client, data.chat_id, stored_agent_state)
     __publish_answer(rabbitmq_producer, data.chat_id, answer)

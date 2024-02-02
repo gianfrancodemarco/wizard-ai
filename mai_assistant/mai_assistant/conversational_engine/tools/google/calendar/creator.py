@@ -1,6 +1,5 @@
 import pickle
 import textwrap
-from datetime import datetime
 from typing import Dict, Optional, Type, Union
 
 from langchain_core.callbacks import CallbackManagerForToolRun
@@ -11,20 +10,18 @@ from mai_assistant.clients import (CreateCalendarEventPayload,
 from mai_assistant.conversational_engine.langchain_extention import (
     FormTool)
 
-from mai_assistant.conversational_engine.langchain_extention.intent_helpers import make_optional_model
 from mai_assistant.constants.redis_keys import RedisKeys
+
+
 class GoogleCalendarCreator(FormTool):
 
     name = "GoogleCalendarCreator"
     description = """Useful to create events on Google Calendar."""
     args_schema: Type[BaseModel] = CreateCalendarEventPayload
-    
-    # _args_schema: Type[BaseModel] = CreateCalendarEventPayload
-    #return_direct = True
-    
+
     chat_id: Optional[str] = None
 
-    def run_when_complete(
+    def _run_when_complete(
         self,
         run_manager: Optional[CallbackManagerForToolRun] = None,
         **kwargs
@@ -54,14 +51,14 @@ class GoogleCalendarCreator(FormTool):
 
         payload = CreateCalendarEventPayload(**input)
 
-        head_string = "Updated form with the following information:" 
+        head_string = "Updated form with the following information:"
         if self.is_form_complete():
             head_string = "Form is complete."
 
-        return textwrap.dedent(f"""
-            {head_string}
-            Summary: {payload.summary}
-            Description: {payload.description}
-            Start: {payload.start}
-            End: {payload.end}
-        """)
+        return f"{head_string}\n" +\
+            textwrap.dedent(f"""
+                Summary: {payload.summary}
+                Description: {payload.description}
+                Start: {payload.start}
+                End: {payload.end}
+            """)
