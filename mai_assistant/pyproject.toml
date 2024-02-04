@@ -6,11 +6,16 @@ version = "0.1.0"
 description = "Artificial Intelligence assistant"
 authors = ["Gianfranco Demarco <gianfrademarco@gmail.com>"]
 
+[tool.poetry.group.test]
+optional = true
+
 [tool.poetry.group.test.dependencies]
 pytest = "^8.0.0"
 pytest-cov = "^4.1.0"
 pygraphviz = "^1.12"
 
+[tool.poetry.group.lint]
+optional = true
 
 [tool.poetry.group.lint.dependencies]
 pylint = "^3.0.3"
