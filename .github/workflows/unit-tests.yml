@@ -16,6 +16,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
+        sudo apt install graphviz graphviz-dev
         python -m pip install --upgrade pip
         pip install poetry
         cd mai_assistant
@@ -33,6 +34,12 @@ jobs:
       with:
         name: coverage-report
         path: mai_assistant/tests/coverage_html
+    - name: Upload graph image
+      uses: actions/upload-artifact@v2
+      with:
+        name: graph
+        path: mai_assistant/tests/graph.png
     - name: Cleanup
       run: |
         rm -rf mai_assistant/tests/coverage_html
+        rm -f mai_assistant/tests/graph.png

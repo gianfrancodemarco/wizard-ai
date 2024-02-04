@@ -1,1 +1,1 @@
-cd mai_assistant/tests && poetry run pytest --cov=mai_assistant --cov-report=html:coverage_html unit && cd ../..
+cd mai_assistant/tests && poetry run pytest --cov=mai_assistant unit && cd ../..
