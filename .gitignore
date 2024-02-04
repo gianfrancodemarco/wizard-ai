@@ -1,6 +1,7 @@
 *.log
 *.pdf
 *.env
+.coverage
 
 __pycache__
 venv
