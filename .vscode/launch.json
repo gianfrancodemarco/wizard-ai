@@ -5,51 +5,55 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run websq",
+      "name": "Python: Debug Tests",
       "type": "python",
       "request": "launch",
-      "program": "${workspaceFolder}/StructGPT/src/webqsp.py",
+      "program": "${file}",
+      "purpose": ["debug-test"],
       "console": "integratedTerminal",
-      "args": [
-        "--input_path",
-        "StructGPT/datasets/WebQSP/data/WebQSP.train.json",
-        "--api_key",
-        "your-key"
-      ]
+      "justMyCode": false
+    },    
+    {
+      "name": "Python: Current File",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "python": "${command:python.interpreterPath}",
+      "console": "integratedTerminal",
+      "justMyCode": false
     },
     {
-      "name": "Run KQA pro",
+      "name": "Debug FastAPI",
       "type": "python",
-      "request": "launch",
-      "program": "${workspaceFolder}/StructGPT/src/kqa_pro.py",
-      "console": "integratedTerminal",
-      "args": [
-        "--input_path",
-        "StructGPT/datasets/KQA Pro/data/data/train.json",
-        "--output_path",
-        "StructGPT/datasets/KQA Pro/data/data/predictions.json",
-        "--api_key",
-        "your-key"
-      ]
-    },
-    {
-      "name": "Run ReAct",
-      "type": "python",
-      "request": "launch",
+      "request": "attach",
+      "port": 5678,
+      "host": "127.0.0.1",
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}/mai_assistant/mai_assistant",
+          "remoteRoot": "/app/mai_assistant"
+        }
+      ],
       "justMyCode": false,
-      "program": "${workspaceFolder}/ToolQA/src/main.py",
-      "args": [
-        "--dataset",
-        "flights",
-        "--hardness",
-        "easy",
-        // "--version",
-        // "v2",
-        "--gpt",
-        "chatgpt",
-        "--openai_api_key",
-        "your-key"
-      ]
+      "redirectOutput": false
+    },
+    {
+      "name": "Debug Telegram Bot",
+      "type": "python",
+      "request": "attach",
+      "port": 5679,
+      "host": "127.0.0.1",
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}/mai_assistant_telegram_bot",
+      "remoteRoot": "/app/mai_assistant_telegram_bot"
+        },
+        {
+          "localRoot": "${workspaceFolder}/mai_assistant_telegram_bot/main.py",
+          "remoteRoot": "/app/main.py"
+        }
+      ],
+        "justMyCode": false
     }
   ]
 }
