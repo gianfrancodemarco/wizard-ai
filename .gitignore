@@ -2,6 +2,7 @@
 *.pdf
 *.env
 .coverage
+graph.png
 
 __pycache__
 venv
