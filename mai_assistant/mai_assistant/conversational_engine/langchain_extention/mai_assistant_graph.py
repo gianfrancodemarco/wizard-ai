@@ -7,6 +7,7 @@ from typing import Any, Sequence, Type
 from langchain import hub
 from langchain.agents import create_openai_functions_agent
 from langchain_core.agents import AgentAction, AgentFinish
+from langchain_core.exceptions import OutputParserException
 from langchain_core.language_models.chat_models import *
 from langchain_core.messages import FunctionMessage
 from langchain_core.prompts.chat import (ChatPromptTemplate,
@@ -16,9 +17,11 @@ from langchain_core.prompts.chat import (ChatPromptTemplate,
 from langchain_core.prompts.prompt import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
-from mai_assistant.conversational_engine.langchain_extention.tool_executor_with_state import ToolExecutor
+
 from mai_assistant.conversational_engine.langchain_extention.form_tool import (
     AgentState, filter_active_tools)
+from mai_assistant.conversational_engine.langchain_extention.tool_executor_with_state import \
+    ToolExecutor
 
 logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)
@@ -49,6 +52,9 @@ class MAIAssistantGraph(StateGraph):
 
     def get_tool_executor(self, state: AgentState):
         return ToolExecutor(self.get_tools(state))
+    
+    def get_llm(self):
+        return ChatOpenAI(temperature=0, verbose=True)
 
     def get_model(self, state: AgentState):
 
@@ -59,7 +65,7 @@ class MAIAssistantGraph(StateGraph):
             MessagesPlaceholder(variable_name="agent_scratchpad"),
         ]
 
-        if state["error"]:
+        if state.get("error"):
             messages = [
                 SystemMessagePromptTemplate.from_template(dedent(f"""
                 There was an error with your last action.
@@ -73,10 +79,10 @@ class MAIAssistantGraph(StateGraph):
             ]
             prompt = ChatPromptTemplate(messages=messages)
 
-        elif state["active_form_tool"]:
+        elif state.get("active_form_tool"):
 
-            form_tool = state["active_form_tool"]
-            # form = state["form"]
+            form_tool = state.get("active_form_tool")
+            # form = state.get("form"]
             information_collected = re.sub("}", "}}", re.sub("{", "{{", str(
                 {name: value for name, value in form_tool.form.__dict__.items() if value})))
             information_to_collect = form_tool.get_next_field_to_collect(
@@ -110,7 +116,7 @@ class MAIAssistantGraph(StateGraph):
                 You are a personal assistant trying to help the user. You always answer in English.
             """))
 
-        llm = ChatOpenAI(temperature=0, verbose=True)
+        llm = self.get_llm()
         model = create_openai_functions_agent(
             llm, self.get_tools(state=state), prompt)
         return model
@@ -144,18 +150,18 @@ class MAIAssistantGraph(StateGraph):
         self.app = self.compile()
 
     def should_continue(self, state: AgentState):
-        if state['error']:
+        if state.get("error"):
             return "error"
-        if isinstance(state['agent_outcome'], AgentFinish):
+        if isinstance(state.get("agent_outcome"), AgentFinish):
             return "end"
-        elif isinstance(state['agent_outcome'], AgentAction):
+        elif isinstance(state.get("agent_outcome"), AgentAction):
             return "tool"
 
     def should_continue_after_tool(self, state: AgentState):
-        if state['error']:
+        if state.get("error"):
             return "error"
 
-        action, result = state['intermediate_steps'][-1]
+        action, result = state.get("intermediate_steps")[-1]
         tool = self.get_tool_by_name(action.tool, state)
         # If tool returns direct, stop here
         # TODO: the tool should be able to dinamically return if return direct
@@ -171,18 +177,18 @@ class MAIAssistantGraph(StateGraph):
         state = state.copy()
 
         # Cap the number of intermediate steps in a prompt to 5
-        if len(state['intermediate_steps']) > 5:
-            state['intermediate_steps'] = state['intermediate_steps'][-5:]
+        if len(state.get("intermediate_steps")) > 5:
+            state["intermediate_steps"] = state.get("intermediate_steps")[-5:]
 
-        import langchain_core
         try:
             response = self.get_model(state).invoke({
-                "input": state["input"],
-                "chat_history": state["chat_history"],
-                "intermediate_steps": state["intermediate_steps"],
-                "error": state["error"],
+                "input": state.get("input"),
+                "chat_history": state.get("chat_history"),
+                "intermediate_steps": state.get("intermediate_steps"),
+                "error": state.get("error"),
             })
-        except langchain_core.exceptions.OutputParserException as e:
+        # TODO: if other exceptions are raised, we should handle them here
+        except OutputParserException as e:
             return {"error": str(e)}
 
         return {
@@ -192,7 +198,7 @@ class MAIAssistantGraph(StateGraph):
 
     def call_tool(self, state: AgentState):
 
-        action = state["agent_outcome"]
+        action = state.get("agent_outcome")
 
         try:
             self.on_tool_start(tool_name=action.tool,

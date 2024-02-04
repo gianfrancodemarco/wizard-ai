@@ -145,7 +145,15 @@ def filter_active_tools(
     base_tools = list(filter(lambda tool: not isinstance(
         tool, FormToolActivator) and not isinstance(tool, FormTool), tools))
 
-    if context.get("active_form_tool") is None:
+    if context.get("active_form_tool"):
+        # If a form_tool is active, remove the Activators and add the form
+        # tool and the context update tool
+        tools = [
+            *base_tools,
+            context.get("active_form_tool"),
+            ContextReset(context=context)
+        ]
+    else:
         activator_tools = [
             FormToolActivator(
                 form_tool_class=tool.__class__,
@@ -159,14 +167,6 @@ def filter_active_tools(
         tools = [
             *base_tools,
             *activator_tools
-        ]
-    else:
-        # If a form_tool is active, remove the Activators and add the form
-        # tool and the context update tool
-        tools = [
-            *base_tools,
-            context.get("active_form_tool"),
-            ContextReset(context=context)
         ]
     return tools
 

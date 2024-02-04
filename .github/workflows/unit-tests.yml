@@ -20,7 +20,19 @@ jobs:
         pip install poetry
         cd mai_assistant
         poetry install --with test
-    - name: Execute unit tests [mai-assistant]
+    - name: Execute unit tests with coverage [mai-assistant]
       run: |
         cd mai_assistant
-        poetry run python -m pytest tests
+        poetry run pytest --cov=mai_assistant --cov-report=html:coverage_html tests
+    - name: Execute unit tests with coverage [mai-assistant-telegram-bot]
+      run: |
+        cd mai_assistant_telegram_bot
+        poetry run pytest --cov=mai_assistant_telegram_bot --cov-report=html:coverage_html tests
+    - name: Upload HTML coverage report
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage-report
+        path: mai_assistant/coverage_html
+    - name: Cleanup
+      run: |
+        rm -rf mai_assistant/coverage_html

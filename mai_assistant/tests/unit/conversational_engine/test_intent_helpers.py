@@ -1,33 +1,9 @@
-from typing import Any
-
-from pydantic import BaseModel
-
 from mai_assistant.conversational_engine.langchain_extention.form_tool import (
-    AgentState, ContextReset, FormTool, FormToolActivator, filter_active_tools)
+    AgentState, ContextReset, FormToolActivator, filter_active_tools)
 from mai_assistant.conversational_engine.langchain_extention.intent_helpers import \
     BaseTool
-from typing import Type
 
-
-class MockBaseTool(BaseTool):
-    name = "MockBaseTool"
-    description = "MockBaseTool description"
-
-    def _run(
-        self,
-        **kwargs: Any,
-    ) -> Any:
-        pass
-
-
-class _DummyPayload(BaseModel):
-    pass
-
-
-class MockFormTool(FormTool):
-    name = "MockFormTool"
-    description = "MockFormTool description"
-    args_schema: Type[BaseModel] = _DummyPayload
+from .mocks import MockBaseTool, MockFormTool
 
 
 def test_filter_active_tools_no_active_form_tool():
