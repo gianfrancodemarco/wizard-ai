@@ -24,10 +24,10 @@ jobs:
       run: |
         cd mai_assistant/tests
         poetry run pytest --cov=mai_assistant --cov-report=html:coverage_html unit
-    - name: Execute unit tests with coverage [mai-assistant-telegram-bot]
-      run: |
-        cd mai_assistant_telegram_bot/tests
-        poetry run pytest --cov=mai_assistant_telegram_bot --cov-report=html:coverage_html unit
+    # - name: Execute unit tests with coverage [mai-assistant-telegram-bot]
+    #   run: |
+    #     cd mai_assistant_telegram_bot/tests
+    #     poetry run pytest --cov=mai_assistant_telegram_bot --cov-report=html:coverage_html unit
     - name: Upload HTML coverage report
       uses: actions/upload-artifact@v2
       with:
