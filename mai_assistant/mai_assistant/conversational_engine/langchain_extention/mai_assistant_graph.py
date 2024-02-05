@@ -19,7 +19,7 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
 
 from mai_assistant.conversational_engine.langchain_extention.form_tool import (
-    AgentState, filter_active_tools)
+    AgentState, filter_active_tools, FormToolOutput)
 from mai_assistant.conversational_engine.langchain_extention.tool_executor_with_state import \
     ToolExecutor
 
@@ -74,7 +74,7 @@ class MAIAssistantGraph(StateGraph):
         self.app = self.compile()
 
     def get_tools(self, state: AgentState):
-        return filter_active_tools(self._tools, state)
+        return filter_active_tools(self._tools[:], state)
 
     def get_tool_by_name(self, name: str, agent_state: AgentState):
         tools = self.get_tools(agent_state)
@@ -208,7 +208,7 @@ class MAIAssistantGraph(StateGraph):
                 state["intermediate_steps"] = state.get(
                     "intermediate_steps")[-5:]
 
-            response = self.get_model(state).invoke(**state)
+            response = self.get_model(state).invoke(state)
             updates = {
                 "agent_outcome": response,
                 "error": None  # Reset the error
@@ -220,10 +220,8 @@ class MAIAssistantGraph(StateGraph):
             return updates
 
     def call_tool(self, state: AgentState):
-
-        action = state.get("agent_outcome")
-
         try:
+            action = state.get("agent_outcome")
             self.on_tool_start(tool_name=action.tool,
                                tool_input=action.tool_input)
 
@@ -234,11 +232,9 @@ class MAIAssistantGraph(StateGraph):
             # If it does so, store the state_update for later and overwrite the response
             # with only the string output
             state_update = {}
-            if isinstance(response, dict):
-                assert "state_update" in response
-                assert "output" in response
-                state_update = response["state_update"]
-                response = response["output"]
+            if isinstance(response, FormToolOutput):
+                state_update = response.state_update
+                response = response.output
 
             self.on_tool_end(tool_name=action.tool, tool_output=response)
 

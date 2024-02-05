@@ -17,7 +17,7 @@ class GoogleCalendarRetriever(FormTool):
 
     name = "GoogleCalendarRetriever"
     description = """Useful to retrieve events from Google Calendar"""
-    return_direct = True
+    #return_direct = True
     args_schema: Type[BaseModel] = GetCalendarEventsPayload
 
     chat_id: Optional[str] = None

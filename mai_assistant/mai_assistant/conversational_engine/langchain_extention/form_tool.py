@@ -7,8 +7,28 @@ from langchain_core.messages import BaseMessage, FunctionMessage
 from langchain_core.pydantic_v1 import BaseModel
 from langchain_core.tools import BaseTool, StructuredTool, ToolException
 from pydantic import BaseModel, ValidationError
+from enum import Enum
 
 from .tool_dummy_payload import ToolDummyPayload
+
+class FormToolOutput(BaseModel):
+    """
+    Represents a form tool output.
+    The output is returned as str.
+    Any other kwarg is returned in the state_update dict
+    """
+
+    output: str
+    state_update: Optional[Dict[str, Any]] = None
+
+    def __init__(self, output: str, **kwargs):
+        super().__init__(output=output)
+        self.state_update = kwargs
+    
+class FormToolState(Enum):
+    DUMMY = "DUMMY"
+    ACTIVE = "ACTIVE"
+    COMPLETE = "COMPLETE"
 
 
 class FormTool(StructuredTool):
@@ -17,10 +37,39 @@ class FormTool(StructuredTool):
     So we use BaseModel instead
     """
     form: BaseModel = None
+    args_schema_: Optional[Type[BaseModel]] = None
+    name_: Optional[str] = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.form = self.args_schema()
+        self.args_schema_ = None
+        self.name_ = None
+        
+    @property
+    def state(self) -> FormToolState:
+        if self.is_dummy_state():
+            return FormToolState.DUMMY
+        elif self.is_form_complete():
+            return FormToolState.COMPLETE
+        else:
+            return FormToolState.ACTIVE
+
+    def set_dummy_state(self):
+        # Guard so that we don't overwrite the original args_schema if
+        # set_dummy_state is called multiple times
+        if not self.is_dummy_state():
+            self.name_ = self.name
+            self.name = f"{self.name}Initiator"
+            self.args_schema_ = self.args_schema
+            self.args_schema = ToolDummyPayload
+
+    def unset_dummy_state(self):
+        self.args_schema = self.args_schema_
+        self.name = self.name_
+
+    def is_dummy_state(self):
+        return self.args_schema == ToolDummyPayload
 
     def _run(
         self,
@@ -28,19 +77,28 @@ class FormTool(StructuredTool):
         run_manager: Optional[CallbackManagerForToolRun] = None,
         **kwargs
     ) -> str:
-        if self.is_form_complete():
-            result = self._run_when_complete(**kwargs)
-            # if no exception is raised, the form is complete and the tool is
-            # done, so reset the active form tool
-            return {
-                "state_update": {
-                    "active_form_tool": None
-                },
-                "output": result
-            }
-        else:
-            return self._update_form(**kwargs)
-
+        match self.state:
+            case FormToolState.DUMMY:
+                self.unset_dummy_state()
+                return FormToolOutput(
+                    output=f"Starting intent {self.name}. Ask the user for the first field.",
+                    active_form_tool = self
+                )
+            case FormToolState.ACTIVE:
+                self._update_form(**kwargs)
+                return FormToolOutput(
+                    active_form_tool=self,
+                    output="Form updated with the provided information. Ask the user for the next field."
+                )
+            case FormToolState.COMPLETE:
+                result = self._run_when_complete(**kwargs)
+                # if no exception is raised, the form is complete and the tool is
+                # done, so reset the active form tool
+                return FormToolOutput(
+                    active_form_tool=None,
+                    output=result
+                )
+        
     def is_form_complete(self) -> bool:
         """
         The default implementation checks if all values except optional ones are set.
@@ -74,12 +132,6 @@ class FormTool(StructuredTool):
                         f"Error at {error['loc'][0]}: {error['msg']}")
                 message = "\n".join(messages)
                 raise ToolException(message)
-        return {
-            "state_update": {
-                "active_form_tool": self
-            },
-            "output": "Form updated with the provided information. Ask the user for the next field.",
-        }
 
     def get_next_field_to_collect(
         self,
@@ -95,7 +147,15 @@ class FormTool(StructuredTool):
         return None
 
     def get_tool_start_message(self, input: dict) -> str:
-        return "Creating form\n"
+        message = ""
+        match self.state:
+            case FormToolState.DUMMY:
+                message = f"Starting {self.name_}"
+            case FormToolState.ACTIVE:
+                message = f"Updating form for {self.name}"
+            case FormToolState.COMPLETE:
+                message = f"Completed {self.name}"
+        return message
 
     def get_information_to_collect(self) -> str:
         return str(list(self.args.keys()))
@@ -141,57 +201,18 @@ def filter_active_tools(
     """
     Form tools are replaced by their activators if they are not active.
     """
-
-    base_tools = list(filter(lambda tool: not isinstance(
-        tool, FormToolActivator) and not isinstance(tool, FormTool), tools))
-
     if context.get("active_form_tool"):
-        # If a form_tool is active, remove the Activators and add the form
-        # tool and the context update tool
+        # If a form_tool is active, it is the only form tool available
+        base_tools = [tool for tool in tools if not isinstance(tool, FormTool)]
         tools = [
             *base_tools,
             context.get("active_form_tool"),
             ContextReset(context=context)
         ]
     else:
-        activator_tools = [
-            FormToolActivator(
-                form_tool_class=tool.__class__,
-                form_tool=tool,
-                name=f"{tool.name}Activator",
-                description=tool.description
-            )
-            for tool in tools
-            if isinstance(tool, FormTool)
-        ]
-        tools = [
-            *base_tools,
-            *activator_tools
-        ]
+        # When a form tool is not active, change the args_schema to DummyPayload
+        # so that the model calls the tool without asking the user to input the fields
+        for tool in tools:
+            if isinstance(tool, FormTool):
+                tool.set_dummy_state()
     return tools
-
-
-class FormToolActivator(BaseTool):
-    args_schema: Type[BaseModel] = ToolDummyPayload
-    form_tool_class: Type[FormTool]
-    form_tool: FormTool
-
-    def _run(
-        self,
-        *args: Any,
-        run_manager: Optional[CallbackManagerForToolRun] = None,
-        **kwargs
-    ) -> str:
-        return {
-            "state_update": {
-                "active_form_tool": self.form_tool,
-            },
-            "output": f"Activating form {self.form_tool.name}"
-        }
-
-    def _parse_input(self, tool_input: str | Dict) -> str | Dict[str, Any]:
-        """FormToolActivator shouldn't have any input, so we ovveride the default implementation."""
-        return {}
-
-    def get_tool_start_message(self, input: dict) -> str:
-        return f"Starting form {self.form_tool.name}"

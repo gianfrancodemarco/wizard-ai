@@ -1,5 +1,5 @@
 from mai_assistant.conversational_engine.langchain_extention.form_tool import (
-    AgentState, ContextReset, FormToolActivator, filter_active_tools)
+    AgentState, ContextReset, FormTool, FormToolState, filter_active_tools)
 from mai_assistant.conversational_engine.langchain_extention.intent_helpers import \
     BaseTool
 
@@ -20,9 +20,10 @@ def test_filter_active_tools_no_active_form_tool():
     assert len(filtered_tools) == 4
     assert isinstance(filtered_tools[0], BaseTool)
     assert isinstance(filtered_tools[1], BaseTool)
-    assert isinstance(filtered_tools[2], FormToolActivator)
-    assert isinstance(filtered_tools[3], FormToolActivator)
-
+    assert isinstance(filtered_tools[2], FormTool)
+    assert filtered_tools[2].state == FormToolState.DUMMY
+    assert isinstance(filtered_tools[3], FormTool)
+    assert filtered_tools[3].state == FormToolState.DUMMY
 
 def test_filter_active_tools_with_active_form_tool():
 
