@@ -21,9 +21,9 @@ def test_filter_active_tools_no_active_form_tool():
     assert isinstance(filtered_tools[0], BaseTool)
     assert isinstance(filtered_tools[1], BaseTool)
     assert isinstance(filtered_tools[2], FormTool)
-    assert filtered_tools[2].state == FormToolState.DUMMY
+    assert filtered_tools[2].state == FormToolState.INACTIVE
     assert isinstance(filtered_tools[3], FormTool)
-    assert filtered_tools[3].state == FormToolState.DUMMY
+    assert filtered_tools[3].state == FormToolState.INACTIVE
 
 def test_filter_active_tools_with_active_form_tool():
 

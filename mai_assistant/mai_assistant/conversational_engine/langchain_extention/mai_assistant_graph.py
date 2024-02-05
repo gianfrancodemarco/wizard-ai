@@ -1,6 +1,7 @@
 import logging
 import pprint
 import re
+from datetime import datetime
 from textwrap import dedent
 from typing import Any, Sequence, Type
 
@@ -19,7 +20,7 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
 
 from mai_assistant.conversational_engine.langchain_extention.form_tool import (
-    AgentState, filter_active_tools, FormToolOutput)
+    AgentState, FormToolOutput, filter_active_tools)
 from mai_assistant.conversational_engine.langchain_extention.tool_executor_with_state import \
     ToolExecutor
 
@@ -42,8 +43,41 @@ class MAIAssistantGraph(StateGraph):
         self.__build_graph()
         self._tools = tools
 
-        # Cache the prompt here
-        self.default_prompt = hub.pull("hwchase17/openai-functions-agent")
+    @property
+    def default_prompt(self):
+        if not hasattr(self, "_default_prompt"):
+            self._default_prompt = hub.pull("hwchase17/openai-functions-agent")
+            self._default_prompt.messages[0] = self.base_system_message
+        return self._default_prompt
+
+    @property
+    def base_system_message(self):
+        return SystemMessagePromptTemplate.from_template(dedent(f"""
+            You are a personal assistant trying to help the user. You always answer in English. The current datetime is {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}.
+            Don't use any of your knowledge or information about the state of the world. If you need something, ask the user for it or use a tool to find or compute it.
+        """))
+
+    @property
+    def prompt_footer(self):
+        return [MessagesPlaceholder(
+            variable_name="chat_history", optional=True),
+            HumanMessagePromptTemplate(prompt=PromptTemplate(
+                template="{input}", input_variables=["input"])),
+            MessagesPlaceholder(variable_name="agent_scratchpad")]
+
+    @property
+    def error_correction_prompt(self):
+        return ChatPromptTemplate(messages=[
+            self.base_system_message,
+            SystemMessagePromptTemplate.from_template(dedent(f"""
+                There was an error with your last action.
+                Please fix it and try again.
+
+                Error:
+                {{error}}.
+
+                """))
+        ])
 
     def __build_graph(self):
 
@@ -98,15 +132,9 @@ class MAIAssistantGraph(StateGraph):
         return model
 
     def __get_default_model(self, state: AgentState):
-
-        prompt = self.default_prompt
-        prompt.messages[0] = SystemMessagePromptTemplate.from_template(dedent(f"""
-            You are a personal assistant trying to help the user. You always answer in English.
-        """))
-
         return self.__get_model_from_state_and_prompt(
             state=state,
-            prompt=prompt
+            prompt=self.default_prompt
         )
 
     def __get_intent_model(self, state: AgentState):
@@ -120,7 +148,7 @@ class MAIAssistantGraph(StateGraph):
         ask_info = SystemMessagePromptTemplate.from_template(dedent(f"""
             You need to ask the user to provide the needed information.
             Now you MUST ask the user to provide a value for the field "{information_to_collect}".
-            When the user provides a value, use the {form_tool.name} tool to update the form.
+            Use the {form_tool.name} tool to update the form each time the user provides one or more values.
         """))
 
         ask_confirm = SystemMessagePromptTemplate.from_template(dedent(f"""
@@ -133,37 +161,20 @@ class MAIAssistantGraph(StateGraph):
             state=state,
             prompt=ChatPromptTemplate(
                 messages=[
-                    SystemMessagePromptTemplate.from_template(dedent(f"""
-                You are a personal assistant and you always answer in English.
-                You are trying to to help the user fill data for {form_tool.name}.
-                So far, you have collected the following information: {information_collected}
-                """)),
+                    self.base_system_message,
                     ask_info if information_to_collect else ask_confirm,
-                    MessagesPlaceholder(
-                        variable_name="chat_history", optional=True),
-                    HumanMessagePromptTemplate(prompt=PromptTemplate(
-                        template="{input}", input_variables=["input"])),
-                    MessagesPlaceholder(variable_name="agent_scratchpad"),
-                ])
+                    *self.prompt_footer
+                ]
+            )
         )
 
     def __get_error_model(self, state: AgentState):
         return self.__get_model_from_state_and_prompt(
             state=state,
             prompt=ChatPromptTemplate(messages=[
-                SystemMessagePromptTemplate.from_template(dedent(f"""
-                There was an error with your last action.
-                Please fix it and try again.
-
-                Error:
-                {{error}}.
-
-                """)),
-                MessagesPlaceholder(
-                    variable_name="chat_history", optional=True),
-                HumanMessagePromptTemplate(prompt=PromptTemplate(
-                    template="{input}", input_variables=["input"])),
-                MessagesPlaceholder(variable_name="agent_scratchpad"),
+                self.base_system_message,
+                *self.prompt_footer,
+                self.error_correction_prompt
             ])
         )
 

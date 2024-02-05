@@ -1,5 +1,7 @@
 import operator
-from typing import (Annotated, Any, Dict, Optional, Sequence, Type, TypedDict, Union)
+from enum import Enum
+from typing import (Annotated, Any, Dict, Optional, Sequence, Type, TypedDict,
+                    Union)
 
 from langchain.callbacks.manager import CallbackManagerForToolRun
 from langchain_core.agents import AgentAction, AgentFinish
@@ -7,9 +9,20 @@ from langchain_core.messages import BaseMessage, FunctionMessage
 from langchain_core.pydantic_v1 import BaseModel
 from langchain_core.tools import BaseTool, StructuredTool, ToolException
 from pydantic import BaseModel, ValidationError
-from enum import Enum
 
-from .tool_dummy_payload import ToolDummyPayload
+
+class ToolInactivePayload(BaseModel):
+    """
+    We cannot pass directly the BaseModel class as args_schema as pydantic will raise errors,
+    so we need to create a dummy class that inherits from BaseModel.
+    """
+
+
+class FormToolState(Enum):
+    INACTIVE = "DUMMY"
+    ACTIVE = "ACTIVE"
+    COMPLETE = "COMPLETE"
+
 
 class FormToolOutput(BaseModel):
     """
@@ -24,11 +37,6 @@ class FormToolOutput(BaseModel):
     def __init__(self, output: str, **kwargs):
         super().__init__(output=output)
         self.state_update = kwargs
-    
-class FormToolState(Enum):
-    DUMMY = "DUMMY"
-    ACTIVE = "ACTIVE"
-    COMPLETE = "COMPLETE"
 
 
 class FormTool(StructuredTool):
@@ -45,31 +53,31 @@ class FormTool(StructuredTool):
         self.form = self.args_schema()
         self.args_schema_ = None
         self.name_ = None
-        
+
     @property
     def state(self) -> FormToolState:
-        if self.is_dummy_state():
-            return FormToolState.DUMMY
+        if self.is_inactive_state():
+            return FormToolState.INACTIVE
         elif self.is_form_complete():
             return FormToolState.COMPLETE
         else:
             return FormToolState.ACTIVE
 
-    def set_dummy_state(self):
+    def set_inactive_state(self):
         # Guard so that we don't overwrite the original args_schema if
-        # set_dummy_state is called multiple times
-        if not self.is_dummy_state():
+        # set_inactive_state is called multiple times
+        if not self.is_inactive_state():
             self.name_ = self.name
             self.name = f"{self.name}Initiator"
             self.args_schema_ = self.args_schema
-            self.args_schema = ToolDummyPayload
+            self.args_schema = ToolInactivePayload
 
-    def unset_dummy_state(self):
+    def unset_inactive_state(self):
         self.args_schema = self.args_schema_
         self.name = self.name_
 
-    def is_dummy_state(self):
-        return self.args_schema == ToolDummyPayload
+    def is_inactive_state(self):
+        return self.args_schema == ToolInactivePayload
 
     def _run(
         self,
@@ -78,11 +86,11 @@ class FormTool(StructuredTool):
         **kwargs
     ) -> str:
         match self.state:
-            case FormToolState.DUMMY:
-                self.unset_dummy_state()
+            case FormToolState.INACTIVE:
+                self.unset_inactive_state()
                 return FormToolOutput(
-                    output=f"Starting intent {self.name}. Ask the user for the first field.",
-                    active_form_tool = self
+                    output=f"Starting intent {self.name}. If the user as already provided some information, call {self.name}.",
+                    active_form_tool=self
                 )
             case FormToolState.ACTIVE:
                 self._update_form(**kwargs)
@@ -98,7 +106,7 @@ class FormTool(StructuredTool):
                     active_form_tool=None,
                     output=result
                 )
-        
+
     def is_form_complete(self) -> bool:
         """
         The default implementation checks if all values except optional ones are set.
@@ -149,7 +157,7 @@ class FormTool(StructuredTool):
     def get_tool_start_message(self, input: dict) -> str:
         message = ""
         match self.state:
-            case FormToolState.DUMMY:
+            case FormToolState.INACTIVE:
                 message = f"Starting {self.name_}"
             case FormToolState.ACTIVE:
                 message = f"Updating form for {self.name}"
@@ -183,7 +191,7 @@ class AgentState(TypedDict):
 class ContextReset(BaseTool):
     name = "ContextReset"
     description = """Call this tool when the user doesn't want to fill the form anymore."""
-    args_schema: Type[BaseModel] = ToolDummyPayload
+    args_schema: Type[BaseModel] = ToolInactivePayload
 
     def _run(self, *args: Any, **kwargs: Any) -> Any:
         return {
@@ -210,9 +218,9 @@ def filter_active_tools(
             ContextReset(context=context)
         ]
     else:
-        # When a form tool is not active, change the args_schema to DummyPayload
+        # When a form tool is not active, change the args_schema to InactivePayload
         # so that the model calls the tool without asking the user to input the fields
         for tool in tools:
             if isinstance(tool, FormTool):
-                tool.set_dummy_state()
+                tool.set_inactive_state()
     return tools

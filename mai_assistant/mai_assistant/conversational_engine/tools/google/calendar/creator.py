@@ -46,16 +46,10 @@ class GoogleCalendarCreator(FormTool):
 
     def get_tool_start_message(self, input: Union[Dict, str]) -> str:
 
-        if isinstance(input, str):
-            input = eval(input)
-
+        header = super().get_tool_start_message(input)
         payload = CreateCalendarEventPayload(**input)
 
-        head_string = "Updated form with the following information:"
-        if self.is_form_complete():
-            head_string = "Form is complete."
-
-        return f"{head_string}\n" +\
+        return f"{header}\n" +\
             textwrap.dedent(f"""
                 Summary: {payload.summary}
                 Description: {payload.description}
