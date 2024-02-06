@@ -4,8 +4,6 @@ from langchain_core.tools import BaseTool
 from pydantic import BaseModel, create_model
 
 # TODO: Delete this
-
-
 def make_optional_model(original_model: BaseModel) -> BaseModel:
     """
     Takes a Pydantic model and returns a new model with all attributes optional.

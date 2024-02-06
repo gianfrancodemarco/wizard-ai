@@ -3,7 +3,7 @@ import pprint
 import re
 from datetime import datetime
 from textwrap import dedent
-from typing import Any, Sequence, Type
+from typing import Any, Sequence, Type, Union
 
 from langchain import hub
 from langchain.agents import create_openai_functions_agent
@@ -20,7 +20,7 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
 
 from mai_assistant.conversational_engine.langchain_extention.form_tool import (
-    AgentState, FormToolOutput, filter_active_tools)
+    AgentState, FormToolOutcome, filter_active_tools)
 from mai_assistant.conversational_engine.langchain_extention.tool_executor_with_state import \
     ToolExecutor
 
@@ -79,6 +79,23 @@ class MAIAssistantGraph(StateGraph):
                 """))
         ])
 
+    def parse_output(self, graph_output: dict) -> str:
+        """
+        Parses the final state of the graph.
+        Theoretically, only one between tool_outcome and agent_outcome are set.
+        Returns the str to be considered the output of the graph.
+        """
+
+        state = graph_output[END]
+
+        output = None
+        if state.get("tool_outcome"):
+            output = state.get("tool_outcome").output
+        elif state.get("agent_outcome"):
+            output = state.get("agent_outcome").return_values["output"]
+        
+        return output
+
     def __build_graph(self):
 
         self.add_node("agent", self.call_agent)
@@ -86,7 +103,7 @@ class MAIAssistantGraph(StateGraph):
 
         self.add_conditional_edges(
             "agent",
-            self.should_continue,
+            self.should_continue_after_agent,
             {
                 "tool": "tool",
                 "error": "agent",
@@ -149,12 +166,16 @@ class MAIAssistantGraph(StateGraph):
             You need to ask the user to provide the needed information.
             Now you MUST ask the user to provide a value for the field "{information_to_collect}".
             Use the {form_tool.name} tool to update the form each time the user provides one or more values.
+            Do not try to validate the input yourself. If the user provides an invalid value, the {form_tool.name} tool will raise an exception.
         """))
 
         ask_confirm = SystemMessagePromptTemplate.from_template(dedent(f"""
             You have all the information you need.
-            Show the user all of the information and ask for confirmation.
+            Show the user the information you have collectedand ask for confirmation.
             If he agrees, call the {form_tool.name} tool one more time with all of the information.
+
+            Information collected: 
+            {information_collected}
         """))
 
         return self.__get_model_from_state_and_prompt(
@@ -189,10 +210,10 @@ class MAIAssistantGraph(StateGraph):
             prompt=prompt
         )
 
-    def should_continue(self, state: AgentState):
+    def should_continue_after_agent(self, state: AgentState):
         if state.get("error"):
             return "error"
-        if isinstance(state.get("agent_outcome"), AgentFinish):
+        elif isinstance(state.get("agent_outcome"), AgentFinish):
             return "end"
         elif isinstance(state.get("agent_outcome"), AgentAction):
             return "tool"
@@ -200,16 +221,10 @@ class MAIAssistantGraph(StateGraph):
     def should_continue_after_tool(self, state: AgentState):
         if state.get("error"):
             return "error"
-
-        action, result = state.get("intermediate_steps")[-1]
-        tool = self.get_tool_by_name(action.tool, state)
-        # If tool returns direct, stop here
-        # TODO: the tool should be able to dinamically return if return direct
-        # or not each time
-        if tool and tool.return_direct:
+        elif isinstance(state.get("tool_outcome"), FormToolOutcome) and state.get("tool_outcome").return_direct:
             return "end"
-        # Else let the agent use the tool response
-        return "continue"
+        else:
+            return "continue"
 
     # Define the function that calls the model
     def call_agent(self, state: AgentState):
@@ -219,9 +234,10 @@ class MAIAssistantGraph(StateGraph):
                 state["intermediate_steps"] = state.get(
                     "intermediate_steps")[-5:]
 
-            response = self.get_model(state).invoke(state)
+            agent_outcome = self.get_model(state).invoke(state)
             updates = {
-                "agent_outcome": response,
+                "agent_outcome": agent_outcome,
+                "tool_outcome": None, # Reset the tool outcome
                 "error": None  # Reset the error
             }
         # TODO: if other exceptions are raised, we should handle them here
@@ -229,34 +245,41 @@ class MAIAssistantGraph(StateGraph):
             updates = {"error": str(e)}
         finally:
             return updates
+        
+    def _parse_tool_outcome(self, tool_output: Union[str, FormToolOutcome]):
+        if isinstance(tool_output, str):
+            return FormToolOutcome(
+                state_update={},
+                output=tool_output
+            )
+        elif isinstance(tool_output, FormToolOutcome):
+            return tool_output
+        else:
+            raise ValueError(
+                f"Tool returned an invalid output: {tool_output}. Must return a string or a FormToolOutcome.")
+
 
     def call_tool(self, state: AgentState):
         try:
             action = state.get("agent_outcome")
-            self.on_tool_start(tool_name=action.tool,
-                               tool_input=action.tool_input)
-
-            # We call the tool_executor and get back a response
-            response = self.get_tool_executor(state).invoke(action)
-
-            # Allow the tool to update the state
-            # If it does so, store the state_update for later and overwrite the response
-            # with only the string output
-            state_update = {}
-            if isinstance(response, FormToolOutput):
-                state_update = response.state_update
-                response = response.output
-
-            self.on_tool_end(tool_name=action.tool, tool_output=response)
-
-            function_message = FunctionMessage(
-                content=str(response),
-                name=action.tool
+            self.on_tool_start(
+                tool_name=action.tool,
+                tool_input=action.tool_input
             )
+            tool_outcome = self._parse_tool_outcome(self.get_tool_executor(state).invoke(action))
+            self.on_tool_end(tool_name=action.tool, tool_output=tool_outcome.output)
 
             updates = {
-                **state_update,
-                "intermediate_steps": [(action, function_message)]
+                **tool_outcome.state_update,
+                "intermediate_steps": [(
+                    action,
+                    FunctionMessage(
+                        content=str(tool_outcome.output),
+                        name=action.tool
+                    ))],
+                "tool_outcome": tool_outcome,
+                "agent_outcome": None,
+                "error": None
             }
 
         except Exception as e:

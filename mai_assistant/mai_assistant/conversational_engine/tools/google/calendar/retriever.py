@@ -17,17 +17,15 @@ class GoogleCalendarRetriever(FormTool):
 
     name = "GoogleCalendarRetriever"
     description = """Useful to retrieve events from Google Calendar"""
-    #return_direct = True
     args_schema: Type[BaseModel] = GetCalendarEventsPayload
+    return_direct = True
 
     chat_id: Optional[str] = None
 
-    def _run(
+    def _run_when_complete(
         self,
-        start: Optional[datetime] = None,
-        end: Optional[datetime] = None,
-        number_of_events: Optional[int] = None,
-        run_manager: Optional[CallbackManagerForToolRun] = None
+        run_manager: Optional[CallbackManagerForToolRun] = None,
+        **kwargs
     ) -> str:
         """Use the tool."""
 
@@ -39,20 +37,20 @@ class GoogleCalendarRetriever(FormTool):
 
         google_client = GoogleClient(credentials)
         payload = GetCalendarEventsPayload(
-            start=start,
-            end=end,
-            number_of_events=number_of_events
+            start=kwargs.get("start"),
+            end=kwargs.get("end"),
+            number_of_events=kwargs.get("number_of_events")
         )
         return google_client.get_calendar_events_html(payload)
 
-    def get_tool_start_message(self, input: dict) -> str:
+    # def get_tool_start_message(self, input: dict) -> str:
 
-        payload = GetCalendarEventsPayload(**input)
+    #     payload = GetCalendarEventsPayload(**input)
 
-        if payload.start and payload.end:
-            return f"Retrieving events from Google Calendar between {payload.start} and {payload.end}"
-        elif payload.number_of_events:
-            return f"Retrieving next {payload.number_of_events} events from Google Calendar"
+    #     if payload.start and payload.end:
+    #         return f"Retrieving events from Google Calendar between {payload.start} and {payload.end}"
+    #     elif payload.number_of_events:
+    #         return f"Retrieving next {payload.number_of_events} events from Google Calendar"
 
     async def ais_form_complete(
         self,

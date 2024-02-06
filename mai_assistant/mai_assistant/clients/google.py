@@ -17,10 +17,10 @@ REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
 
 class CreateCalendarEventPayload(BaseModel):
 
+    # TODO: 
     # Let's make everything Optional manually for now
     # Users can implement validations to make sure the required fields are
     # present
-
     summary: Optional[str] = Field(
         default=None,
         description="Title of the event",

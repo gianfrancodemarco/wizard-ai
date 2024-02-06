@@ -24,7 +24,7 @@ class FormToolState(Enum):
     COMPLETE = "COMPLETE"
 
 
-class FormToolOutput(BaseModel):
+class FormToolOutcome(BaseModel):
     """
     Represents a form tool output.
     The output is returned as str.
@@ -33,9 +33,18 @@ class FormToolOutput(BaseModel):
 
     output: str
     state_update: Optional[Dict[str, Any]] = None
+    return_direct: Optional[bool] = False
 
-    def __init__(self, output: str, **kwargs):
-        super().__init__(output=output)
+    def __init__(
+        self,
+        output: str,
+        return_direct: bool,
+        **kwargs
+    ):
+        super().__init__(
+            output=output,
+            return_direct=return_direct
+        )
         self.state_update = kwargs
 
 
@@ -47,6 +56,7 @@ class FormTool(StructuredTool):
     form: BaseModel = None
     args_schema_: Optional[Type[BaseModel]] = None
     name_: Optional[str] = None
+    skip_confirm: Optional[bool] = False
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -88,13 +98,14 @@ class FormTool(StructuredTool):
         match self.state:
             case FormToolState.INACTIVE:
                 self.unset_inactive_state()
-                return FormToolOutput(
+                return FormToolOutcome(
                     output=f"Starting intent {self.name}. If the user as already provided some information, call {self.name}.",
                     active_form_tool=self
                 )
             case FormToolState.ACTIVE:
                 self._update_form(**kwargs)
-                return FormToolOutput(
+                # TODO: If skip confirm...
+                return FormToolOutcome(
                     active_form_tool=self,
                     output="Form updated with the provided information. Ask the user for the next field."
                 )
@@ -102,9 +113,10 @@ class FormTool(StructuredTool):
                 result = self._run_when_complete(**kwargs)
                 # if no exception is raised, the form is complete and the tool is
                 # done, so reset the active form tool
-                return FormToolOutput(
+                return FormToolOutcome(
                     active_form_tool=None,
-                    output=result
+                    output=result,
+                    return_direct=self.return_direct
                 )
 
     def is_form_complete(self) -> bool:
@@ -178,15 +190,16 @@ class AgentState(TypedDict):
     # Needs `None` as a valid type, since this is what this will start as
     agent_outcome: Annotated[Optional[Union[AgentAction,
                                             AgentFinish, None]], operator.setitem]
+    # The outcome of a given call to a tool
+    # Needs `None` as a valid type, since this is what this will start as
+    tool_outcome: Annotated[Optional[Union[FormToolOutcome, str, None]], operator.setitem]
     # List of actions and corresponding observations
     # Here we annotate this with `operator.add` to indicate that operations to
     # this state should be ADDED to the existing values (not overwrite it)
     intermediate_steps: Annotated[Optional[list[tuple[AgentAction,
                                                       FunctionMessage]]], operator.add]
     error: Annotated[Optional[str], operator.setitem]
-
     active_form_tool: Annotated[Optional[FormTool], operator.setitem]
-
 
 class ContextReset(BaseTool):
     name = "ContextReset"

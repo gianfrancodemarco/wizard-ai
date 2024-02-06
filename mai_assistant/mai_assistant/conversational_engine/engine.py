@@ -150,7 +150,7 @@ async def process_message(data: dict) -> None:
         ---
     """))
 
-    answer = value["agent_outcome"].return_values["output"]
+    answer = graph.parse_output(output)
 
     # Prepare input and memory
     stored_agent_state.memory.save_context(
