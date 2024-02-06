@@ -1,4 +1,4 @@
-site_name: MAI Assistant
+site_name: Wizard AI
 theme:
   name: material
 
@@ -11,6 +11,8 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.snippets:
       base_path: ['../wizard_ai']
+  - markdown_include.include:
+      base_path: '../docs'
 
 plugins:
 - search
