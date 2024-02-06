@@ -1,0 +1,15 @@
+site_name: MAI Assistant
+theme:
+  name: material
+
+plugins:
+- search
+- gen-files:
+    scripts:
+    - scripts/gen_ref_pages.py  
+- literate-nav:
+    nav_file: SUMMARY.md
+- mkdocstrings
+
+nav:
+  - Code Reference: reference/
