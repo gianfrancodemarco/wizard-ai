@@ -34,8 +34,16 @@ class FormToolOutput(BaseModel):
     output: str
     state_update: Optional[Dict[str, Any]] = None
 
-    def __init__(self, output: str, **kwargs):
-        super().__init__(output=output)
+    def __init__(
+        self,
+        output: str,
+        return_direct: bool = False,
+        **kwargs
+    ):
+        super().__init__(
+            output=output,
+            return_direct=return_direct
+        )
         self.state_update = kwargs
 
 

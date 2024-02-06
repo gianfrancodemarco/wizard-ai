@@ -45,10 +45,10 @@ class MAIAssistantGraph(StateGraph):
 
     @property
     def default_prompt(self):
-        if not hasattr(self, "_default_prompt"):
-            self._default_prompt = hub.pull("hwchase17/openai-functions-agent")
-            self._default_prompt.messages[0] = self.base_system_message
-        return self._default_prompt
+        return ChatPromptTemplate(messages=[
+            self.base_system_message,
+            *self.prompt_footer
+        ])
 
     @property
     def base_system_message(self):

@@ -2,21 +2,21 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: 
+    - main"
+    - "!gh-pages"
+
   pull_request:
-    branches: [ "main" ]
+    branches: 
+    - main"
+    - "!gh-pages"
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image for mai_assistant
       run: docker build . --file .docker/mai_assistant.Dockerfile --tag mai_assistant:$(date +%s) --build-arg BUILD_TYPE=production
     - name: Build the Docker image for mai_assistant_telegram_bot
       run: docker build . --file .docker/mai_assistant_telegram_bot.Dockerfile --tag mai_assistant_telegram_bot:$(date +%s) --build-arg BUILD_TYPE=production
-
-      

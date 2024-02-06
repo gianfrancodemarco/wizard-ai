@@ -1,7 +1,16 @@
 name: Unit tests
 
-on: [push]
+on:
+  push:
+    branches: 
+    - main"
+    - "!gh-pages"
 
+  pull_request:
+    branches: 
+    - main"
+    - "!gh-pages"
+  
 jobs:
   build:
     runs-on: ubuntu-latest
