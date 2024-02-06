@@ -22,8 +22,8 @@ jobs:
         # remove unused imports
       - name: Remove unused imports
         run: 
-          autoflake --ignore-init-module-imports --recursive --in-place mai_assistant &&
-          autoflake --ignore-init-module-imports --recursive --in-place mai_assistant_telegram_bot
+          autoflake --ignore-init-module-imports --recursive --in-place wizard_ai &&
+          autoflake --ignore-init-module-imports --recursive --in-place wizard_ai_telegram_bot
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:

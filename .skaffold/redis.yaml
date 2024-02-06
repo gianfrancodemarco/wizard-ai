@@ -1,7 +1,7 @@
 apiVersion: skaffold/v2beta29
 kind: Config
 metadata:
-  name: mai-assistant-redis
+  name: wizard-ai-redis
 requires:
   - path: namespace.yaml
   - path: secrets.yaml
@@ -12,11 +12,11 @@ deploy:
         remoteChart: oci://registry-1.docker.io/bitnamicharts/redis
         upgradeOnChange: true
         createNamespace: true
-        namespace: mai-assistant
+        namespace: wizard-ai
         valuesFiles:
           - ../.helm/redis/values.yaml
 portForward:
   - resourceType: service
     resourceName: redis-master
-    namespace: mai-assistant
+    namespace: wizard-ai
     port: 6379

@@ -25,27 +25,27 @@ jobs:
         sudo apt install graphviz graphviz-dev
         python -m pip install --upgrade pip
         pip install poetry
-        cd mai_assistant
+        cd wizard_ai
         poetry install --with test
-    - name: Execute unit tests with coverage [mai-assistant]
+    - name: Execute unit tests with coverage [wizard-ai]
       run: |
-        cd mai_assistant/tests
-        poetry run pytest --cov=mai_assistant --cov-report=html:coverage_html unit
-    # - name: Execute unit tests with coverage [mai-assistant-telegram-bot]
+        cd wizard_ai/tests
+        poetry run pytest --cov=wizard_ai --cov-report=html:coverage_html unit
+    # - name: Execute unit tests with coverage [wizard-ai-telegram-bot]
     #   run: |
-    #     cd mai_assistant_telegram_bot/tests
-    #     poetry run pytest --cov=mai_assistant_telegram_bot --cov-report=html:coverage_html unit
+    #     cd wizard_ai_telegram_bot/tests
+    #     poetry run pytest --cov=wizard_ai_telegram_bot --cov-report=html:coverage_html unit
     - name: Upload HTML coverage report
       uses: actions/upload-artifact@v2
       with:
         name: coverage-report
-        path: mai_assistant/tests/coverage_html
+        path: wizard_ai/tests/coverage_html
     - name: Upload graph image
       uses: actions/upload-artifact@v2
       with:
         name: graph
-        path: mai_assistant/tests/graph.png
+        path: wizard_ai/tests/graph.png
     - name: Cleanup
       run: |
-        rm -rf mai_assistant/tests/coverage_html
-        rm -f mai_assistant/tests/graph.png
+        rm -rf wizard_ai/tests/coverage_html
+        rm -f wizard_ai/tests/graph.png

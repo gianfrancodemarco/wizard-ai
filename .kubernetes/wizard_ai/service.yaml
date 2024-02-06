@@ -1,0 +1,18 @@
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: wizard-ai-service
+  namespace: wizard-ai
+spec:
+  selector:
+    app: wizard-ai
+  ports:
+    - name: rest
+      protocol: TCP
+      port: 8000
+      targetPort: 8000
+    - name: debug
+      protocol: TCP
+      port: 5678
+      targetPort: 5678

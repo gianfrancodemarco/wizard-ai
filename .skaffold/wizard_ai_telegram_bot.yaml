@@ -1,0 +1,29 @@
+apiVersion: skaffold/v2beta29
+kind: Config
+metadata:
+  name: wizard-ai-telegram-bot
+requires:
+  - path: namespace.yaml
+  - path: secrets.yaml
+build:
+  artifacts:
+  - image: wizard-ai-telegram-bot
+    docker:
+      dockerfile: .docker/wizard_ai_telegram_bot.Dockerfile
+      buildArgs:
+          BUILD_TYPE: development
+    context: ../
+    # sync:
+    #   manual:
+    #     - src: 'wizard_ai_telegram_bot/**/*.py'
+    #       dest: /app/wizard_ai_telegram_bot
+    #       strip: wizard_ai_telegram_bot
+deploy:
+  kubectl:
+    manifests:
+    - ../.kubernetes/wizard_ai_telegram_bot/*.yaml
+portForward:
+  - resourceType: service
+    resourceName: wizard-ai-telegram-bot-service
+    namespace: wizard-ai
+    port: 5679

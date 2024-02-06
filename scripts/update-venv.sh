@@ -1,1 +1,1 @@
-../venv/bin/python -m pip install -r mai_assistant/requirements.txt
+../venv/bin/python -m pip install -r wizard_ai/requirements.txt

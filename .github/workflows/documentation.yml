@@ -37,13 +37,13 @@ jobs:
       run: |
         sudo apt install graphviz graphviz-dev
         python -m pip install --upgrade pip
-        cd mai_assistant
+        cd wizard_ai
         pip install poetry
-        cd mai_assistant
+        cd wizard_ai
         poetry install --with docs --with test
 
     - name: Build Documentation
-      run: cd mai_assistant && poetry run python -m mkdocs build -f ../docs/mkdocs.yml
+      run: cd wizard_ai && poetry run python -m mkdocs build -f ../docs/mkdocs.yml
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v1

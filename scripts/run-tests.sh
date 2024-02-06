@@ -1,1 +1,1 @@
-cd mai_assistant/tests && poetry run pytest --cov=mai_assistant unit && cd ../.. && rm -f mai_assistant/tests/graph.png
+cd wizard_ai/tests && poetry run pytest --cov=wizard_ai unit && cd ../.. && rm -f wizard_ai/tests/graph.png

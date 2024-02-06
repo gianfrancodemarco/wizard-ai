@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wizard-ai-telegram-bot
+  namespace: wizard-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wizard-ai-telegram-bot
+  template:
+    metadata:
+      labels:
+        app: wizard-ai-telegram-bot
+    spec:
+      containers:
+        - name: wizard-ai-telegram-bot
+          image: wizard-ai-telegram-bot
+          imagePullPolicy: Never
+          env:
+            - name: wizard_ai_URL
+              value: wizard-ai-service:8000
+            - name: TELEGRAM_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: wizard-ai-telegram-bot-secret
+                  key: TELEGRAM_API_TOKEN
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: wizard-ai-secret
+                  key: OPENAI_API_KEY
+            - name: REDIS_HOST
+              value: "redis-master"
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wizard-ai-secret
+                  key: REDIS_PASSWORD
+            - name: RABBITMQ_HOST
+              value: "rabbitmq"
+            - name: RABBITMQ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-custom-secret
+                  key: rabbitmq-user
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-custom-secret
+                  key: rabbitmq-password
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+            requests:
+              cpu: "0.5"
+              memory: "512Mi"

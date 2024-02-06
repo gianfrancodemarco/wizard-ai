@@ -1,7 +1,7 @@
 apiVersion: skaffold/v2beta29
 kind: Config
 metadata:
-  name: mai-assistant-rabbitmq
+  name: wizard-ai-rabbitmq
 requires:
   - path: namespace.yaml
   - path: secrets.yaml
@@ -12,15 +12,15 @@ deploy:
         remoteChart: oci://registry-1.docker.io/bitnamicharts/rabbitmq
         upgradeOnChange: true
         createNamespace: true
-        namespace: mai-assistant
+        namespace: wizard-ai
         valuesFiles:
           - ../.helm/rabbitmq/values.yaml
 portForward:
   - resourceType: service
     resourceName: rabbitmq
-    namespace: mai-assistant
+    namespace: wizard-ai
     port: 5672 # RabbitMQ
   - resourceType: service
     resourceName: rabbitmq
-    namespace: mai-assistant
+    namespace: wizard-ai
     port: 15672 # RabbitMQ Management UI

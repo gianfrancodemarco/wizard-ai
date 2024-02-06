@@ -1,0 +1,35 @@
+apiVersion: skaffold/v2beta29
+kind: Config
+metadata:
+  name: wizard-ai
+requires:
+  - path: namespace.yaml
+  - path: secrets.yaml
+build:
+  artifacts:
+  - image: wizard-ai
+    docker:
+      dockerfile: .docker/wizard_ai.Dockerfile
+      buildArgs:
+          BUILD_TYPE: development
+    context: ../
+    sync:
+      infer:
+        - '**/*.py'
+      # manual:
+      #   - src: 'wizard_ai/**/*.py'
+      #     dest: /app/wizard_ai
+      #     strip: wizard_ai/
+deploy:
+  kubectl:
+    manifests:
+    - ../.kubernetes/wizard_ai/*.yaml
+portForward:
+  - resourceType: service
+    resourceName: wizard-ai-service
+    namespace: wizard-ai
+    port: 8000
+  - resourceType: service
+    resourceName: wizard-ai-service
+    namespace: wizard-ai
+    port: 5678

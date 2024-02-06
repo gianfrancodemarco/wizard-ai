@@ -6,7 +6,7 @@ import mkdocs_gen_files
 
 nav = mkdocs_gen_files.Nav()
 
-src = Path(__file__).parent.parent.parent / "mai_assistant"
+src = Path(__file__).parent.parent.parent / "wizard_ai"
 
 for path in sorted(src.rglob("*.py")):
     

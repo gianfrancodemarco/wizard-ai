@@ -20,3 +20,9 @@ pip install mkdocs mkdocs-material mkdocstrings
     docs/
         index.md  # The documentation homepage.
         ...       # Other markdown pages, images and other files.
+
+## Example import code
+
+```py title="main.py"
+--8<-- "wizard_ai/main.py"
+```

@@ -5,5 +5,5 @@ requires:
   - path: .skaffold/secrets.yaml
   - path: .skaffold/redis.yaml
   - path: .skaffold/rabbitmq.yaml
-  - path: .skaffold/mai_assistant.yaml
-  - path: .skaffold/mai_assistant_telegram_bot.yaml
+  - path: .skaffold/wizard_ai.yaml
+  - path: .skaffold/wizard_ai_telegram_bot.yaml
