@@ -17,24 +17,16 @@ REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
 
 class CreateCalendarEventPayload(BaseModel):
 
-    # Let's make everything Optional manually for now
-    # Users can implement validations to make sure the required fields are
-    # present
-
-    summary: Optional[str] = Field(
-        default=None,
+    summary: str = Field(
         description="Title of the event",
     )
-    description: Optional[str] = Field(
-        default=None,
+    description: str = Field(
         description="Description of the event",
     )
-    start: Optional[datetime] = Field(
-        default=None,
+    start: datetime = Field(
         description="Start date of the event",
     )
-    end: Optional[datetime] = Field(
-        default=None,
+    end: datetime = Field(
         description="End date of the event",
     )
 

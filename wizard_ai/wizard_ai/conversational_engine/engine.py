@@ -8,14 +8,17 @@ from typing import Any
 from fastapi.responses import JSONResponse
 
 from wizard_ai.clients import (RabbitMQProducer, get_rabbitmq_producer,
-                                   get_redis_client)
+                               get_redis_client)
 from wizard_ai.clients.rabbitmq import RabbitMQProducer
 from wizard_ai.constants import MessageQueues, MessageType
 from wizard_ai.constants.message_queues import MessageQueues
 from wizard_ai.constants.message_type import MessageType
-from wizard_ai.conversational_engine.memory import get_stored_agent_state, store_agent_state
+from wizard_ai.conversational_engine.langchain_extention.form_tool import \
+    FormTool
 from wizard_ai.conversational_engine.langchain_extention.wizard_ai_graph import \
     MAIAssistantGraph
+from wizard_ai.conversational_engine.memory import (get_stored_agent_state,
+                                                    store_agent_state)
 from wizard_ai.conversational_engine.tools import *
 from wizard_ai.models.chat_payload import ChatPayload
 
@@ -43,7 +46,7 @@ class RabbitMQConnector:
 
     def on_tool_start(
         self,
-        tool_name: str,
+        tool: FormTool,
         tool_input: str
     ) -> Any:
         """Run when tool starts running."""
@@ -51,11 +54,9 @@ class RabbitMQConnector:
             return
 
         try:
-            tool = next(
-                (tool for tool in self.tools if tool.name == tool_name), None)
             tool_start_message = tool.get_tool_start_message(tool_input)
         except BaseException:
-            tool_start_message = f"{tool_name}: {tool_input}"
+            tool_start_message = f"{tool.name}: {tool_input}"
 
         self.rabbitmq_client.publish(
             queue=self.queue,
@@ -68,7 +69,7 @@ class RabbitMQConnector:
 
     def on_tool_end(
         self,
-        tool_name: str,
+        tool: FormTool,
         tool_output: str
     ) -> Any:
         """Run when tool ends running."""

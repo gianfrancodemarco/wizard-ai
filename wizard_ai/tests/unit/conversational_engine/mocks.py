@@ -3,9 +3,7 @@ from typing import Any, Type
 from pydantic import BaseModel
 
 from wizard_ai.conversational_engine.langchain_extention.form_tool import \
-    FormTool
-from wizard_ai.conversational_engine.langchain_extention.intent_helpers import \
-    BaseTool
+    FormTool, BaseTool
 
 
 class MockBaseTool(BaseTool):

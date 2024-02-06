@@ -1,7 +1,5 @@
 from wizard_ai.conversational_engine.langchain_extention.form_tool import (
-    AgentState, ContextReset, FormTool, FormToolState, filter_active_tools)
-from wizard_ai.conversational_engine.langchain_extention.intent_helpers import \
-    BaseTool
+    AgentState, ContextReset, FormTool, FormToolState, BaseTool, filter_active_tools)
 
 from .mocks import MockBaseTool, MockFormTool
 

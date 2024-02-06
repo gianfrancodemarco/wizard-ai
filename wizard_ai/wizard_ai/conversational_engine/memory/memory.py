@@ -1,6 +1,8 @@
+import json
 import logging
+import os
 import pickle
-from typing import Dict, Union
+from typing import Dict, Union, Optional
 
 import redis
 from langchain.memory import ConversationBufferWindowMemory
@@ -12,18 +14,42 @@ from wizard_ai.conversational_engine.langchain_extention.form_tool import (
 
 logger = logging.getLogger(__name__)
 
+HISTORY_LENGTH = os.getenv("HISTORY_LENGTH", 5)
+
 
 class StoredAgentState:
-    memory: BaseChatMemory
-    active_form_tool: Union[Dict, FormTool]
+    memory: Optional[BaseChatMemory]
+    active_form_tool: Optional[Union[Dict, FormTool]]
 
     def __init__(
         self,
-        memory: BaseChatMemory,
-        active_form_tool: Union[Dict, FormTool]
+        memory: Optional[BaseChatMemory] = ConversationBufferWindowMemory(
+            k=HISTORY_LENGTH,
+            memory_key="history",
+            human_prefix="Human",
+            ai_prefix="Answer",
+            input_key="messages",
+            return_messages=True
+        ),
+        active_form_tool: Union[Dict, FormTool] = None
     ) -> None:
         self.memory = memory
         self.active_form_tool = active_form_tool
+
+    def to_pickle(self):
+        if self.active_form_tool:
+            self.active_form_tool.form = self.active_form_tool.form.model_dump_json()
+            self.active_form_tool.args_schema = self.active_form_tool.args_schema_
+            self.active_form_tool.args_schema_ = None
+        return pickle.dumps(self)
+
+    @staticmethod
+    def from_pickle(pickled: str):
+        stored_agent_state = pickle.loads(pickled)
+        if stored_agent_state.active_form_tool:
+            stored_agent_state.active_form_tool.args_schema_ = stored_agent_state.active_form_tool.args_schema
+            stored_agent_state.active_form_tool.init_state()
+        return stored_agent_state
 
 
 def get_stored_agent_state(
@@ -36,20 +62,11 @@ def get_stored_agent_state(
     )
 
     if stored_agent_state is not None:
-        stored_agent_state: StoredAgentState = pickle.loads(stored_agent_state)
+        stored_agent_state: StoredAgentState = StoredAgentState.from_pickle(
+            stored_agent_state)
         logger.info("Loaded agent state from redis")
     else:
-        stored_agent_state = StoredAgentState(
-            memory=ConversationBufferWindowMemory(
-                k=5,
-                memory_key="history",
-                human_prefix="Human",
-                ai_prefix="Answer",
-                input_key="messages",
-                return_messages=True
-            ),
-            active_form_tool=None
-        )
+        stored_agent_state = StoredAgentState()
     return stored_agent_state
 
 
@@ -66,5 +83,5 @@ def store_agent_state(
     redis_client.hset(
         chat_id,
         RedisKeys.AGENT_STATE.value,
-        pickle.dumps(stored_agent_state)
+        stored_agent_state.to_pickle()
     )

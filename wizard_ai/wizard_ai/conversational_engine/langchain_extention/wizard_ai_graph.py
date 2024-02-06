@@ -233,8 +233,9 @@ class MAIAssistantGraph(StateGraph):
     def call_tool(self, state: AgentState):
         try:
             action = state.get("agent_outcome")
-            self.on_tool_start(tool_name=action.tool,
-                               tool_input=action.tool_input)
+            tool = self.get_tool_by_name(action.tool, state)
+            
+            self.on_tool_start(tool=tool, tool_input=action.tool_input)
 
             # We call the tool_executor and get back a response
             response = self.get_tool_executor(state).invoke(action)
@@ -247,7 +248,7 @@ class MAIAssistantGraph(StateGraph):
                 state_update = response.state_update
                 response = response.output
 
-            self.on_tool_end(tool_name=action.tool, tool_output=response)
+            self.on_tool_end(tool=tool, tool_output=response)
 
             function_message = FunctionMessage(
                 content=str(response),
