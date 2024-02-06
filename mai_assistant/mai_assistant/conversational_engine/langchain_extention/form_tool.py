@@ -38,7 +38,7 @@ class FormToolOutcome(BaseModel):
     def __init__(
         self,
         output: str,
-        return_direct: bool,
+        return_direct: bool = False,
         **kwargs
     ):
         super().__init__(

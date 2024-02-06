@@ -1,7 +1,14 @@
 name: Code formatter
 
-on: [push]
-
+on:
+  push:
+    branches: 
+    - main"
+    - "!gh-pages"
+  pull_request:
+    branches: 
+    - main"
+    - "!gh-pages"
 jobs:
   autopep8:
     runs-on: ubuntu-latest
