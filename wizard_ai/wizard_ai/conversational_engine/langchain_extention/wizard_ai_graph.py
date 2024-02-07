@@ -55,8 +55,8 @@ class MAIAssistantGraph(StateGraph):
         return SystemMessagePromptTemplate.from_template(dedent(f"""
             You are a personal assistant trying to help the user. You always answer in English. The current datetime is {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}.
             Don't use any of your knowledge or information about the state of the world. If you need something, ask the user for it or use a tool to find or compute it.
-        """))
-
+        """).strip())
+    
     @property
     def prompt_footer(self):
         return [MessagesPlaceholder(
@@ -76,7 +76,7 @@ class MAIAssistantGraph(StateGraph):
                 Error:
                 {{error}}.
 
-                """))
+                """).strip())
         ])
 
     def __build_graph(self):
@@ -118,7 +118,7 @@ class MAIAssistantGraph(StateGraph):
         return ToolExecutor(self.get_tools(state))
 
     def get_llm(self):
-        return ChatOpenAI(temperature=0, verbose=True)
+        return ChatOpenAI(model="gpt-3.5-turbo-1106", temperature=0, verbose=True)
 
     def get_model(self, state: AgentState):
 
@@ -142,27 +142,32 @@ class MAIAssistantGraph(StateGraph):
         form_tool = state.get("active_form_tool")
         information_collected = re.sub("}", "}}", re.sub("{", "{{", str(
             {name: value for name, value in form_tool.form.__dict__.items() if value})))
-        information_to_collect = form_tool.get_next_field_to_collect(
-            form_tool.form)
-
-        ask_info = SystemMessagePromptTemplate.from_template(dedent(f"""
-            You need to ask the user to provide the needed information.
+        
+        information_to_collect = form_tool.get_next_field_to_collect()
+        if information_to_collect:
+            message = SystemMessagePromptTemplate.from_template(dedent(
+            f"""
+            Help the user fill data for {form_tool.name}. Ask to provide the needed information.
             Now you MUST ask the user to provide a value for the field "{information_to_collect}".
             Use the {form_tool.name} tool to update the form each time the user provides one or more values.
-        """))
-
-        ask_confirm = SystemMessagePromptTemplate.from_template(dedent(f"""
-            You have all the information you need.
+            """
+            ).strip())
+        else:
+            message = SystemMessagePromptTemplate.from_template(dedent(
+            f"""
+            Help the user fill data for {form_tool.name}. You have all the information you need.
             Show the user all of the information and ask for confirmation.
-            If he agrees, call the {form_tool.name} tool one more time with all of the information.
-        """))
-
+            If he agrees, call the {form_tool.name} tool one more time with confirm=True.
+            If he doesn't or want to change something, call it with confirm=False.
+            """
+            ).strip())
+ 
         return self.__get_model_from_state_and_prompt(
             state=state,
             prompt=ChatPromptTemplate(
                 messages=[
                     self.base_system_message,
-                    ask_info if information_to_collect else ask_confirm,
+                    message,
                     *self.prompt_footer
                 ]
             )

@@ -1,3 +1,4 @@
+import json
 import operator
 from enum import Enum
 from typing import (Annotated, Any, Dict, Optional, Sequence, Type, TypedDict,
@@ -54,8 +55,13 @@ def make_optional_model(original_model: BaseModel) -> BaseModel:
     """
     Takes a Pydantic model and returns a new model with all attributes optional.
     """
-    optional_attributes = {attr_name: (
-        attr_type, None) for attr_name, attr_type in original_model.__annotations__.items()}
+    optional_attributes = {
+        attr_name: (
+            Union[None, attr_type],
+            Field(default=None, description=original_model.model_fields[attr_name].description)
+        ) 
+        for attr_name, attr_type in original_model.__annotations__.items()
+    }
 
     # Define a custom Pydantic model with optional attributes
     new_class_name = original_model.__name__ + 'Optional'
@@ -111,6 +117,9 @@ class FormTool(StructuredTool):
         self.args_schema = make_optional_model(self.args_schema_)
         if not self.form:
             self.form = self.args_schema()
+        elif isinstance(self.form, str):
+            self.form = self.args_schema(**json.loads(self.form))
+
 
     def set_filled_state(self):
         self.description = f"Finalizes intent {self.name}, which {self.description_}"
@@ -194,16 +203,17 @@ class FormTool(StructuredTool):
 
     def get_next_field_to_collect(
         self,
-        form: Optional[BaseModel],
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
         """
         The default implementation returns the first field that is not set.
         """
+        if self.state == FormToolState.FILLED:
+            return None
+        
         for field_name, field_info in self.args_schema.__fields__.items():
-            if not getattr(form, field_name):
+            if not getattr(self.form, field_name):
                 return field_name
-        return None
 
     def get_tool_start_message(self, input: dict) -> str:
         message = ""

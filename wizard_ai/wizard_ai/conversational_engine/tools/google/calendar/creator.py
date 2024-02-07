@@ -16,7 +16,7 @@ from wizard_ai.constants.redis_keys import RedisKeys
 class GoogleCalendarCreator(FormTool):
 
     name = "GoogleCalendarCreator"
-    description = """Useful to create events on Google Calendar."""
+    description = """Useful to create events/memos/reminders on Google Calendar."""
     args_schema: Type[BaseModel] = CreateCalendarEventPayload
 
     chat_id: Optional[str] = None
