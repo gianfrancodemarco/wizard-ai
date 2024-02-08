@@ -12,36 +12,8 @@ jobs:
       matrix:
         python-version: ["3.10"]
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
-        with:
-          python-version: ${{ matrix.python-version }}
-  
-      - name: Install dependencies
-        run: |
-          pip install openai
-
-      - name: Run script to generate and update docstrings
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: python .github/workflows/generate_docs.py 'wizard_ai/wizard_ai/constants'
-
-      - name: Commit changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add .
-          git commit -m "Auto-generated docstrings"
-
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: gianfrancodemarco/zero-docs-action@v1
         with:
-          title: "Auto-generated documentation"
-          body: |
-            This PR includes auto-generated documentation for Python files.
-          labels: "documentation"
-          branch: "auto-docs"
-          base: "main"
-          reviewers: gianfranco-demarco
+          scan-dir: wizard_ai/wizard_ai/constants
+          reviewers: gianfrancodemarco
