@@ -15,5 +15,6 @@ jobs:
       - name: Create Pull Request
         uses: gianfrancodemarco/zero-docs-action@v1
         with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           scan-dir: wizard_ai/wizard_ai/constants
           reviewers: gianfrancodemarco
