@@ -2,6 +2,10 @@ name: Auto Doc Generation
 
 on:
   workflow_dispatch:
+    inputs:
+      scan-dir:
+        type: string
+        description: 'The directory to scan for doc generation'
 
 jobs:
   auto_doc_generation:
