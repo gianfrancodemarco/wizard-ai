@@ -26,7 +26,7 @@ jobs:
       - name: Run script to generate and update docstrings
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: python .github/workflows/generate_docs.py 'wizard_ai/tests/unit/conversational_engine'
+        run: python .github/workflows/generate_docs.py 'wizard_ai/wizard_ai/constants'
 
       - name: Commit changes
         run: |
