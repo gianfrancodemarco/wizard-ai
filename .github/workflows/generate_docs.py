@@ -49,9 +49,12 @@ def update_docstrings(filename):
     for node in ast.walk(tree):
         if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
             if not ast.get_docstring(node):
-                logger.info(f"Generating docstring for {node.name}")
-                # Generate docstring for class or function
-                generated_docstring = generate_docstring(content)
+
+                start_line = node.lineno - 1
+                end_line = node.body[0].lineno - 1 if node.body else node.lineno
+                code_block = "\n".join(content.split("\n")[start_line:end_line])
+                generated_docstring = generate_docstring(code_block)
+
                 if generated_docstring:
                     # Add the generated docstring to the node
                     ast.increment_lineno(node)
@@ -76,7 +79,6 @@ def update_docstrings_in_directory(scan_dir):
                 update_docstrings(filename)
 
 if __name__ == "__main__":
-    # Retrieve the SCAN_DIR argument from command-line arguments
     if len(sys.argv) != 2:
         logger.error("Usage: python generate_docs.py <SCAN_DIR>")
         sys.exit(1)
