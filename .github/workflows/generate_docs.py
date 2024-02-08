@@ -1,14 +1,21 @@
 import ast
 import os
 import sys
+import logging
+import time
 
 from openai import OpenAI
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def generate_docstring(text):
     # Function to generate docstring using OpenAI API
     # This function takes input `text` and returns the generated docstring
     try:
+        logger.info("Calling OpenAI to generate docstring...")
+        start_time = time.time()
         client = OpenAI()
 
         chat_completion = client.chat.completions.create(
@@ -25,13 +32,15 @@ def generate_docstring(text):
             model="gpt-3.5-turbo",
         )
 
+        end_time = time.time()
+        logger.info(f"OpenAI call completed in {end_time - start_time:.2f} seconds")
         return chat_completion.choices[0].message.content.strip()
     except Exception as e:
-        print(f"Error generating docstring: {e}")
+        logger.error(f"Error generating docstring: {e}")
         return ""
 
-
 def update_docstrings(filename):
+    logger.info(f"Updating docstrings in file: {filename}")
     with open(filename, "r") as f:
         content = f.read()
 
@@ -40,6 +49,7 @@ def update_docstrings(filename):
     for node in ast.walk(tree):
         if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
             if not ast.get_docstring(node):
+                logger.info(f"Generating docstring for {node.name}")
                 # Generate docstring for class or function
                 generated_docstring = generate_docstring(content)
                 if generated_docstring:
@@ -47,6 +57,7 @@ def update_docstrings(filename):
                     ast.increment_lineno(node)
                     node.body.insert(0, ast.Expr(
                         value=ast.Constant(value=generated_docstring)))
+                    logger.info(f"Added docstring for {node.name}")
 
     # Generate updated source code
     updated_code = ast.unparse(tree)
@@ -55,8 +66,8 @@ def update_docstrings(filename):
     with open(filename, "w") as f:
         f.write(updated_code)
 
-
 def update_docstrings_in_directory(scan_dir):
+    logger.info(f"Scanning directory: {scan_dir}")
     # Scan directory for Python files
     for root, _, files in os.walk(scan_dir):
         for file in files:
@@ -64,11 +75,10 @@ def update_docstrings_in_directory(scan_dir):
                 filename = os.path.join(root, file)
                 update_docstrings(filename)
 
-
 if __name__ == "__main__":
     # Retrieve the SCAN_DIR argument from command-line arguments
     if len(sys.argv) != 2:
-        print("Usage: python generate_docs.py <SCAN_DIR>")
+        logger.error("Usage: python generate_docs.py <SCAN_DIR>")
         sys.exit(1)
     SCAN_DIR = sys.argv[1]
     update_docstrings_in_directory(SCAN_DIR)
