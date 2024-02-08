@@ -1,0 +1,45 @@
+name: Auto Doc Generation
+
+on:
+  push:
+    branches:
+      - auto-docs
+
+jobs:
+  auto_doc_generation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          pip install openai
+
+      - name: Run script to generate and update docstrings
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: python .github/workflows/generate_docs.py 'wizard_ai/tests/unit/conversational_engine'
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Auto-generated docstrings"
+
+      - name: Push changes to repository
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: "Auto-generated documentation"
+          body: |
+            This PR includes auto-generated documentation for Python files.
+          labels: "documentation"
+          branch: "auto-docs"
+          base: "main"
+          reviewers: gianfranco-demarco
