@@ -118,7 +118,7 @@ class MAIAssistantGraph(StateGraph):
         return ToolExecutor(self.get_tools(state))
 
     def get_llm(self):
-        return ChatOpenAI(model="gpt-3.5-turbo-1106", temperature=0, verbose=True)
+        return ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0, verbose=True)
 
     def get_model(self, state: AgentState):
 
