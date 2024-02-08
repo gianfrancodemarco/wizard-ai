@@ -177,9 +177,8 @@ class MAIAssistantGraph(StateGraph):
         return self.__get_model_from_state_and_prompt(
             state=state,
             prompt=ChatPromptTemplate(messages=[
-                self.base_system_message,
-                *self.prompt_footer,
                 self.error_correction_prompt
+                *self.prompt_footer,
             ])
         )
 

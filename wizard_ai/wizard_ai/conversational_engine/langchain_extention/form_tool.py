@@ -122,7 +122,13 @@ class FormTool(StructuredTool):
 
 
     def set_filled_state(self):
+        self.state = FormToolState.FILLED
         self.description = f"Finalizes intent {self.name}, which {self.description_}"
+        self.args_schema = make_optional_model(self.args_schema_)
+        if not self.form:
+            self.form = self.args_schema()
+        elif isinstance(self.form, str):
+            self.form = self.args_schema(**json.loads(self.form))
         self.args_schema = ToolConfirmIntentPayload
 
     def _run(
@@ -153,7 +159,7 @@ class FormTool(StructuredTool):
                     )                
             case FormToolState.FILLED:
                 if kwargs.get("confirm"):
-                    result = self._run_when_complete(**kwargs)
+                    result = self._run_when_complete()
                     # if no exception is raised, the form is complete and the tool is
                     # done, so reset the active form tool
                     return FormToolOutput(
