@@ -1,20 +1,15 @@
 name: Auto Doc Generation
 
 on:
-  push:
-    branches:
-      - auto-docs
+  workflow_dispatch:
 
 jobs:
   auto_doc_generation:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.10"]
     steps:
-      - name: Create Pull Request
+      - name: Generate Docs
         uses: gianfrancodemarco/zero-docs-action@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
-          scan-dir: wizard_ai/wizard_ai/constants
+          scan-dir: ${{ github.event.inputs.scan-dir }}
           reviewers: gianfrancodemarco
