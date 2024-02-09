@@ -20,10 +20,7 @@ class GoogleCalendarCreator(FormTool):
 
     chat_id: Optional[str] = None
 
-    def _run_when_complete(
-        self,
-        run_manager: Optional[CallbackManagerForToolRun] = None,
-    ) -> str:
+    def _run_when_complete(self) -> str:
         """Use the tool."""
         credentials = get_redis_client().hget(
             self.chat_id,

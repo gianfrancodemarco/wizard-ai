@@ -1,70 +1,62 @@
 import pickle
-from datetime import datetime
+import textwrap
 from typing import Optional, Type
 
-from langchain_core.callbacks import (AsyncCallbackManagerForToolRun,
-                                      CallbackManagerForToolRun)
 from pydantic import BaseModel
 
 from wizard_ai.clients import (GetCalendarEventsPayload, GoogleClient,
-                                   get_redis_client)
+                               get_redis_client)
 from wizard_ai.constants import RedisKeys
-from wizard_ai.conversational_engine.langchain_extention import (
-    AgentState, FormTool)
+from wizard_ai.conversational_engine.langchain_extention import (FormTool,
+                                                                 FormToolState)
 
 
 class GoogleCalendarRetriever(FormTool):
 
     name = "GoogleCalendarRetriever"
     description = """Useful to retrieve events from Google Calendar"""
-    #return_direct = True
     args_schema: Type[BaseModel] = GetCalendarEventsPayload
 
+    return_direct = True
+    skip_confirm = True
     chat_id: Optional[str] = None
 
-    def _run(
-        self,
-        start: Optional[datetime] = None,
-        end: Optional[datetime] = None,
-        number_of_events: Optional[int] = None,
-        run_manager: Optional[CallbackManagerForToolRun] = None
-    ) -> str:
-        """Use the tool."""
-
+    def _run_when_complete(self) -> str:
         credentials = get_redis_client().hget(
             self.chat_id,
             RedisKeys.GOOGLE_CREDENTIALS.value
         )
-        credentials = pickle.loads(credentials)
-
-        google_client = GoogleClient(credentials)
+        google_client = GoogleClient(pickle.loads(credentials))
         payload = GetCalendarEventsPayload(
-            start=start,
-            end=end,
-            number_of_events=number_of_events
+            start=self.form.start,
+            end=self.form.end,
+            number_of_events=self.form.number_of_events
         )
         return google_client.get_calendar_events_html(payload)
 
     def get_tool_start_message(self, input: dict) -> str:
+        base_message = super().get_tool_start_message(input)
+        if self.state in (FormToolState.ACTIVE, FormToolState.FILLED):
+            payload = GetCalendarEventsPayload(**input)
 
-        payload = GetCalendarEventsPayload(**input)
+            return f"{base_message}\n" +\
+                textwrap.dedent(f"""
+                    Number of events: {payload.number_of_events}
+                    Start: {payload.start}
+                    End: {payload.end}
+                """)
 
-        if payload.start and payload.end:
-            return f"Retrieving events from Google Calendar between {payload.start} and {payload.end}"
-        elif payload.number_of_events:
-            return f"Retrieving next {payload.number_of_events} events from Google Calendar"
+        return base_message
 
-    async def ais_form_complete(
+    def is_form_filled(
         self,
-        run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
-        context: Optional[AgentState] = None,
     ) -> bool:
         """
         User should provide number_of_events or start and end dates
         """
-        if context.form.number_of_events:
+        if self.form.number_of_events:
             return True
-        elif context.form.start and context.form.end:
+        elif self.form.start and self.form.end:
             return True
         else:
             return False

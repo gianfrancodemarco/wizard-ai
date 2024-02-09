@@ -113,7 +113,7 @@ async def process_message(data: dict) -> None:
         chat_id=chat_id,
         tools=tools,
         rabbitmq_producer=rabbitmq_producer,
-        queue=MessageQueues.wizard_ai_OUT.value
+        queue=MessageQueues.WIZARD_AI_OUT.value
     )
 
     graph = MAIAssistantGraph(
@@ -151,7 +151,7 @@ async def process_message(data: dict) -> None:
         ---
     """))
 
-    answer = value["agent_outcome"].return_values["output"]
+    answer = graph.parse_output(output)
 
     # Prepare input and memory
     stored_agent_state.memory.save_context(
@@ -171,7 +171,7 @@ def __publish_answer(
         chat_id: str,
         answer: str):
     rabbitmq_client.publish(
-        queue=MessageQueues.wizard_ai_OUT.value,
+        queue=MessageQueues.WIZARD_AI_OUT.value,
         message=json.dumps({
             "type": MessageType.TEXT.value,
             "chat_id": chat_id,

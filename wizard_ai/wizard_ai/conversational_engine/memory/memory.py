@@ -23,16 +23,20 @@ class StoredAgentState:
 
     def __init__(
         self,
-        memory: Optional[BaseChatMemory] = ConversationBufferWindowMemory(
-            k=HISTORY_LENGTH,
-            memory_key="history",
-            human_prefix="Human",
-            ai_prefix="Answer",
-            input_key="messages",
-            return_messages=True
-        ),
+        memory: Optional[BaseChatMemory] = None,
         active_form_tool: Union[Dict, FormTool] = None
     ) -> None:
+
+        if memory is None:
+            memory = ConversationBufferWindowMemory(
+                k=HISTORY_LENGTH,
+                memory_key="history",
+                human_prefix="Human",
+                ai_prefix="Answer",
+                input_key="messages",
+                return_messages=True
+            )
+
         self.memory = memory
         self.active_form_tool = active_form_tool
 

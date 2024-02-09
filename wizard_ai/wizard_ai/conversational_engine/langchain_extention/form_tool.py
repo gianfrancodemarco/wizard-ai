@@ -1,5 +1,6 @@
 import json
 import operator
+from abc import ABC, abstractmethod
 from enum import Enum
 from typing import (Annotated, Any, Dict, Optional, Sequence, Type, TypedDict,
                     Union)
@@ -11,10 +12,16 @@ from langchain_core.pydantic_v1 import BaseModel
 from langchain_core.tools import BaseTool, StructuredTool, ToolException
 from pydantic import BaseModel, Field, ValidationError, create_model
 
+class FormToolState(Enum):
+    INACTIVE = "INACTIVE"
+    ACTIVE = "ACTIVE"
+    FILLED = "FILLED"
 
 # We cannot pass directly the BaseModel class as args_schema as pydantic will raise errors,
-# so we need to create a dummy class that inherits from BaseModel. 
-class ToolInactivePayload(BaseModel): pass
+# so we need to create a dummy class that inherits from BaseModel.
+class ToolInactivePayload(BaseModel):
+    pass
+
 
 class ToolConfirmIntentPayload(BaseModel):
     confirm: bool = Field(
@@ -22,13 +29,7 @@ class ToolConfirmIntentPayload(BaseModel):
     )
 
 
-class FormToolState(Enum):
-    INACTIVE = "DUMMY"
-    ACTIVE = "ACTIVE"
-    FILLED = "FILLED"
-
-
-class FormToolOutput(BaseModel):
+class FormToolOutcome(BaseModel):
     """
     Represents a form tool output.
     The output is returned as str.
@@ -37,6 +38,7 @@ class FormToolOutput(BaseModel):
 
     output: str
     state_update: Optional[Dict[str, Any]] = None
+    return_direct: Optional[bool] = False
 
     def __init__(
         self,
@@ -58,8 +60,9 @@ def make_optional_model(original_model: BaseModel) -> BaseModel:
     optional_attributes = {
         attr_name: (
             Union[None, attr_type],
-            Field(default=None, description=original_model.model_fields[attr_name].description)
-        ) 
+            Field(
+                default=None, description=original_model.model_fields[attr_name].description)
+        )
         for attr_name, attr_type in original_model.__annotations__.items()
     }
 
@@ -75,7 +78,7 @@ def make_optional_model(original_model: BaseModel) -> BaseModel:
     return OptionalModel
 
 
-class FormTool(StructuredTool):
+class FormTool(StructuredTool, ABC):
     """
     FormTool methods should take context as AgentState, but this creates circular references
     So we use BaseModel instead
@@ -83,7 +86,8 @@ class FormTool(StructuredTool):
     form: BaseModel = None
     args_schema_: Optional[Type[BaseModel]] = None
     description_: Optional[str] = None
-    state: Union[FormToolState|None] = None
+    state: Union[FormToolState | None] = None
+    skip_confirm: Optional[bool] = False
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -120,7 +124,6 @@ class FormTool(StructuredTool):
         elif isinstance(self.form, str):
             self.form = self.args_schema(**json.loads(self.form))
 
-
     def set_filled_state(self):
         self.state = FormToolState.FILLED
         self.description = f"Finalizes intent {self.name}, which {self.description_}"
@@ -140,35 +143,45 @@ class FormTool(StructuredTool):
         match self.state:
             case FormToolState.INACTIVE:
                 self.set_active_state()
-                return FormToolOutput(
+                return FormToolOutcome(
                     output=f"Starting intent {self.name}. If the user as already provided some information, call {self.name}.",
-                    active_form_tool=self
+                    active_form_tool=self,
+                    function_call=self.name
                 )
             case FormToolState.ACTIVE:
                 self._update_form(**kwargs)
                 if self.is_form_filled():
                     self.set_filled_state()
-                    return FormToolOutput(
-                        active_form_tool=self,
-                        output="Form is filled. Ask the user to confirm the information."
-                    )
+                    if self.skip_confirm:
+                        result = self._run_when_complete()
+                        return FormToolOutcome(
+                            active_form_tool=None,
+                            output=result,
+                            return_direct=self.return_direct
+                        )
+                    else:
+                        return FormToolOutcome(
+                            active_form_tool=self,
+                            output="Form is filled. Ask the user to confirm the information."
+                        )
                 else:
-                    return FormToolOutput(
+                    return FormToolOutcome(
                         active_form_tool=self,
                         output="Form updated with the provided information. Ask the user for the next field."
-                    )                
+                    )
             case FormToolState.FILLED:
                 if kwargs.get("confirm"):
                     result = self._run_when_complete()
                     # if no exception is raised, the form is complete and the tool is
                     # done, so reset the active form tool
-                    return FormToolOutput(
+                    return FormToolOutcome(
                         active_form_tool=None,
-                        output=result
+                        output=result,
+                        return_direct=self.return_direct
                     )
                 else:
                     self.set_active_state()
-                    return FormToolOutput(
+                    return FormToolOutcome(
                         active_form_tool=self,
                         output="Ask the user to update the form."
                     )
@@ -183,15 +196,11 @@ class FormTool(StructuredTool):
                 return False
         return True
 
-    # TODO: @abstractmethod
-    def _run_when_complete(
-        self,
-        *args,
-        run_manager: Optional[CallbackManagerForToolRun] = None
-    ) -> str:
+    @abstractmethod
+    def _run_when_complete(self) -> str:
         """
         Should raise an exception if something goes wrong.
-        The message should describe the error and will be segnt back to the agent to try to fix it.
+        The message should describe the error and will be sent back to the agent to try to fix it.
         """
 
     def _update_form(self, **kwargs):
@@ -216,7 +225,7 @@ class FormTool(StructuredTool):
         """
         if self.state == FormToolState.FILLED:
             return None
-        
+
         for field_name, field_info in self.args_schema.__fields__.items():
             if not getattr(self.form, field_name):
                 return field_name
@@ -245,6 +254,10 @@ class AgentState(TypedDict):
     # Needs `None` as a valid type, since this is what this will start as
     agent_outcome: Annotated[Optional[Union[AgentAction,
                                             AgentFinish, None]], operator.setitem]
+    # The outcome of a given call to a tool
+    # Needs `None` as a valid type, since this is what this will start as
+    tool_outcome: Annotated[Optional[Union[FormToolOutcome,
+                                           str, None]], operator.setitem]
     # List of actions and corresponding observations
     # Here we annotate this with `operator.add` to indicate that operations to
     # this state should be ADDED to the existing values (not overwrite it)
@@ -254,19 +267,21 @@ class AgentState(TypedDict):
 
     active_form_tool: Annotated[Optional[FormTool], operator.setitem]
 
+    function_call: Annotated[Optional[str], operator.setitem]
+
 
 class ContextReset(BaseTool):
     name = "ContextReset"
-    description = """Call this tool when the user doesn't want to fill the form anymore."""
+    description = """Call this tool when the user doesn't want to complete the intent anymore. DON'T call it when he wants to change some data."""
     args_schema: Type[BaseModel] = ToolInactivePayload
 
     def _run(self, *args: Any, **kwargs: Any) -> Any:
-        return {
-            "state_update": {
+        return FormToolOutcome(
+            state_update={
                 "active_form_tool": None
             },
-            "output": "Context reset. Form cleared. Ask the user what he wants to do next."
-        }
+            output="Context reset. Form cleared. Ask the user what he wants to do next."
+        )
 
 
 def filter_active_tools(

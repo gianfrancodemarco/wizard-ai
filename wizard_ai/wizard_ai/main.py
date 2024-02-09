@@ -32,6 +32,6 @@ app.include_router(google_login_router)
 app.include_router(google_actions_router)
 
 asyncio.get_event_loop().create_task(RabbitMQConsumer(
-    queue_name=MessageQueues.wizard_ai_IN.value,
+    queue_name=MessageQueues.WIZARD_AI_IN.value,
     on_message_callback=process_message
 ).run_consumer())

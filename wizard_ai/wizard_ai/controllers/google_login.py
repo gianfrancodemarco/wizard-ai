@@ -142,15 +142,9 @@ def callback(
         pickle.dumps(credentials)
     )
 
-    # TODO: Shouldn't be needed, delete this
-    # redis_client.hdel(
-    #     "google_state_token_mapping",
-    #     state_token
-    # )
-
     # Publish a message to the RabbitMQ queue
     rabbitmq_client.publish(
-        queue=MessageQueues.wizard_ai_OUT.value,
+        queue=MessageQueues.WIZARD_AI_OUT.value,
         message=json.dumps({
             "type": MessageType.TEXT.value,
             "chat_id": chat_id,
