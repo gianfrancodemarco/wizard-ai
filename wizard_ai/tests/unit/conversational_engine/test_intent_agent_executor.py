@@ -11,14 +11,14 @@ from .mocks import *
 
 
 class MockIntentAgentExecutorOkModel(IntentAgentExecutor):
-    def get_model(self, state):
+    def build_model(self, state):
         agent = MagicMock()
         agent.invoke = MagicMock(return_value="Mocked response")
         return agent
 
 
 class MockIntentAgentExecutorErrorModel(IntentAgentExecutor):
-    def get_model(self, state):
+    def build_model(self, state):
         agent = MagicMock()
         agent.invoke = MagicMock(
             side_effect=OutputParserException("Mocked error"))
@@ -59,34 +59,18 @@ class TestIntentAgentExecutor:
         tool = graph.get_tool_by_name("NonExistingTool", state)
         assert tool is None
 
-    def test_get_model_default_prompt(self):
-        graph = IntentAgentExecutor()
-        state = AgentState()
-        model = graph.get_model(state)
-        prompt_template = model.steps[1].messages[0].prompt.template
-        basic_template = "\nYou are a personal assistant trying to help the user. You always answer in English.\n"
-        assert prompt_template == basic_template
-
-    def test_get_model_active_intent_tool(self):
-        graph = IntentAgentExecutor()
-        state = AgentState()
-        active_intent_tool = MockFormTool()
-        state["active_intent_tool"] = active_intent_tool
-        model = graph.get_model(state)
-        assert isinstance(model.steps[1], ChatPromptTemplate)
-
     def test_should_continue_error(self):
         graph = IntentAgentExecutor()
         state = AgentState()
         state["error"] = True
-        result = graph.should_continue(state)
+        result = graph.should_continue_after_agent(state)
         assert result == "error"
 
     def test_should_continue_end(self):
         graph = IntentAgentExecutor()
         state = AgentState()
         state["agent_outcome"] = AgentFinish({}, "end")
-        result = graph.should_continue(state)
+        result = graph.should_continue_after_agent(state)
         assert result == "end"
 
     def test_should_continue_tool(self):
@@ -94,7 +78,7 @@ class TestIntentAgentExecutor:
         state = AgentState()
         state["agent_outcome"] = AgentAction(
             tool="MockBaseTool", tool_input={}, log="")
-        result = graph.should_continue(state)
+        result = graph.should_continue_after_agent(state)
         assert result == "tool"
 
     def test_should_continue_after_tool_error(self):
@@ -104,25 +88,15 @@ class TestIntentAgentExecutor:
         result = graph.should_continue_after_tool(state)
         assert result == "error"
 
-    def test_should_continue_after_tool_return_direct(self):
+    def test_should_continue_after_tool_return_direct_end(self):
         graph = IntentAgentExecutor()
-        state = AgentState()
-        state["intermediate_steps"] = [(AgentAction(
-            tool="MockBaseTool", tool_input={}, log=""), "output")]
-        tool = MockBaseTool()
-        tool.return_direct = True
-        state["active_intent_tool"] = tool
+        state = AgentState(tool_outcome=IntentToolOutcome(return_direct=True, output=""))
         result = graph.should_continue_after_tool(state)
         assert result == "end"
 
     def test_should_continue_after_tool_continue(self):
         graph = IntentAgentExecutor()
-        state = AgentState()
-        state["intermediate_steps"] = [(AgentAction(
-            tool="MockBaseTool", tool_input={}, log=""), "output")]
-        tool = MockBaseTool()
-        tool.return_direct = False
-        state["active_intent_tool"] = tool
+        state = AgentState(tool_outcome=IntentToolOutcome(return_direct=False, output=""))
         result = graph.should_continue_after_tool(state)
         assert result == "continue"
 

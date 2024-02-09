@@ -2,7 +2,6 @@ import pickle
 import textwrap
 from typing import Dict, Optional, Type, Union
 
-from langchain_core.callbacks import CallbackManagerForToolRun
 from pydantic import BaseModel
 
 from wizard_ai.clients import (CreateCalendarEventPayload, GoogleClient,

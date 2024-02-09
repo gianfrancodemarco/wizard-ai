@@ -11,15 +11,18 @@ from langgraph.graph import END, StateGraph
 
 from wizard_ai.conversational_engine.intent_agent.intent_tool import (
     AgentState, IntentToolOutcome, filter_active_tools)
+from wizard_ai.conversational_engine.intent_agent.intent_tool_executor import \
+    IntentToolExecutor
 from wizard_ai.conversational_engine.intent_agent.model_factory import \
     ModelFactory
-from wizard_ai.conversational_engine.intent_agent.tool_executor_with_state import \
-    IntentToolExecutor
 
 logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)
 
+
 class IntentAgentExecutor(StateGraph):
+
+    MAX_INTERMEDIATE_STEPS = 5
 
     def __init__(
         self,
@@ -87,18 +90,21 @@ class IntentAgentExecutor(StateGraph):
         else:
             return "continue"
 
+    def build_model(self, state: AgentState):
+        return ModelFactory.build_model(
+            state=state,
+            tools=self.get_tools(state)
+        )
+
     # Define the function that calls the model
     def call_agent(self, state: AgentState):
         try:
             # Cap the number of intermediate steps in a prompt to 5
-            if len(state.get("intermediate_steps")) > 5:
+            if len(state.get("intermediate_steps")) > self.MAX_INTERMEDIATE_STEPS:
                 state["intermediate_steps"] = state.get(
-                    "intermediate_steps")[-5:]
+                    "intermediate_steps")[-self.MAX_INTERMEDIATE_STEPS:]
 
-            agent_outcome = ModelFactory.build_model(
-                state=state,
-                tools=self.get_tools(state=state)
-            ).invoke(state)
+            agent_outcome = self.build_model(state=state).invoke(state)
             updates = {
                 "agent_outcome": agent_outcome,
                 "function_call": None,  # Reset the function call

@@ -16,7 +16,6 @@ class MockBaseTool(BaseTool):
     ) -> Any:
         pass
 
-
 class _DummyPayload(BaseModel):
     pass
 
@@ -25,3 +24,6 @@ class MockFormTool(IntentTool):
     name = "MockFormTool"
     description = "MockFormTool description"
     args_schema: Type[BaseModel] = _DummyPayload
+
+    def _run_when_complete(self) -> Any:
+        pass
