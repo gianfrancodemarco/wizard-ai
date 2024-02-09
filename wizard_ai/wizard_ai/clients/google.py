@@ -9,7 +9,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from pydantic import BaseModel, Field, field_validator
 
-from wizard_ai.html_processor import HtmlProcessor
+from wizard_ai.helpers import HtmlProcessor
 
 REDIS_HOST = os.environ.get('REDIS_HOST')
 REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')

@@ -1,6 +1,8 @@
 from collections import defaultdict
 
+from bs4 import BeautifulSoup
 from langgraph.graph.state import StateGraph
+from readability import Document
 
 
 class StateGraphDrawer:
@@ -125,7 +127,8 @@ class StateGraphDrawer:
             raise ImportError("pygraphviz is required to draw the state graph")
 
         # Create a directed graph
-        graphviz_graph = pgv.AGraph(directed=True, strict=False, nodesep=0.9, ranksep=1.0)
+        graphviz_graph = pgv.AGraph(
+            directed=True, strict=False, nodesep=0.9, ranksep=1.0)
 
         # Add nodes, conditional edges, and edges to the graph
         self.add_nodes(graphviz_graph, state_graph)
@@ -166,3 +169,15 @@ class StateGraphDrawer:
             state_graph.entry_point).attr.update(
             fillcolor='lightblue')
         graph.get_node("__end__").attr.update(fillcolor='orange')
+
+
+class HtmlProcessor:
+
+    @staticmethod
+    def clear_html(html):
+        doc = Document(html)
+        main_content = doc.summary()
+        soup = BeautifulSoup(main_content, 'html.parser')
+        for script in soup(['script', 'style']):
+            script.decompose()
+        return soup.get_text(separator='\n', strip=True)

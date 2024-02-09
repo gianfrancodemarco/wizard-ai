@@ -5,10 +5,9 @@ from fastapi import FastAPI
 
 from wizard_ai.clients.rabbitmq import RabbitMQConsumer
 from wizard_ai.constants import MessageQueues
-from wizard_ai.controllers import (conversations_router,
-                                       google_actions_router,
-                                       google_login_router)
-from wizard_ai.conversational_engine.engine import process_message
+from wizard_ai.controllers import (conversations_router, google_actions_router,
+                                   google_login_router)
+from wizard_ai.conversational_engine import process_message
 
 # Add stream and file handlers to logger. Use basic config
 # to avoid adding duplicate handlers when reloading server

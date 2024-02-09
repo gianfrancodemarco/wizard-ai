@@ -6,7 +6,7 @@ import requests
 from parsel import Selector
 from pydantic import BaseModel
 
-from wizard_ai.html_processor import HtmlProcessor
+from wizard_ai.helpers import HtmlProcessor
 
 logger = logging.getLogger(__name__)
 
