@@ -1,7 +1,7 @@
 from langgraph.prebuilt.tool_executor import *
 
-from wizard_ai.conversational_engine.intent_agent.form_tool import (
-    AgentState, FormToolOutcome)
+from wizard_ai.conversational_engine.intent_agent.intent_tool import (
+    AgentState, IntentToolOutcome)
 
 
 class IntentToolExecutor(ToolExecutor):
@@ -27,16 +27,16 @@ class IntentToolExecutor(ToolExecutor):
 
     def _parse_tool_outcome(
         self,
-        output: Union[str, FormToolOutcome],
+        output: Union[str, IntentToolOutcome],
         tool: BaseTool
     ):
         if isinstance(output, str):
-            return FormToolOutcome(
+            return IntentToolOutcome(
                 state_update={},
                 output=output,
                 return_direct=tool.return_direct,
             )
-        elif isinstance(output, FormToolOutcome):
+        elif isinstance(output, IntentToolOutcome):
             return output
         else:
             raise ValueError(

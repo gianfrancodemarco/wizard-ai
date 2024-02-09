@@ -2,8 +2,8 @@ from typing import Any, Type
 
 from pydantic import BaseModel
 
-from wizard_ai.conversational_engine.intent_agent.form_tool import \
-    FormTool, BaseTool
+from wizard_ai.conversational_engine.intent_agent.intent_tool import \
+    IntentTool, BaseTool
 
 
 class MockBaseTool(BaseTool):
@@ -21,7 +21,7 @@ class _DummyPayload(BaseModel):
     pass
 
 
-class MockFormTool(FormTool):
+class MockFormTool(IntentTool):
     name = "MockFormTool"
     description = "MockFormTool description"
     args_schema: Type[BaseModel] = _DummyPayload

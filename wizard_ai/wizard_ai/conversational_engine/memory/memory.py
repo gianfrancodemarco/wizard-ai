@@ -9,7 +9,7 @@ from langchain.memory import ConversationBufferWindowMemory
 from langchain.memory.chat_memory import BaseChatMemory
 
 from wizard_ai.constants import RedisKeys
-from wizard_ai.conversational_engine.intent_agent.form_tool import AgentState, FormTool
+from wizard_ai.conversational_engine.intent_agent.intent_tool import AgentState, IntentTool
 
 logger = logging.getLogger(__name__)
 
@@ -18,12 +18,12 @@ HISTORY_LENGTH = os.getenv("HISTORY_LENGTH", 5)
 
 class StoredAgentState:
     memory: Optional[BaseChatMemory]
-    active_form_tool: Optional[Union[Dict, FormTool]]
+    active_intent_tool: Optional[Union[Dict, IntentTool]]
 
     def __init__(
         self,
         memory: Optional[BaseChatMemory] = None,
-        active_form_tool: Union[Dict, FormTool] = None
+        active_intent_tool: Union[Dict, IntentTool] = None
     ) -> None:
 
         if memory is None:
@@ -37,21 +37,21 @@ class StoredAgentState:
             )
 
         self.memory = memory
-        self.active_form_tool = active_form_tool
+        self.active_intent_tool = active_intent_tool
 
     def to_pickle(self):
-        if self.active_form_tool:
-            self.active_form_tool.form = self.active_form_tool.form.model_dump_json()
-            self.active_form_tool.args_schema = self.active_form_tool.args_schema_
-            self.active_form_tool.args_schema_ = None
+        if self.active_intent_tool:
+            self.active_intent_tool.form = self.active_intent_tool.form.model_dump_json()
+            self.active_intent_tool.args_schema = self.active_intent_tool.args_schema_
+            self.active_intent_tool.args_schema_ = None
         return pickle.dumps(self)
 
     @staticmethod
     def from_pickle(pickled: str):
         stored_agent_state = pickle.loads(pickled)
-        if stored_agent_state.active_form_tool:
-            stored_agent_state.active_form_tool.args_schema_ = stored_agent_state.active_form_tool.args_schema
-            stored_agent_state.active_form_tool.init_state()
+        if stored_agent_state.active_intent_tool:
+            stored_agent_state.active_intent_tool.args_schema_ = stored_agent_state.active_intent_tool.args_schema
+            stored_agent_state.active_intent_tool.init_state()
         return stored_agent_state
 
 
@@ -80,7 +80,7 @@ def store_agent_state(
 ):
     stored_agent_state = StoredAgentState(
         memory=agent_state.memory,
-        active_form_tool=agent_state.active_form_tool
+        active_intent_tool=agent_state.active_intent_tool
     )
 
     redis_client.hset(

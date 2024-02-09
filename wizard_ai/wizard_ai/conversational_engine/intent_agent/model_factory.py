@@ -15,7 +15,7 @@ from langchain_core.prompts.chat import (ChatPromptTemplate,
 from langchain_core.prompts.prompt import PromptTemplate
 from langchain_openai import ChatOpenAI
 
-from wizard_ai.conversational_engine.intent_agent.form_tool import AgentState
+from wizard_ai.conversational_engine.intent_agent.intent_tool import AgentState
 
 logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)
@@ -94,7 +94,7 @@ class ModelFactory:
         builder = ModelFactory.build_default_model
         if state.get("error"):
             builder = ModelFactory.build_error_model
-        elif state.get("active_form_tool"):
+        elif state.get("active_intent_tool"):
             builder = ModelFactory.build_intent_model
 
         return builder(state, tools)
@@ -124,7 +124,7 @@ class ModelFactory:
         tools: List[BaseTool] = []
     ):
 
-        form_tool = state.get("active_form_tool")
+        form_tool = state.get("active_intent_tool")
         information_collected = re.sub("}", "}}", re.sub("{", "{{", str(
             {name: value for name, value in form_tool.form.__dict__.items() if value})))
 

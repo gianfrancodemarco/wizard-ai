@@ -1,10 +1,10 @@
-from wizard_ai.conversational_engine.intent_agent.form_tool import (
-    AgentState, ContextReset, FormTool, FormToolState, BaseTool, filter_active_tools)
+from wizard_ai.conversational_engine.intent_agent.intent_tool import (
+    AgentState, ContextReset, IntentTool, IntentToolState, BaseTool, filter_active_tools)
 
 from .mocks import MockBaseTool, MockFormTool
 
 
-def test_filter_active_tools_no_active_form_tool():
+def test_filter_active_tools_no_active_intent_tool():
     tools = [
         MockBaseTool(),
         MockBaseTool(),
@@ -18,28 +18,28 @@ def test_filter_active_tools_no_active_form_tool():
     assert len(filtered_tools) == 4
     assert isinstance(filtered_tools[0], BaseTool)
     assert isinstance(filtered_tools[1], BaseTool)
-    assert isinstance(filtered_tools[2], FormTool)
-    assert filtered_tools[2].state == FormToolState.INACTIVE
-    assert isinstance(filtered_tools[3], FormTool)
-    assert filtered_tools[3].state == FormToolState.INACTIVE
+    assert isinstance(filtered_tools[2], IntentTool)
+    assert filtered_tools[2].state == IntentToolState.INACTIVE
+    assert isinstance(filtered_tools[3], IntentTool)
+    assert filtered_tools[3].state == IntentToolState.INACTIVE
 
-def test_filter_active_tools_with_active_form_tool():
+def test_filter_active_tools_with_active_intent_tool():
 
-    active_form_tool = MockFormTool()
+    active_intent_tool = MockFormTool()
 
     tools = [
         MockBaseTool(),
         MockBaseTool(),
-        active_form_tool,
+        active_intent_tool,
         MockFormTool(),
     ]
     agent_state = AgentState()
-    agent_state["active_form_tool"] = active_form_tool
+    agent_state["active_intent_tool"] = active_intent_tool
 
     filtered_tools = filter_active_tools(tools, agent_state)
 
     assert len(filtered_tools) == 4
     assert isinstance(filtered_tools[0], BaseTool)
     assert isinstance(filtered_tools[1], BaseTool)
-    assert filtered_tools[2] == active_form_tool
+    assert filtered_tools[2] == active_intent_tool
     assert isinstance(filtered_tools[3], ContextReset)

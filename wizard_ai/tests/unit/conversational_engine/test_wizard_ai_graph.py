@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from langchain_core.exceptions import OutputParserException
 
-from wizard_ai.conversational_engine.intent_agent.form_tool import (
+from wizard_ai.conversational_engine.intent_agent.intent_tool import (
     AgentState, ContextReset)
 from wizard_ai.conversational_engine.intent_agent.intent_agent_executor import *
 
@@ -27,35 +27,35 @@ class MockIntentAgentExecutorErrorModel(IntentAgentExecutor):
 
 class TestIntentAgentExecutor:
 
-    def test_get_tools_no_active_form_tool(self):
+    def test_get_tools_no_active_intent_tool(self):
         graph = IntentAgentExecutor()
         state = AgentState()
         tools = graph.get_tools(state)
         assert len(tools) == 0
 
-    def test_get_tools_with_active_form_tool(self):
+    def test_get_tools_with_active_intent_tool(self):
         graph = IntentAgentExecutor()
         state = AgentState()
-        active_form_tool = MockFormTool()
-        state["active_form_tool"] = active_form_tool
+        active_intent_tool = MockFormTool()
+        state["active_intent_tool"] = active_intent_tool
         tools = graph.get_tools(state)
         assert len(tools) == 2
-        assert tools[0] == active_form_tool
+        assert tools[0] == active_intent_tool
         assert tools[1] == ContextReset()
 
     def test_get_tool_by_name_existing_tool(self):
         graph = IntentAgentExecutor()
         state = AgentState()
-        active_form_tool = MockFormTool()
-        state["active_form_tool"] = active_form_tool
+        active_intent_tool = MockFormTool()
+        state["active_intent_tool"] = active_intent_tool
         tool = graph.get_tool_by_name("MockFormTool", state)
-        assert tool == active_form_tool
+        assert tool == active_intent_tool
 
     def test_get_tool_by_name_non_existing_tool(self):
         graph = IntentAgentExecutor()
         state = AgentState()
-        active_form_tool = MockFormTool()
-        state["active_form_tool"] = active_form_tool
+        active_intent_tool = MockFormTool()
+        state["active_intent_tool"] = active_intent_tool
         tool = graph.get_tool_by_name("NonExistingTool", state)
         assert tool is None
 
@@ -67,11 +67,11 @@ class TestIntentAgentExecutor:
         basic_template = "\nYou are a personal assistant trying to help the user. You always answer in English.\n"
         assert prompt_template == basic_template
 
-    def test_get_model_active_form_tool(self):
+    def test_get_model_active_intent_tool(self):
         graph = IntentAgentExecutor()
         state = AgentState()
-        active_form_tool = MockFormTool()
-        state["active_form_tool"] = active_form_tool
+        active_intent_tool = MockFormTool()
+        state["active_intent_tool"] = active_intent_tool
         model = graph.get_model(state)
         assert isinstance(model.steps[1], ChatPromptTemplate)
 
@@ -111,7 +111,7 @@ class TestIntentAgentExecutor:
             tool="MockBaseTool", tool_input={}, log=""), "output")]
         tool = MockBaseTool()
         tool.return_direct = True
-        state["active_form_tool"] = tool
+        state["active_intent_tool"] = tool
         result = graph.should_continue_after_tool(state)
         assert result == "end"
 
@@ -122,7 +122,7 @@ class TestIntentAgentExecutor:
             tool="MockBaseTool", tool_input={}, log=""), "output")]
         tool = MockBaseTool()
         tool.return_direct = False
-        state["active_form_tool"] = tool
+        state["active_intent_tool"] = tool
         result = graph.should_continue_after_tool(state)
         assert result == "continue"
 

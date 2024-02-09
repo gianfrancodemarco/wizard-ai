@@ -9,8 +9,8 @@ from langchain_core.language_models.chat_models import *
 from langchain_core.messages import FunctionMessage
 from langgraph.graph import END, StateGraph
 
-from wizard_ai.conversational_engine.intent_agent.form_tool import (
-    AgentState, FormToolOutcome, filter_active_tools)
+from wizard_ai.conversational_engine.intent_agent.intent_tool import (
+    AgentState, IntentToolOutcome, filter_active_tools)
 from wizard_ai.conversational_engine.intent_agent.model_factory import \
     ModelFactory
 from wizard_ai.conversational_engine.intent_agent.tool_executor_with_state import \
@@ -82,7 +82,7 @@ class IntentAgentExecutor(StateGraph):
     def should_continue_after_tool(self, state: AgentState):
         if state.get("error"):
             return "error"
-        elif isinstance(state.get("tool_outcome"), FormToolOutcome) and state.get("tool_outcome").return_direct:
+        elif isinstance(state.get("tool_outcome"), IntentToolOutcome) and state.get("tool_outcome").return_direct:
             return "end"
         else:
             return "continue"
