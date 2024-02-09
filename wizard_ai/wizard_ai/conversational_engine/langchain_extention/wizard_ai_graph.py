@@ -1,11 +1,11 @@
 import logging
 import pprint
 import re
+import traceback
 from datetime import datetime
 from textwrap import dedent
-from typing import Any, Sequence, Type, Union
+from typing import Any, Sequence, Type
 
-from langchain import hub
 from langchain.agents import create_openai_functions_agent
 from langchain_core.agents import AgentAction, AgentFinish
 from langchain_core.exceptions import OutputParserException
@@ -22,7 +22,7 @@ from langgraph.graph import END, StateGraph
 from wizard_ai.conversational_engine.langchain_extention.form_tool import (
     AgentState, FormToolOutcome, filter_active_tools)
 from wizard_ai.conversational_engine.langchain_extention.tool_executor_with_state import \
-    ToolExecutor
+    IntentToolExecutor
 
 logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)
@@ -56,7 +56,7 @@ class MAIAssistantGraph(StateGraph):
             You are a personal assistant trying to help the user. You always answer in English. The current datetime is {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}.
             Don't use any of your knowledge or information about the state of the world. If you need something, ask the user for it or use a tool to find or compute it.
         """).strip())
-    
+
     @property
     def prompt_footer(self):
         return [MessagesPlaceholder(
@@ -93,7 +93,7 @@ class MAIAssistantGraph(StateGraph):
             output = state.get("tool_outcome").output
         elif state.get("agent_outcome"):
             output = state.get("agent_outcome").return_values["output"]
-        
+
         return output
 
     def __build_graph(self):
@@ -132,7 +132,7 @@ class MAIAssistantGraph(StateGraph):
         return next((tool for tool in tools if tool.name == name), None)
 
     def get_tool_executor(self, state: AgentState):
-        return ToolExecutor(self.get_tools(state))
+        return IntentToolExecutor(self.get_tools(state))
 
     def get_llm(self, function_call: str = None):
         return ChatOpenAI(
@@ -164,11 +164,11 @@ class MAIAssistantGraph(StateGraph):
         form_tool = state.get("active_form_tool")
         information_collected = re.sub("}", "}}", re.sub("{", "{{", str(
             {name: value for name, value in form_tool.form.__dict__.items() if value})))
-        
+
         information_to_collect = form_tool.get_next_field_to_collect()
         if information_to_collect:
             message = SystemMessagePromptTemplate.from_template(dedent(
-            f"""
+                f"""
             Help the user fill data for {form_tool.name}. Ask to provide the needed information.
             Now you MUST ask the user to provide a value for the field "{information_to_collect}".
             You MUST use the {form_tool.name} tool to update the stored data each time the user provides one or more values.
@@ -176,14 +176,14 @@ class MAIAssistantGraph(StateGraph):
             ).strip())
         else:
             message = SystemMessagePromptTemplate.from_template(dedent(
-            f"""
+                f"""
             Help the user fill data for {form_tool.name}. You have all the information you need.
             Show the user all of the information and ask for confirmation.
             If he agrees, call the {form_tool.name} tool one more time with confirm=True.
             If he doesn't or want to change something, call it with confirm=False.
             """
             ).strip())
- 
+
         return self.__get_model_from_state_and_prompt(
             state=state,
             prompt=ChatPromptTemplate(
@@ -242,28 +242,16 @@ class MAIAssistantGraph(StateGraph):
             agent_outcome = self.get_model(state).invoke(state)
             updates = {
                 "agent_outcome": agent_outcome,
-                "function_call": None, # Reset the function call
-                "tool_outcome": None, # Reset the tool outcome
+                "function_call": None,  # Reset the function call
+                "tool_outcome": None,  # Reset the tool outcome
                 "error": None  # Reset the error
             }
         # TODO: if other exceptions are raised, we should handle them here
         except OutputParserException as e:
+            traceback.print_exc()
             updates = {"error": str(e)}
         finally:
             return updates
-        
-    def _parse_tool_outcome(self, tool_output: Union[str, FormToolOutcome]):
-        if isinstance(tool_output, str):
-            return FormToolOutcome(
-                state_update={},
-                output=tool_output
-            )
-        elif isinstance(tool_output, FormToolOutcome):
-            return tool_output
-        else:
-            raise ValueError(
-                f"Tool returned an invalid output: {tool_output}. Must return a string or a FormToolOutcome.")
-
 
     def call_tool(self, state: AgentState):
         try:
@@ -271,7 +259,7 @@ class MAIAssistantGraph(StateGraph):
             tool = self.get_tool_by_name(action.tool, state)
 
             self.on_tool_start(tool=tool, tool_input=action.tool_input)
-            tool_outcome = self._parse_tool_outcome(self.get_tool_executor(state).invoke(action))
+            tool_outcome = self.get_tool_executor(state).invoke(action)
             self.on_tool_end(tool=tool, tool_output=tool_outcome.output)
 
             updates = {
@@ -288,6 +276,7 @@ class MAIAssistantGraph(StateGraph):
             }
 
         except Exception as e:
+            traceback.print_exc()
             updates = {
                 "intermediate_steps": [(action, FunctionMessage(
                     content=str(e),

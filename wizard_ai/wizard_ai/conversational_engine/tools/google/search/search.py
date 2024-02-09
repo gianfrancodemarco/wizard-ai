@@ -14,6 +14,7 @@ class GoogleSearch(BaseTool):
     description: str = "Useful for searching the internet with Google to retrieve up to date information."
     args_schema: Type[BaseModel] = GoogleSearchClientPayload
     google_search_client: Optional[GoogleSearchClient] = None
+    return_direct: bool = False
 
     def __init__(self):
         super().__init__()
