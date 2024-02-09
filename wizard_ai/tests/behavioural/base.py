@@ -6,8 +6,7 @@ from langchain import chat_models, prompts, smith
 from langchain.schema import output_parser
 from langchain_openai import ChatOpenAI
 
-from wizard_ai.conversational_engine.langchain_extention.wizard_ai_graph import (
-    MAIAssistantGraph)
+from wizard_ai..conversational_engine.intent_agent import (IntentAgentExecutor)
 from wizard_ai.conversational_engine.tools import *
 
 os.environ["OPENAI_API_KEY"] = "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"

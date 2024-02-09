@@ -9,7 +9,7 @@ from langchain.memory import ConversationBufferWindowMemory
 from langchain.memory.chat_memory import BaseChatMemory
 
 from wizard_ai.constants import RedisKeys
-from wizard_ai.conversational_engine.langchain_extention.form_tool import (
+from wizard_ai.conversational_engine.intent_agent.form_tool import (
     AgentState, FormTool, make_optional_model)
 
 logger = logging.getLogger(__name__)

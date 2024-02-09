@@ -19,16 +19,16 @@ from langchain_core.prompts.prompt import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
 
-from wizard_ai.conversational_engine.langchain_extention.form_tool import (
+from wizard_ai.conversational_engine.intent_agent.form_tool import (
     AgentState, FormToolOutcome, filter_active_tools)
-from wizard_ai.conversational_engine.langchain_extention.tool_executor_with_state import \
+from wizard_ai.conversational_engine.intent_agent.tool_executor_with_state import \
     IntentToolExecutor
 
 logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)
 
 
-class MAIAssistantGraph(StateGraph):
+class IntentAgentExecutor(StateGraph):
 
     def __init__(
         self,
@@ -291,8 +291,8 @@ class MAIAssistantGraph(StateGraph):
 if __name__ == "__main__":
     import os
 
-    from wizard_ai.conversational_engine.langchain_extention.helpers import \
+    from wizard_ai.conversational_engine.intent_agent.helpers import \
         StateGraphDrawer
     os.environ["OPENAI_API_KEY"] = "sk-..."
-    graph = MAIAssistantGraph()
+    graph = IntentAgentExecutor()
     StateGraphDrawer().draw(graph)

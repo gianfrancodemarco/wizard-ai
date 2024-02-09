@@ -3,21 +3,21 @@ from unittest.mock import MagicMock, patch
 import pytest
 from langchain_core.exceptions import OutputParserException
 
-from wizard_ai.conversational_engine.langchain_extention.form_tool import (
+from wizard_ai.conversational_engine.intent_agent.form_tool import (
     AgentState, ContextReset)
-from wizard_ai.conversational_engine.langchain_extention.wizard_ai_graph import *
+from wizard_ai.conversational_engine.intent_agent.intent_agent_executor import *
 
 from .mocks import *
 
 
-class MockMAIAssistantGraphOkModel(MAIAssistantGraph):
+class MockIntentAgentExecutorOkModel(IntentAgentExecutor):
     def get_model(self, state):
         agent = MagicMock()
         agent.invoke = MagicMock(return_value="Mocked response")
         return agent
 
 
-class MockMAIAssistantGraphErrorModel(MAIAssistantGraph):
+class MockIntentAgentExecutorErrorModel(IntentAgentExecutor):
     def get_model(self, state):
         agent = MagicMock()
         agent.invoke = MagicMock(
@@ -25,16 +25,16 @@ class MockMAIAssistantGraphErrorModel(MAIAssistantGraph):
         return agent
 
 
-class TestMAIAssistantGraph:
+class TestIntentAgentExecutor:
 
     def test_get_tools_no_active_form_tool(self):
-        graph = MAIAssistantGraph()
+        graph = IntentAgentExecutor()
         state = AgentState()
         tools = graph.get_tools(state)
         assert len(tools) == 0
 
     def test_get_tools_with_active_form_tool(self):
-        graph = MAIAssistantGraph()
+        graph = IntentAgentExecutor()
         state = AgentState()
         active_form_tool = MockFormTool()
         state["active_form_tool"] = active_form_tool
@@ -44,7 +44,7 @@ class TestMAIAssistantGraph:
         assert tools[1] == ContextReset()
 
     def test_get_tool_by_name_existing_tool(self):
-        graph = MAIAssistantGraph()
+        graph = IntentAgentExecutor()
         state = AgentState()
         active_form_tool = MockFormTool()
         state["active_form_tool"] = active_form_tool
@@ -52,7 +52,7 @@ class TestMAIAssistantGraph:
         assert tool == active_form_tool
 
     def test_get_tool_by_name_non_existing_tool(self):
-        graph = MAIAssistantGraph()
+        graph = IntentAgentExecutor()
         state = AgentState()
         active_form_tool = MockFormTool()
         state["active_form_tool"] = active_form_tool
@@ -60,7 +60,7 @@ class TestMAIAssistantGraph:
         assert tool is None
 
     def test_get_model_default_prompt(self):
-        graph = MAIAssistantGraph()
+        graph = IntentAgentExecutor()
         state = AgentState()
         model = graph.get_model(state)
         prompt_template = model.steps[1].messages[0].prompt.template
@@ -68,7 +68,7 @@ class TestMAIAssistantGraph:
         assert prompt_template == basic_template
 
     def test_get_model_active_form_tool(self):
-        graph = MAIAssistantGraph()
+        graph = IntentAgentExecutor()
         state = AgentState()
         active_form_tool = MockFormTool()
         state["active_form_tool"] = active_form_tool
@@ -76,21 +76,21 @@ class TestMAIAssistantGraph:
         assert isinstance(model.steps[1], ChatPromptTemplate)
 
     def test_should_continue_error(self):
-        graph = MAIAssistantGraph()
+        graph = IntentAgentExecutor()
         state = AgentState()
         state["error"] = True
         result = graph.should_continue(state)
         assert result == "error"
 
     def test_should_continue_end(self):
-        graph = MAIAssistantGraph()
+        graph = IntentAgentExecutor()
         state = AgentState()
         state["agent_outcome"] = AgentFinish({}, "end")
         result = graph.should_continue(state)
         assert result == "end"
 
     def test_should_continue_tool(self):
-        graph = MAIAssistantGraph()
+        graph = IntentAgentExecutor()
         state = AgentState()
         state["agent_outcome"] = AgentAction(
             tool="MockBaseTool", tool_input={}, log="")
@@ -98,14 +98,14 @@ class TestMAIAssistantGraph:
         assert result == "tool"
 
     def test_should_continue_after_tool_error(self):
-        graph = MAIAssistantGraph()
+        graph = IntentAgentExecutor()
         state = AgentState()
         state["error"] = True
         result = graph.should_continue_after_tool(state)
         assert result == "error"
 
     def test_should_continue_after_tool_return_direct(self):
-        graph = MAIAssistantGraph()
+        graph = IntentAgentExecutor()
         state = AgentState()
         state["intermediate_steps"] = [(AgentAction(
             tool="MockBaseTool", tool_input={}, log=""), "output")]
@@ -116,7 +116,7 @@ class TestMAIAssistantGraph:
         assert result == "end"
 
     def test_should_continue_after_tool_continue(self):
-        graph = MAIAssistantGraph()
+        graph = IntentAgentExecutor()
         state = AgentState()
         state["intermediate_steps"] = [(AgentAction(
             tool="MockBaseTool", tool_input={}, log=""), "output")]
@@ -127,7 +127,7 @@ class TestMAIAssistantGraph:
         assert result == "continue"
 
     def test_call_agent(self):
-        graph = MockMAIAssistantGraphOkModel()
+        graph = MockIntentAgentExecutorOkModel()
         state = AgentState()
         state["input"] = "Hello"
         state["chat_history"] = []
@@ -140,7 +140,7 @@ class TestMAIAssistantGraph:
         assert response["error"] is None
 
     def test_call_agent_error(self):
-        graph = MockMAIAssistantGraphErrorModel()
+        graph = MockIntentAgentExecutorErrorModel()
         state = AgentState()
         state["input"] = "Hello"
         state["chat_history"] = []
@@ -151,7 +151,7 @@ class TestMAIAssistantGraph:
         assert response["error"] is not None
 
     def test_call_tool(self):
-        graph = MAIAssistantGraph()
+        graph = IntentAgentExecutor()
         state = AgentState()
         state["agent_outcome"] = AgentAction(
             tool="MockBaseTool", tool_input={}, log="")

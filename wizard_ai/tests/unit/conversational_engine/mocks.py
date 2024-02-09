@@ -2,7 +2,7 @@ from typing import Any, Type
 
 from pydantic import BaseModel
 
-from wizard_ai.conversational_engine.langchain_extention.form_tool import \
+from wizard_ai.conversational_engine.intent_agent.form_tool import \
     FormTool, BaseTool
 
 

@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from wizard_ai.clients import (GetCalendarEventsPayload, GoogleClient,
                                get_redis_client)
 from wizard_ai.constants import RedisKeys
-from wizard_ai.conversational_engine.langchain_extention import (FormTool,
+from wizard_ai.conversational_engine.intent_agent import (FormTool,
                                                                  FormToolState)
 
 

@@ -1,4 +1,4 @@
-# graph = MAIAssistantGraph(tools=tools)
+# graph = IntentAgentExecutor(tools=tools)
 
 # # Define the evaluators to apply
 # eval_config = smith.RunEvalConfig(

@@ -13,14 +13,13 @@ from wizard_ai.clients.rabbitmq import RabbitMQProducer
 from wizard_ai.constants import MessageQueues, MessageType
 from wizard_ai.constants.message_queues import MessageQueues
 from wizard_ai.constants.message_type import MessageType
-from wizard_ai.conversational_engine.langchain_extention.form_tool import \
-    FormTool
-from wizard_ai.conversational_engine.langchain_extention.wizard_ai_graph import \
-    MAIAssistantGraph
+from wizard_ai.conversational_engine.intent_agent.form_tool import FormTool
 from wizard_ai.conversational_engine.memory import (get_stored_agent_state,
                                                     store_agent_state)
 from wizard_ai.conversational_engine.tools import *
 from wizard_ai.models.chat_payload import ChatPayload
+from wizard_ai.conversational_engine.intent_agent.intent_agent_executor import \
+    IntentAgentExecutor
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -116,7 +115,7 @@ async def process_message(data: dict) -> None:
         queue=MessageQueues.WIZARD_AI_OUT.value
     )
 
-    graph = MAIAssistantGraph(
+    graph = IntentAgentExecutor(
         tools=tools,
         on_tool_start=rabbitmq_connector.on_tool_start,
         on_tool_end=rabbitmq_connector.on_tool_end
