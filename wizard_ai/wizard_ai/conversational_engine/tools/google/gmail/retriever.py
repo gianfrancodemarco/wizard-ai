@@ -6,7 +6,7 @@ from langchain_core.callbacks import CallbackManagerForToolRun
 from pydantic import BaseModel
 
 from wizard_ai.clients import (GetEmailsPayload, GoogleClient,
-                                   get_redis_client)
+                               get_redis_client)
 from wizard_ai.constants import RedisKeys
 
 
@@ -15,7 +15,7 @@ class GmailRetriever(StructuredTool):
     name = "GmailRetriever"
     description = """Useful to retrieve emails from Gmail"""
     args_schema: Type[BaseModel] = GetEmailsPayload
-    
+
     return_direct = True
     chat_id: Optional[str] = None
 

@@ -12,6 +12,7 @@ from langchain_core.pydantic_v1 import BaseModel
 from langchain_core.tools import BaseTool, StructuredTool, ToolException
 from pydantic import BaseModel, Field, ValidationError, create_model
 
+
 class IntentToolState(Enum):
     INACTIVE = "INACTIVE"
     ACTIVE = "ACTIVE"
@@ -19,6 +20,8 @@ class IntentToolState(Enum):
 
 # We cannot pass directly the BaseModel class as args_schema as pydantic will raise errors,
 # so we need to create a dummy class that inherits from BaseModel.
+
+
 class IntentToolInactivePayload(BaseModel):
     pass
 
@@ -289,7 +292,9 @@ def filter_active_tools(
     """
     if context.get("active_intent_tool"):
         # If a form_tool is active, it is the only form tool available
-        base_tools = [tool for tool in tools if not isinstance(tool, IntentTool)]
+        base_tools = [
+            tool for tool in tools if not isinstance(
+                tool, IntentTool)]
         tools = [
             *base_tools,
             context.get("active_intent_tool"),

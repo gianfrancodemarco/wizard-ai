@@ -70,7 +70,8 @@ class IntentAgentExecutor(StateGraph):
         return filter_active_tools(self._tools[:], state)
 
     def get_tool_by_name(self, name: str, agent_state: AgentState):
-        return next((tool for tool in self.get_tools(agent_state) if tool.name == name), None)
+        return next((tool for tool in self.get_tools(
+            agent_state) if tool.name == name), None)
 
     def get_tool_executor(self, state: AgentState):
         return IntentToolExecutor(self.get_tools(state))
@@ -101,7 +102,8 @@ class IntentAgentExecutor(StateGraph):
     def call_agent(self, state: AgentState):
         try:
             # Cap the number of intermediate steps in a prompt to 5
-            if len(state.get("intermediate_steps")) > self.MAX_INTERMEDIATE_STEPS:
+            if len(state.get("intermediate_steps")
+                   ) > self.MAX_INTERMEDIATE_STEPS:
                 state["intermediate_steps"] = state.get(
                     "intermediate_steps")[-self.MAX_INTERMEDIATE_STEPS:]
 
@@ -118,8 +120,7 @@ class IntentAgentExecutor(StateGraph):
             traceback.print_exc()
             updates = {"error": str(e)}
             return updates
-            
-        
+
     def on_tool_start(self, tool: BaseTool, tool_input: dict):
         if self._on_tool_start:
             self._on_tool_start(tool, tool_input)
