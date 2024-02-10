@@ -1,12 +1,13 @@
-from langchain_community.tools.convert_to_openai import format_tool_to_openai_function
 import os
 
 import langsmith
 from langchain import chat_models, prompts, smith
 from langchain.schema import output_parser
+from langchain_community.tools.convert_to_openai import \
+    format_tool_to_openai_function
 from langchain_openai import ChatOpenAI
 
-from wizard_ai..conversational_engine.intent_agent import (IntentAgentExecutor)
+from wizard_ai.conversational_engine.intent_agent import IntentAgentExecutor
 from wizard_ai.conversational_engine.tools import *
 
 os.environ["OPENAI_API_KEY"] = "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"
