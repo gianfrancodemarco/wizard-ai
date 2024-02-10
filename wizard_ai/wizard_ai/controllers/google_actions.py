@@ -5,8 +5,8 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
 from wizard_ai.clients import (CreateCalendarEventPayload,
-                                   GetCalendarEventsPayload, GoogleClient,
-                                   RedisClientDep)
+                               GetCalendarEventsPayload, GoogleClient,
+                               RedisClientDep)
 from wizard_ai.constants import RedisKeys
 
 logger = logging.getLogger(__name__)

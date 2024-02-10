@@ -9,16 +9,20 @@ from wizard_ai.clients.google_search import (GoogleSearchClient,
 def test_search_financial_data():
     for query in ["bitcoin price", "tesla stock price"]:
         client = GoogleSearchClient()
-        payload = GoogleSearchClientPayload(query=query, num_expanded_results=2)
+        payload = GoogleSearchClientPayload(
+            query=query, num_expanded_results=2)
         result = client.search(payload)
         assert result.startswith("\n\nFinancial data")
+
 
 def test_search_info_box():
     for query in ["pizza"]:
         client = GoogleSearchClient()
-        payload = GoogleSearchClientPayload(query=query, num_expanded_results=2)
+        payload = GoogleSearchClientPayload(
+            query=query, num_expanded_results=2)
         result = client.search(payload)
         assert "Found info box:" in result
+
 
 def test_search_with_valid_payload_no_result():
     client = GoogleSearchClient()
@@ -42,6 +46,7 @@ def test_search_with_invalid_payload():
     with patch.object(client, "make_request") as mock_make_request:
         with pytest.raises(ValueError):
             client.search(payload)
+
 
 def create_mock_response():
     class MockResponse:

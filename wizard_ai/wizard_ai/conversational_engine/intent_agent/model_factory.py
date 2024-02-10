@@ -39,7 +39,7 @@ PROMPT_FOOTER_MESSAGES = [
 ERROR_CORRECTION_PROMPT = dedent(f"""
     There was an error with your last action.
     Please fix it and try again.
-                                
+
     Error:
     {{error}}.
 """).strip()

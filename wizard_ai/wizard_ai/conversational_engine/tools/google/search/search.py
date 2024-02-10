@@ -5,7 +5,7 @@ from langchain_core.callbacks import CallbackManagerForToolRun
 from pydantic import BaseModel
 
 from wizard_ai.clients.google_search import (GoogleSearchClient,
-                                                 GoogleSearchClientPayload)
+                                             GoogleSearchClientPayload)
 
 
 class GoogleSearch(BaseTool):

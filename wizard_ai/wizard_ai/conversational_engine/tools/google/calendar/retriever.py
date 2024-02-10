@@ -9,6 +9,7 @@ from wizard_ai.clients import (GetCalendarEventsPayload, GoogleClient,
 from wizard_ai.constants import RedisKeys
 from wizard_ai.conversational_engine.intent_agent.intent_tool import IntentTool, IntentToolState
 
+
 class GoogleCalendarRetriever(IntentTool):
 
     name = "GoogleCalendarRetriever"

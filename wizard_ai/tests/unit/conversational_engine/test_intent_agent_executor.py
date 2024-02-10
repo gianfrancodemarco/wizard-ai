@@ -1,5 +1,5 @@
 from typing import Any
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from langchain_core.exceptions import OutputParserException
@@ -127,6 +127,7 @@ class TestIntentAgentExecutor:
         assert response["tool_outcome"] is None
         assert "agent_outcome" in response
         assert response["agent_outcome"] == "Mocked response"
+
     def test_call_agent_error(self):
         graph = MockIntentAgentExecutorErrorModel()
         state = AgentState()
@@ -196,7 +197,7 @@ class TestIntentAgentExecutor:
                         content="Tool output",
                         name="MockIntentTool"
                     )),
-            )*10,
+            ) * 10,
         )
         response = graph.call_agent(state)
         assert "error" in response

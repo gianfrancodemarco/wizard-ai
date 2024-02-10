@@ -197,7 +197,7 @@ class GoogleSearchClient:
             return dedent(f"""
                 Found info box:
                 {HtmlProcessor.clear_html(info_box)}
-            """)                
+            """)
 
     def _scrape_results_list(self, selector: Selector) -> List[Dict[str, str]]:
         parsed = []

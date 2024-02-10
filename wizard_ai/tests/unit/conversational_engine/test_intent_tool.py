@@ -23,6 +23,7 @@ def test_filter_active_tools_no_active_intent_tool():
     assert isinstance(filtered_tools[3], IntentTool)
     assert filtered_tools[3].state == IntentToolState.INACTIVE
 
+
 def test_filter_active_tools_with_active_intent_tool():
 
     active_intent_tool = MockIntentTool()
