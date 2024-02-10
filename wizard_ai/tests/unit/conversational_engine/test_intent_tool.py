@@ -1,15 +1,15 @@
 from wizard_ai.conversational_engine.intent_agent.intent_tool import (
     AgentState, ContextReset, IntentTool, IntentToolState, BaseTool, filter_active_tools)
 
-from .mocks import MockBaseTool, MockFormTool
+from .mocks import MockBaseTool, MockIntentTool
 
 
 def test_filter_active_tools_no_active_intent_tool():
     tools = [
         MockBaseTool(),
         MockBaseTool(),
-        MockFormTool(),
-        MockFormTool(),
+        MockIntentTool(),
+        MockIntentTool(),
     ]
     agent_state = AgentState()
 
@@ -25,13 +25,13 @@ def test_filter_active_tools_no_active_intent_tool():
 
 def test_filter_active_tools_with_active_intent_tool():
 
-    active_intent_tool = MockFormTool()
+    active_intent_tool = MockIntentTool()
 
     tools = [
         MockBaseTool(),
         MockBaseTool(),
         active_intent_tool,
-        MockFormTool(),
+        MockIntentTool(),
     ]
     agent_state = AgentState()
     agent_state["active_intent_tool"] = active_intent_tool

@@ -3,6 +3,7 @@ import pprint
 import traceback
 from typing import Any, Sequence, Type
 
+from langchain.tools import BaseTool
 from langchain_core.agents import AgentAction, AgentFinish
 from langchain_core.exceptions import OutputParserException
 from langchain_core.language_models.chat_models import *
@@ -32,8 +33,8 @@ class IntentAgentExecutor(StateGraph):
     ) -> None:
         super().__init__(AgentState)
 
-        self.on_tool_start = on_tool_start
-        self.on_tool_end = on_tool_end
+        self._on_tool_start = on_tool_start
+        self._on_tool_end = on_tool_end
         self._tools = tools
         self.__build_graph()
 
@@ -111,12 +112,21 @@ class IntentAgentExecutor(StateGraph):
                 "tool_outcome": None,  # Reset the tool outcome
                 "error": None  # Reset the error
             }
+            return updates
         # TODO: if other exceptions are raised, we should handle them here
         except OutputParserException as e:
             traceback.print_exc()
             updates = {"error": str(e)}
-        finally:
             return updates
+            
+        
+    def on_tool_start(self, tool: BaseTool, tool_input: dict):
+        if self._on_tool_start:
+            self._on_tool_start(tool, tool_input)
+
+    def on_tool_end(self, tool: BaseTool, tool_output: Any):
+        if self._on_tool_end:
+            self._on_tool_end(tool, tool_output)
 
     def call_tool(self, state: AgentState):
         try:

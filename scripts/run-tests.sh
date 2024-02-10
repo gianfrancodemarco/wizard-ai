@@ -1,1 +1,1 @@
-cd wizard_ai/tests && poetry run pytest --cov=wizard_ai unit && cd ../.. && rm -f wizard_ai/tests/graph.png
+cd wizard_ai/tests && poetry run pytest --cov=wizard_ai --cov-report=html:coverage_html unit && cd ../.. && rm -f wizard_ai/tests/graph.png

@@ -49,6 +49,9 @@ class GoogleSearchClient:
         self,
         payload: GoogleSearchClientPayload
     ) -> str:
+        if not payload.query:
+            raise ValueError("Query cannot be empty")
+
         logging.info(f"Searching the internet with query: {payload.query}")
         params = {'q': payload.query}
 
@@ -191,7 +194,10 @@ class GoogleSearchClient:
     def _scrape_info_box(self, selector: Selector) -> List[Dict[str, str]]:
         info_box = selector.xpath("//div[@class='I6TXqe']").extract_first()
         if info_box:
-            return HtmlProcessor.clear_html(info_box)
+            return dedent(f"""
+                Found info box:
+                {HtmlProcessor.clear_html(info_box)}
+            """)                
 
     def _scrape_results_list(self, selector: Selector) -> List[Dict[str, str]]:
         parsed = []
@@ -251,26 +257,3 @@ class GoogleSearchClient:
         """
         return True
         return query in self.previous_searches
-
-
-if __name__ == "__main__":
-    google_search_client = GoogleSearchClient()
-
-    for query in [
-        "pizza",
-        "chiellini",
-        "What is the value of Microsoft stock?",
-        "What is the value of Amazon stock?",
-        "What is the price of Bitcoin?",
-        "What is the value of Apple stock?",
-        "What is the value of Tesla stock?",
-        "What is the value of Google stock?",
-        "What is the value of Silver?",
-        "What is the value of Gold?",
-        "What is the value of Ethereum?"
-    ]:
-        payload = GoogleSearchClientPayload(
-            query=query
-        )
-        result = google_search_client.search(payload)
-        print(result)
