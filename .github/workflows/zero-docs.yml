@@ -3,9 +3,13 @@ name: Auto Doc Generation
 on:
   workflow_dispatch:
     inputs:
-      scan-dir:
+      paths:
         type: string
-        description: 'The directory to scan for doc generation'
+        description: "Space separated list of directories and/or files to scan"
+      code-entities:
+        description: "List of code entities to generate docstrings for"
+        required: false
+        default: "module,class,function"
 
 jobs:
   auto_doc_generation:
