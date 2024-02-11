@@ -1,6 +1,7 @@
 import base64
 import os
 from datetime import datetime, timezone
+from email.message import EmailMessage
 from textwrap import dedent
 from typing import Any, List, Optional
 
@@ -54,6 +55,18 @@ class GetEmailsPayload(BaseModel):
     number_of_emails: Optional[int] = Field(
         default=3,
         description="Number of emails to retrieve"
+    )
+
+
+class SendEmailPayload(BaseModel):
+    to: str = Field(
+        description="Email address of the recipient"
+    )
+    subject: str = Field(
+        description="Subject of the email"
+    )
+    body: str = Field(
+        description="Body of the email"
     )
 
 
@@ -212,3 +225,30 @@ class GoogleClient:
         emails_string = emails_string.replace("<", "").replace(">", "")
 
         return emails_string
+
+    def send_email(
+        self,
+        payload: SendEmailPayload
+    ):
+        service = build('gmail', 'v1', credentials=self.credentials)
+
+        profile = service.users().getProfile(userId="me").execute()
+        message = self.__create_message(
+            sender=profile["emailAddress"], to=payload.to, subject=payload.subject, body=payload.body)
+        message = self.__send_message(service, 'me', message)
+        return "Email sent successfully!"
+
+    def __create_message(self, sender: str, to: str, subject: str, body: str):
+        message = EmailMessage()
+        message['From'] = sender
+        message['To'] = to
+        message['Subject'] = subject
+        message.set_content(body)
+        encoded_message = base64.urlsafe_b64encode(
+            message.as_bytes()).decode()
+        return {'raw': encoded_message}
+
+    def __send_message(self, service, user_id: str, message: dict):
+        message = service.users().messages().send(
+            userId=user_id, body=message).execute()
+        return message
