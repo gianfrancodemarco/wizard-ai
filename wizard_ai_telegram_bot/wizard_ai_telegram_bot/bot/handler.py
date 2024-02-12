@@ -67,7 +67,8 @@ class Handler:
         # Call OpenAI whisper API
         text = self.openai_client.audio.transcriptions.create(
             model="whisper-1",
-            file=open("audio.ogg", "rb")
+            file=open("audio.ogg", "rb"),
+            language="it"
         ).text
 
         asyncio.gather(
