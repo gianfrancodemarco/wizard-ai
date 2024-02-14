@@ -131,6 +131,61 @@ class FormTool(StructuredTool, ABC):
             self.form = self.args_schema(**json.loads(self.form))
         self.args_schema = FormToolConfirmPayload
 
+    def activate(
+        self,
+        *args,
+        run_manager: Optional[CallbackManagerForToolRun] = None,
+        **kwargs
+    ) -> FormToolOutcome:
+        self.set_active_state()
+        return FormToolOutcome(
+            output=f"Starting form {self.name}. If the user as already provided some information, call {self.name}.",
+            active_form_tool=self,
+            tool_choice=self.name
+        )
+
+    def update(
+        self,
+        *args,
+        run_manager: Optional[CallbackManagerForToolRun] = None,
+        **kwargs
+    ) -> FormToolOutcome:
+        self._update_form(**kwargs)
+        if self.is_form_filled():
+            self.set_filled_state()
+            if self.skip_confirm:
+                return self.finalize(confirm=True)
+            else:
+                return FormToolOutcome(
+                    active_form_tool=self,
+                    output="Form is filled. Ask the user to confirm the information."
+                )
+        else:
+            return FormToolOutcome(
+                active_form_tool=self,
+                output="Form updated with the provided information. Ask the user for the next field."
+            )
+    
+    def finalize(
+        self,
+        *args,
+        run_manager: Optional[CallbackManagerForToolRun] = None,
+        **kwargs
+    ) -> FormToolOutcome:
+        if kwargs.get("confirm"):
+            result = self._run_when_complete()
+            return FormToolOutcome(
+                active_form_tool=None,
+                output=result,
+                return_direct=self.return_direct
+            )
+        else:
+            self.set_active_state()
+            return FormToolOutcome(
+                active_form_tool=self,
+                output="Ask the user to update the form."
+            )
+
     def _run(
         self,
         *args,
@@ -139,49 +194,13 @@ class FormTool(StructuredTool, ABC):
     ) -> str:
         match self.state:
             case FormToolState.INACTIVE:
-                self.set_active_state()
-                return FormToolOutcome(
-                    output=f"Starting form {self.name}. If the user as already provided some information, call {self.name}.",
-                    active_form_tool=self,
-                    tool_choice=self.name
-                )
+                return self.activate(*args, **kwargs, run_manager=run_manager)
+    
             case FormToolState.ACTIVE:
-                self._update_form(**kwargs)
-                if self.is_form_filled():
-                    self.set_filled_state()
-                    if self.skip_confirm:
-                        result = self._run_when_complete()
-                        return FormToolOutcome(
-                            active_form_tool=None,
-                            output=result,
-                            return_direct=self.return_direct
-                        )
-                    else:
-                        return FormToolOutcome(
-                            active_form_tool=self,
-                            output="Form is filled. Ask the user to confirm the information."
-                        )
-                else:
-                    return FormToolOutcome(
-                        active_form_tool=self,
-                        output="Form updated with the provided information. Ask the user for the next field."
-                    )
+                return self.update(*args, **kwargs, run_manager=run_manager)
+
             case FormToolState.FILLED:
-                if kwargs.get("confirm"):
-                    result = self._run_when_complete()
-                    # if no exception is raised, the form is complete and the tool is
-                    # done, so reset the active form tool
-                    return FormToolOutcome(
-                        active_form_tool=None,
-                        output=result,
-                        return_direct=self.return_direct
-                    )
-                else:
-                    self.set_active_state()
-                    return FormToolOutcome(
-                        active_form_tool=self,
-                        output="Ask the user to update the form."
-                    )
+                return self.finalize(*args, **kwargs, run_manager=run_manager)
 
     def is_form_filled(self) -> bool:
         """
@@ -278,23 +297,3 @@ class FormReset(BaseTool):
             active_form_tool=None,
             output="Form reset. Form cleared. Ask the user what he wants to do next."
         )
-
-
-def filter_active_tools(
-    tools: Sequence[BaseTool],
-    context: AgentState
-):
-    """
-    Form tools are replaced by their activators if they are not active.
-    """
-    if context.get("active_form_tool"):
-        # If a form_tool is active, it is the only form tool available
-        base_tools = [
-            tool for tool in tools if not isinstance(
-                tool, FormTool)]
-        tools = [
-            *base_tools,
-            context.get("active_form_tool"),
-            FormReset(context=context)
-        ]
-    return tools

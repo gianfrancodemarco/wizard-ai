@@ -11,7 +11,7 @@ from langchain_core.messages import FunctionMessage
 from langgraph.graph import END, StateGraph
 
 from wizard_ai.conversational_engine.form_agent.form_tool import (
-    AgentState, FormToolOutcome, filter_active_tools)
+    AgentState, FormReset, FormTool, FormToolOutcome)
 from wizard_ai.conversational_engine.form_agent.form_tool_executor import \
     FormToolExecutor
 from wizard_ai.conversational_engine.form_agent.model_factory import \
@@ -66,8 +66,28 @@ class FormAgentExecutor(StateGraph):
         self.set_entry_point("agent")
         self.app = self.compile()
 
+    def filter_active_tools(
+        self,
+        tools: Sequence[BaseTool],
+        context: AgentState
+    ):
+        """
+        Form tools are replaced by their activators if they are not active.
+        """
+        if context.get("active_form_tool"):
+            # If a form_tool is active, it is the only form tool available
+            base_tools = [
+                tool for tool in tools if not isinstance(
+                    tool, FormTool)]
+            tools = [
+                *base_tools,
+                context.get("active_form_tool"),
+                FormReset(context=context)
+            ]
+        return tools
+
     def get_tools(self, state: AgentState):
-        return filter_active_tools(self._tools[:], state)
+        return self.filter_active_tools(self._tools[:], state)
 
     def get_tool_by_name(self, name: str, agent_state: AgentState):
         return next((tool for tool in self.get_tools(
@@ -109,10 +129,10 @@ class FormAgentExecutor(StateGraph):
 
             agent_outcome = self.build_model(state=state).invoke(state)
 
-            #TODO: workaround for migrating from functions to tools
+            # TODO: workaround for migrating from functions to tools
             if isinstance(agent_outcome, list) and isinstance(agent_outcome[0], AgentAction):
                 agent_outcome = agent_outcome[0]
-            
+
             updates = {
                 "agent_outcome": agent_outcome,
                 "tool_choice": None,  # Reset the function call
