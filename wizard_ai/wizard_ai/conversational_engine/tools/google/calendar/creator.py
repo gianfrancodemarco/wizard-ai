@@ -9,8 +9,9 @@ from wizard_ai.clients import (CreateCalendarEventPayload, GoogleClient,
 from wizard_ai.constants.redis_keys import RedisKeys
 from wizard_ai.conversational_engine.intent_agent import (IntentTool,
                                                           IntentToolState)
-
-
+from langchain.tools import StructuredTool
+from datetime import datetime
+#class GoogleCalendarCreator(StructuredTool):
 class GoogleCalendarCreator(IntentTool):
 
     name = "GoogleCalendarCreator"
@@ -19,6 +20,31 @@ class GoogleCalendarCreator(IntentTool):
 
     chat_id: Optional[str] = None
 
+    # Uncomment and change base class to use as structured tool
+    # def _run(
+    #     self,
+    #     summary: str,
+    #     description: str,
+    #     start: datetime,
+    #     end: datetime,
+    #     *args
+    # ) -> str:
+    #     """Use the tool."""
+    #     credentials = get_redis_client().hget(
+    #         self.chat_id,
+    #         RedisKeys.GOOGLE_CREDENTIALS.value
+    #     )
+    #     google_client = GoogleClient(pickle.loads(credentials))
+    #     payload = CreateCalendarEventPayload(
+    #         summary=summary,
+    #         description=description,
+    #         start=start,
+    #         end=end
+    #     )
+    #     google_client.create_calendar_event(payload)
+    #     return "The event was created successfully"
+
+    # Uncomment and change base class to use as IntentTool
     def _run_when_complete(self) -> str:
         """Use the tool."""
         credentials = get_redis_client().hget(

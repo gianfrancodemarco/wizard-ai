@@ -5,7 +5,7 @@ import pytest
 from langchain_core.exceptions import OutputParserException
 
 from wizard_ai.conversational_engine.intent_agent.intent_tool import (
-    AgentState, ContextReset)
+    AgentState, IntentReset)
 from wizard_ai.conversational_engine.intent_agent.intent_agent_executor import *
 
 from .mocks import *
@@ -50,7 +50,7 @@ class TestIntentAgentExecutor:
         tools = graph.get_tools(state)
         assert len(tools) == 2
         assert tools[0] == active_intent_tool
-        assert tools[1] == ContextReset()
+        assert tools[1] == IntentReset()
 
     def test_get_tool_by_name_existing_tool(self):
         graph = IntentAgentExecutor()

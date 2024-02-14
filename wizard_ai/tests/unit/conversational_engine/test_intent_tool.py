@@ -1,5 +1,5 @@
 from wizard_ai.conversational_engine.intent_agent.intent_tool import (
-    AgentState, ContextReset, IntentTool, IntentToolState, BaseTool, filter_active_tools)
+    AgentState, IntentReset, IntentTool, IntentToolState, BaseTool, filter_active_tools)
 
 from .mocks import MockBaseTool, MockIntentTool
 
@@ -43,4 +43,4 @@ def test_filter_active_tools_with_active_intent_tool():
     assert isinstance(filtered_tools[0], BaseTool)
     assert isinstance(filtered_tools[1], BaseTool)
     assert filtered_tools[2] == active_intent_tool
-    assert isinstance(filtered_tools[3], ContextReset)
+    assert isinstance(filtered_tools[3], IntentReset)

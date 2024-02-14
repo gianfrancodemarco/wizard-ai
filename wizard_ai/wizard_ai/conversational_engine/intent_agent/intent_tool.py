@@ -20,8 +20,6 @@ class IntentToolState(Enum):
 
 # We cannot pass directly the BaseModel class as args_schema as pydantic will raise errors,
 # so we need to create a dummy class that inherits from BaseModel.
-
-
 class IntentToolInactivePayload(BaseModel):
     pass
 
@@ -145,7 +143,7 @@ class IntentTool(StructuredTool, ABC):
                 return IntentToolOutcome(
                     output=f"Starting intent {self.name}. If the user as already provided some information, call {self.name}.",
                     active_intent_tool=self,
-                    function_call=self.name
+                    tool_choice=self.name
                 )
             case IntentToolState.ACTIVE:
                 self._update_form(**kwargs)
@@ -266,20 +264,19 @@ class AgentState(TypedDict):
 
     active_intent_tool: Annotated[Optional[IntentTool], operator.setitem]
 
-    function_call: Annotated[Optional[str], operator.setitem]
+    # Used to force the agent to call a specific tool
+    tool_choice: Annotated[Optional[str], operator.setitem]
 
 
-class ContextReset(BaseTool):
-    name = "ContextReset"
+class IntentReset(BaseTool):
+    name = "IntentReset"
     description = """Call this tool when the user doesn't want to complete the intent anymore. DON'T call it when he wants to change some data."""
     args_schema: Type[BaseModel] = IntentToolInactivePayload
 
     def _run(self, *args: Any, **kwargs: Any) -> Any:
         return IntentToolOutcome(
-            state_update={
-                "active_intent_tool": None
-            },
-            output="Context reset. Form cleared. Ask the user what he wants to do next."
+            active_intent_tool=None,
+            output="Intent reset. Form cleared. Ask the user what he wants to do next."
         )
 
 
@@ -298,6 +295,6 @@ def filter_active_tools(
         tools = [
             *base_tools,
             context.get("active_intent_tool"),
-            ContextReset(context=context)
+            IntentReset(context=context)
         ]
     return tools

@@ -12,7 +12,7 @@ from wizard_ai.conversational_engine.intent_agent.intent_tool import AgentState,
 
 logger = logging.getLogger(__name__)
 
-HISTORY_LENGTH = os.getenv("HISTORY_LENGTH", 5)
+HISTORY_LENGTH = os.getenv("HISTORY_LENGTH", 20)
 
 
 class StoredAgentState:

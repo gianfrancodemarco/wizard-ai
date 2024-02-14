@@ -5,7 +5,7 @@ import re
 from datetime import datetime
 from textwrap import dedent
 
-from langchain.agents import create_openai_functions_agent
+from langchain.agents import create_openai_tools_agent
 from langchain.tools import BaseTool
 from langchain_core.language_models.chat_models import *
 from langchain_core.prompts.chat import (ChatPromptTemplate,
@@ -101,13 +101,13 @@ class ModelFactory:
         return builder(state, tools)
 
     def build_llm(
-        function_call: str = None
+        tool_choice: str = None
     ):
         return ChatOpenAI(
             model=LLM_MODEL,
             temperature=0,
             verbose=True,
-            function_call={"name": function_call} if function_call else None
+            tool_choice={"type": "function", "function": {"name": tool_choice}} if tool_choice else None
         )
 
     def build_default_model(
@@ -163,8 +163,8 @@ class ModelFactory:
         prompt: ChatPromptTemplate,
         tools: List[BaseTool] = []
     ):
-        return create_openai_functions_agent(
-            ModelFactory.build_llm(state.get("function_call")),
+        return create_openai_tools_agent(
+            ModelFactory.build_llm(state.get("tool_choice")),
             tools,
             prompt=prompt
         )

@@ -108,9 +108,14 @@ class IntentAgentExecutor(StateGraph):
                     "intermediate_steps")[-self.MAX_INTERMEDIATE_STEPS:]
 
             agent_outcome = self.build_model(state=state).invoke(state)
+
+            #TODO: workaround for migrating from functions to tools
+            if isinstance(agent_outcome, list) and isinstance(agent_outcome[0], AgentAction):
+                agent_outcome = agent_outcome[0]
+            
             updates = {
                 "agent_outcome": agent_outcome,
-                "function_call": None,  # Reset the function call
+                "tool_choice": None,  # Reset the function call
                 "tool_outcome": None,  # Reset the tool outcome
                 "error": None  # Reset the error
             }
