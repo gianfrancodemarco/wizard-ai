@@ -66,28 +66,8 @@ class FormAgentExecutor(StateGraph):
         self.set_entry_point("agent")
         self.app = self.compile()
 
-    def filter_active_tools(
-        self,
-        tools: Sequence[BaseTool],
-        context: AgentState
-    ):
-        """
-        Form tools are replaced by their activators if they are not active.
-        """
-        if context.get("active_form_tool"):
-            # If a form_tool is active, it is the only form tool available
-            base_tools = [
-                tool for tool in tools if not isinstance(
-                    tool, FormTool)]
-            tools = [
-                *base_tools,
-                context.get("active_form_tool"),
-                FormReset(context=context)
-            ]
-        return tools
-
     def get_tools(self, state: AgentState):
-        return self.filter_active_tools(self._tools[:], state)
+        return filter_active_tools(self._tools[:], state)
 
     def get_tool_by_name(self, name: str, agent_state: AgentState):
         return next((tool for tool in self.get_tools(
@@ -204,3 +184,22 @@ class FormAgentExecutor(StateGraph):
             output = state.get("agent_outcome").return_values["output"]
 
         return output
+
+def filter_active_tools(
+    tools: Sequence[BaseTool],
+    context: AgentState
+):
+    """
+    Form tools are replaced by their activators if they are not active.
+    """
+    if context.get("active_form_tool"):
+        # If a form_tool is active, it is the only form tool available
+        base_tools = [
+            tool for tool in tools if not isinstance(
+                tool, FormTool)]
+        tools = [
+            *base_tools,
+            context.get("active_form_tool"),
+            FormReset(context=context)
+        ]
+    return tools

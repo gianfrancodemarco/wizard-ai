@@ -1,5 +1,5 @@
-from wizard_ai.conversational_engine.form_agent.form_tool import (
-    AgentState, FormReset, FormTool, FormToolState, BaseTool, filter_active_tools)
+from wizard_ai.conversational_engine import (AgentState, BaseTool, FormReset,
+                                             FormTool, FormToolState, filter_active_tools)
 
 from .mocks import MockBaseTool, MockFormTool
 
