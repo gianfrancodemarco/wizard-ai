@@ -20,7 +20,7 @@ class DummyStateGraph(StateGraph):
             "start",
             lambda x: "end",
             {
-                "intent": "end"
+                "form": "end"
             }
         )
         self.set_entry_point("start")

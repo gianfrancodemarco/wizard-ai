@@ -2,8 +2,8 @@ from typing import Any, Type
 
 from pydantic import BaseModel
 
-from wizard_ai.conversational_engine.intent_agent.intent_tool import (
-    BaseTool, IntentTool)
+from wizard_ai.conversational_engine.form_agent.form_tool import (
+    BaseTool, FormTool)
 
 
 class MockBaseTool(BaseTool):
@@ -26,18 +26,18 @@ class _DummyPayloadWithFields(BaseModel):
     age: int
 
 
-class MockIntentTool(IntentTool):
-    name = "MockIntentTool"
-    description = "MockIntentTool description"
+class MockFormTool(FormTool):
+    name = "MockFormTool"
+    description = "MockFormTool description"
     args_schema: Type[BaseModel] = _DummyPayload
 
     def _run_when_complete(self) -> Any:
         pass
 
 
-class MockIntentToolWithFields(IntentTool):
-    name = "MockIntentToolWithFields"
-    description = "MockIntentToolWithFields description"
+class MockFormToolWithFields(FormTool):
+    name = "MockFormToolWithFields"
+    description = "MockFormToolWithFields description"
     args_schema: Type[BaseModel] = _DummyPayloadWithFields
 
     def _run_when_complete(self) -> Any:

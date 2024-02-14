@@ -7,11 +7,11 @@ from pydantic import BaseModel
 from wizard_ai.clients import GoogleClient, SendEmailPayload, get_redis_client
 from wizard_ai.constants import RedisKeys
 from wizard_ai.constants.redis_keys import RedisKeys
-from wizard_ai.conversational_engine.intent_agent import (IntentTool,
-                                                          IntentToolState)
+from wizard_ai.conversational_engine.form_agent import (FormTool,
+                                                          FormToolState)
 
 
-class GmailSender(IntentTool):
+class GmailSender(FormTool):
 
     name = "GmailSender"
     description = """Useful to send emails from Gmail"""
@@ -38,7 +38,7 @@ class GmailSender(IntentTool):
 
     def get_tool_start_message(self, input: Union[Dict, str]) -> str:
         base_message = super().get_tool_start_message(input)
-        if self.state in (IntentToolState.ACTIVE, IntentToolState.FILLED):
+        if self.state in (FormToolState.ACTIVE, FormToolState.FILLED):
             payload = self.args_schema(**input)
             return f"{base_message}\n" +\
                 textwrap.dedent(f"""

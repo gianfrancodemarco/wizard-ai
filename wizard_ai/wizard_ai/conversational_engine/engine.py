@@ -13,13 +13,12 @@ from wizard_ai.clients.rabbitmq import RabbitMQProducer
 from wizard_ai.constants import MessageQueues, MessageType
 from wizard_ai.constants.message_queues import MessageQueues
 from wizard_ai.constants.message_type import MessageType
-from wizard_ai.conversational_engine.intent_agent.intent_tool import IntentTool
-from wizard_ai.conversational_engine.memory import (get_stored_agent_state,
-                                                    store_agent_state)
+from wizard_ai.conversational_engine.form_agent import (FormAgentExecutor,
+                                                        FormTool,
+                                                        get_stored_agent_state,
+                                                        store_agent_state)
 from wizard_ai.conversational_engine.tools import *
 from wizard_ai.models.chat_payload import ChatPayload
-from wizard_ai.conversational_engine.intent_agent.intent_agent_executor import \
-    IntentAgentExecutor
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -45,7 +44,7 @@ class RabbitMQConnector:
 
     def on_tool_start(
         self,
-        tool: IntentTool,
+        tool: FormTool,
         tool_input: str
     ) -> Any:
         """Run when tool starts running."""
@@ -68,7 +67,7 @@ class RabbitMQConnector:
 
     def on_tool_end(
         self,
-        tool: IntentTool,
+        tool: FormTool,
         tool_output: str
     ) -> Any:
         """Run when tool ends running."""
@@ -106,7 +105,7 @@ async def process_message(data: dict) -> None:
         "input": data.content,
         "chat_history": [*stored_agent_state.memory.buffer],
         "intermediate_steps": [],
-        "active_intent_tool": stored_agent_state.active_intent_tool
+        "active_form_tool": stored_agent_state.active_form_tool
     }
 
     rabbitmq_connector = RabbitMQConnector(
@@ -116,7 +115,7 @@ async def process_message(data: dict) -> None:
         queue=MessageQueues.WIZARD_AI_OUT.value
     )
 
-    graph = IntentAgentExecutor(
+    graph = FormAgentExecutor(
         tools=tools,
         on_tool_start=rabbitmq_connector.on_tool_start,
         on_tool_end=rabbitmq_connector.on_tool_end
@@ -158,7 +157,7 @@ async def process_message(data: dict) -> None:
         inputs={"messages": data.content},
         outputs={"output": answer}
     )
-    stored_agent_state.active_intent_tool = value["active_intent_tool"]
+    stored_agent_state.active_form_tool = value["active_form_tool"]
 
     store_agent_state(redis_client, data.chat_id, stored_agent_state)
     __publish_answer(rabbitmq_producer, data.chat_id, answer)

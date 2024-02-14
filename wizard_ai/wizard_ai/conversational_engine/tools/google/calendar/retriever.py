@@ -7,10 +7,10 @@ from pydantic import BaseModel
 from wizard_ai.clients import (GetCalendarEventsPayload, GoogleClient,
                                get_redis_client)
 from wizard_ai.constants import RedisKeys
-from wizard_ai.conversational_engine.intent_agent.intent_tool import IntentTool, IntentToolState
+from wizard_ai.conversational_engine.form_agent.form_tool import FormTool, FormToolState
 
 
-class GoogleCalendarRetriever(IntentTool):
+class GoogleCalendarRetriever(FormTool):
 
     name = "GoogleCalendarRetriever"
     description = """Useful to retrieve events from Google Calendar"""
@@ -35,7 +35,7 @@ class GoogleCalendarRetriever(IntentTool):
 
     def get_tool_start_message(self, input: dict) -> str:
         base_message = super().get_tool_start_message(input)
-        if self.state in (IntentToolState.ACTIVE, IntentToolState.FILLED):
+        if self.state in (FormToolState.ACTIVE, FormToolState.FILLED):
             payload = GetCalendarEventsPayload(**input)
 
             return f"{base_message}\n" +\
