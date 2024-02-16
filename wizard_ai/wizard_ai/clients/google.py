@@ -184,7 +184,7 @@ class GoogleClient:
                         msg['payload']['body']['data'].encode('UTF-8')).decode('UTF-8')
 
                 # Clear the full content
-                # full_content = HtmlProcessor.clear_html(full_content)
+                full_content = HtmlProcessor.clear_html(full_content)
             else:
                 full_content = msg['snippet']
 

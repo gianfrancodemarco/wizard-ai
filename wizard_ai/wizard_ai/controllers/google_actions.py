@@ -24,6 +24,8 @@ def create_calendar_event(
         chat_id,
         RedisKeys.GOOGLE_CREDENTIALS.value
     )
+    if not credentials:
+        raise ValueError("No Google credentials found. User must login first.")
     credentials = pickle.loads(credentials)
 
     # TODO: This can be obtained with dependency injection
@@ -51,6 +53,8 @@ def create_calendar_event(
         chat_id,
         RedisKeys.GOOGLE_CREDENTIALS.value
     )
+    if not credentials:
+        raise ValueError("No Google credentials found. User must login first.")
     credentials = pickle.loads(credentials)
 
     # TODO: This can be obtained with dependency injection
