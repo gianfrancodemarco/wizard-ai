@@ -110,7 +110,8 @@ class FormAgentExecutor(StateGraph):
             agent_outcome = self.build_model(state=state).invoke(state)
 
             # TODO: workaround for migrating from functions to tools
-            if isinstance(agent_outcome, list) and isinstance(agent_outcome[0], AgentAction):
+            if isinstance(agent_outcome, list) and isinstance(
+                    agent_outcome[0], AgentAction):
                 agent_outcome = agent_outcome[0]
 
             updates = {
@@ -184,6 +185,7 @@ class FormAgentExecutor(StateGraph):
             output = state.get("agent_outcome").return_values["output"]
 
         return output
+
 
 def filter_active_tools(
     tools: Sequence[BaseTool],
