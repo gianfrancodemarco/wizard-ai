@@ -52,12 +52,12 @@ class TestFormAgentExecutor:
         assert tools[0] == active_form_tool
         assert tools[1] == FormReset()
 
-    def test_get_tool_by_name_existing_tool(self):
+    def test_get_tool_by_name_existing_tool_inactive(self):
         graph = FormAgentExecutor()
         state = AgentState()
         active_form_tool = MockFormTool()
         state["active_form_tool"] = active_form_tool
-        tool = graph.get_tool_by_name("MockFormTool", state)
+        tool = graph.get_tool_by_name("MockFormToolStart", state)
         assert tool == active_form_tool
 
     def test_get_tool_by_name_non_existing_tool(self):
@@ -147,7 +147,7 @@ class TestFormAgentExecutor:
         )
         state = AgentState()
         state["agent_outcome"] = AgentAction(
-            tool="MockFormTool", tool_input={}, log="")
+            tool="MockFormToolStart", tool_input={}, log="")
         response = graph.call_tool(state)
         assert "intermediate_steps" in response
         assert "error" in response
@@ -175,7 +175,7 @@ class TestFormAgentExecutor:
         )
         state = AgentState(
             agent_outcome=AgentAction(
-                tool="MockFormTool", tool_input={}, log="")
+                tool="MockFormToolStart", tool_input={}, log="")
         )
         graph.call_tool(state)
         on_tool_start.assert_called_once()

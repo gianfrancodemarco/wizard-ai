@@ -192,11 +192,15 @@ def test_get_emails():
                 {'name': 'From', 'value': 'sender@example.com'},
                 {'name': 'Date', 'value': '2022-01-01'},
                 {'name': 'Subject', 'value': 'Test Email'},
-            ]
+            ],
+            'mimeType': 'text/plain',
+            'body': {
+                'data': 'VGhpcyBpcyBhIHRlc3QgZW1haWw='
+            }
         },
         'snippet': 'This is a test email'
     }
-
+                    
     with patch('wizard_ai.clients.google.build', return_value=service_mock):
         emails = client.get_emails_html(payload)
 
