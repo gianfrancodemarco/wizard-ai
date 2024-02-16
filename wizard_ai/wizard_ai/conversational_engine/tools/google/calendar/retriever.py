@@ -24,7 +24,6 @@ class GoogleCalendarRetriever(FormTool):
 
     def _run_when_complete(
         self,
-        number_of_events: int,
         start: datetime,
         end: datetime
     ) -> str:
@@ -34,7 +33,6 @@ class GoogleCalendarRetriever(FormTool):
         )
         google_client = GoogleClient(pickle.loads(credentials))
         payload = GetCalendarEventsPayload(
-            number_of_events=number_of_events,
             start=start,
             end=end,
         )
@@ -47,25 +45,8 @@ class GoogleCalendarRetriever(FormTool):
 
             return f"{base_message}\n" +\
                 textwrap.dedent(f"""
-                    Number of events: {payload.number_of_events}
                     Start: {payload.start}
                     End: {payload.end}
                 """)
 
         return base_message
-
-    def is_form_filled(
-        self,
-    ) -> bool:
-        """
-        User should provide number_of_events or start and end dates
-        """
-        if self.form.number_of_events:
-            return True
-        elif self.form.start and self.form.end:
-            return True
-        else:
-            return False
-
-    def get_information_to_collect(self) -> str:
-        return ["number_of_events OR (start and end dates)"]

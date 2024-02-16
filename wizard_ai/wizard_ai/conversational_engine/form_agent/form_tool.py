@@ -81,48 +81,56 @@ def make_optional_model(original_model: BaseModel) -> BaseModel:
 
 class FormTool(StructuredTool, ABC):
     form: BaseModel = None
-    args_schema_: Optional[Type[BaseModel]] = None
-    description_: Optional[str] = None
     state: Union[FormToolState | None] = None
     skip_confirm: Optional[bool] = False
+
+    # Backup attributes for handling changes in the state
+    args_schema_: Optional[Type[BaseModel]] = None
+    description_: Optional[str] = None
+    name_: Optional[str] = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.args_schema_ = None
+        self.name_ = None
         self.description_ = None
         self.init_state()
 
     def init_state(self):
         state_initializer = {
-            None: self.set_inactive_state,
-            FormToolState.INACTIVE: self.set_inactive_state,
-            FormToolState.ACTIVE: self.set_active_state,
-            FormToolState.FILLED: self.set_filled_state
+            None: self.enter_inactive_state,
+            FormToolState.INACTIVE: self.enter_inactive_state,
+            FormToolState.ACTIVE: self.enter_active_state,
+            FormToolState.FILLED: self.enter_filled_state
         }
         state_initializer[self.state]()
 
-    def set_inactive_state(self):
+    def enter_inactive_state(self):
         # Guard so that we don't overwrite the original args_schema if
         # set_inactive_state is called multiple times
         if not self.state == FormToolState.INACTIVE:
             self.state = FormToolState.INACTIVE
+            self.name_ = self.name
+            self.name = f"{self.name_}Start"
             self.description_ = self.description
             self.description = f"Starts the form {self.name}, which {self.description_}"
             self.args_schema_ = self.args_schema
             self.args_schema = FormToolInactivePayload
 
-    def set_active_state(self):
+    def enter_active_state(self):
         # if not self.state == FormToolState.ACTIVE:
         self.state = FormToolState.ACTIVE
-        self.description = f"Updates data for formnten {self.name}, which {self.description_}"
+        self.name = f"{self.name_}Update"
+        self.description = f"Updates data for form {self.name}, which {self.description_}"
         self.args_schema = make_optional_model(self.args_schema_)
         if not self.form:
             self.form = self.args_schema()
         elif isinstance(self.form, str):
             self.form = self.args_schema(**json.loads(self.form))
 
-    def set_filled_state(self):
+    def enter_filled_state(self):
         self.state = FormToolState.FILLED
+        self.name = f"{self.name_}Finalize"
         self.description = f"Finalizes form {self.name}, which {self.description_}"
         self.args_schema = make_optional_model(self.args_schema_)
         if not self.form:
@@ -137,7 +145,7 @@ class FormTool(StructuredTool, ABC):
         run_manager: Optional[CallbackManagerForToolRun] = None,
         **kwargs
     ) -> FormToolOutcome:
-        self.set_active_state()
+        self.enter_active_state()
         return FormToolOutcome(
             output=f"Starting form {self.name}. If the user as already provided some information, call {self.name}.",
             active_form_tool=self,
@@ -152,7 +160,7 @@ class FormTool(StructuredTool, ABC):
     ) -> FormToolOutcome:
         self._update_form(**kwargs)
         if self.is_form_filled():
-            self.set_filled_state()
+            self.enter_filled_state()
             if self.skip_confirm:
                 return self.finalize(confirm=True)
             else:
@@ -165,7 +173,7 @@ class FormTool(StructuredTool, ABC):
                 active_form_tool=self,
                 output="Form updated with the provided information. Ask the user for the next field."
             )
-    
+
     def finalize(
         self,
         *args,
@@ -182,7 +190,7 @@ class FormTool(StructuredTool, ABC):
                 return_direct=self.return_direct
             )
         else:
-            self.set_active_state()
+            self.enter_active_state()
             return FormToolOutcome(
                 active_form_tool=self,
                 output="Ask the user to update the form."
@@ -197,7 +205,7 @@ class FormTool(StructuredTool, ABC):
         match self.state:
             case FormToolState.INACTIVE:
                 return self.activate(*args, **kwargs, run_manager=run_manager)
-    
+
             case FormToolState.ACTIVE:
                 return self.update(*args, **kwargs, run_manager=run_manager)
 

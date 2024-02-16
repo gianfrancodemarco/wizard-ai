@@ -160,7 +160,7 @@ class FormAgentExecutor(StateGraph):
             traceback.print_exc()
             updates = {
                 "intermediate_steps": [(action, FunctionMessage(
-                    content=str(e),
+                    content=f"{type(e).__name__}: {str(e)}",
                     name=action.tool
                 ))],
                 "error": str(e)

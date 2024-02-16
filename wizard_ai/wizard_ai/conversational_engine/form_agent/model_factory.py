@@ -74,11 +74,15 @@ def information_to_collect_prompt_template(
 
 def ask_for_confirmation_prompt_template(
     form_tool: BaseTool
-):
+):    
+    information_collected = re.sub("}", "}}", re.sub("{", "{{", str(
+    {name: value for name, value in form_tool.form.__dict__.items() if value})))
+
     return SystemMessagePromptTemplate.from_template(dedent(
         f"""
         Help the user fill data for {form_tool.name}. You have all the information you need.
-        Show the user all of the information and ask for confirmation.
+        Show the user all of the information using bullet points and ask for confirmation:
+        {information_collected}
         If he agrees, call the {form_tool.name} tool one more time with confirm=True.
         If he doesn't or want to change something, call it with confirm=False.
         """
@@ -126,8 +130,6 @@ class ModelFactory:
     ):
 
         form_tool = state.get("active_form_tool")
-        information_collected = re.sub("}", "}}", re.sub("{", "{{", str(
-            {name: value for name, value in form_tool.form.__dict__.items() if value})))
 
         information_to_collect = form_tool.get_next_field_to_collect()
         if information_to_collect:
