@@ -1,5 +1,6 @@
 import pickle
 import textwrap
+from datetime import datetime
 from typing import Optional, Type
 
 from pydantic import BaseModel
@@ -7,7 +8,8 @@ from pydantic import BaseModel
 from wizard_ai.clients import (GetCalendarEventsPayload, GoogleClient,
                                get_redis_client)
 from wizard_ai.constants import RedisKeys
-from wizard_ai.conversational_engine.form_agent.form_tool import FormTool, FormToolState
+from wizard_ai.conversational_engine.form_agent.form_tool import (
+    FormTool, FormToolState)
 
 
 class GoogleCalendarRetriever(FormTool):
@@ -20,16 +22,21 @@ class GoogleCalendarRetriever(FormTool):
     skip_confirm = True
     chat_id: Optional[str] = None
 
-    def _run_when_complete(self) -> str:
+    def _run_when_complete(
+        self,
+        number_of_events: int,
+        start: datetime,
+        end: datetime
+    ) -> str:
         credentials = get_redis_client().hget(
             self.chat_id,
             RedisKeys.GOOGLE_CREDENTIALS.value
         )
         google_client = GoogleClient(pickle.loads(credentials))
         payload = GetCalendarEventsPayload(
-            start=self.form.start,
-            end=self.form.end,
-            number_of_events=self.form.number_of_events
+            number_of_events=number_of_events,
+            start=start,
+            end=end,
         )
         return google_client.get_calendar_events_html(payload)
 

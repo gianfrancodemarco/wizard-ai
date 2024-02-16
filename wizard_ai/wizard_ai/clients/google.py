@@ -14,7 +14,7 @@ from wizard_ai.helpers import HtmlProcessor
 
 REDIS_HOST = os.environ.get('REDIS_HOST')
 REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
-
+GET_FULL_CONTENT = True
 
 class CreateCalendarEventPayload(BaseModel):
 
@@ -167,7 +167,7 @@ class GoogleClient:
                            ['headers'] if header['name'] == 'Subject'), None)
 
             full_content = ''
-            GET_FULL_CONTENT = False
+            
             if GET_FULL_CONTENT:
                 # Check if the email is in multipart format
                 if 'multipart' in msg['payload']['mimeType']:
@@ -185,7 +185,7 @@ class GoogleClient:
                         msg['payload']['body']['data'].encode('UTF-8')).decode('UTF-8')
 
                 # Clear the full content
-                full_content = HtmlProcessor.clear_html(full_content)
+                # full_content = HtmlProcessor.clear_html(full_content)
             else:
                 full_content = msg['snippet']
 

@@ -7,8 +7,7 @@ from pydantic import BaseModel
 from wizard_ai.clients import GoogleClient, SendEmailPayload, get_redis_client
 from wizard_ai.constants import RedisKeys
 from wizard_ai.constants.redis_keys import RedisKeys
-from wizard_ai.conversational_engine.form_agent import (FormTool,
-                                                          FormToolState)
+from wizard_ai.conversational_engine.form_agent import FormTool, FormToolState
 
 
 class GmailSender(FormTool):
@@ -19,7 +18,12 @@ class GmailSender(FormTool):
 
     chat_id: Optional[str] = None
 
-    def _run_when_complete(self) -> str:
+    def _run_when_complete(
+        self,
+        to: str,
+        subject: str,
+        body: str
+    ) -> str:
         """Use the tool."""
 
         credentials = get_redis_client().hget(
@@ -30,9 +34,9 @@ class GmailSender(FormTool):
 
         google_client = GoogleClient(credentials)
         payload = SendEmailPayload(
-            body=self.form.body,
-            subject=self.form.subject,
-            to=self.form.to
+            body=body,
+            subject=subject,
+            to=to
         )
         return google_client.send_email(payload)
 

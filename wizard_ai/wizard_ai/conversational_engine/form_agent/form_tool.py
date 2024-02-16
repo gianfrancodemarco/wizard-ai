@@ -2,7 +2,7 @@ import json
 import operator
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import (Annotated, Any, Dict, Optional, Sequence, Type, TypedDict,
+from typing import (Annotated, Any, Dict, Optional, Type, TypedDict,
                     Union)
 
 from langchain.callbacks.manager import CallbackManagerForToolRun
@@ -173,7 +173,9 @@ class FormTool(StructuredTool, ABC):
         **kwargs
     ) -> FormToolOutcome:
         if kwargs.get("confirm"):
-            result = self._run_when_complete()
+            # The FormTool could use self.form to get the data, but we pass it as kwargs to 
+            # keep the signature consistent with _run
+            result = self._run_when_complete(**self.form.model_dump())
             return FormToolOutcome(
                 active_form_tool=None,
                 output=result,

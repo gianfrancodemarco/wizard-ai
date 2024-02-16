@@ -45,7 +45,13 @@ class GoogleCalendarCreator(FormTool):
     #     return "The event was created successfully"
 
     # Uncomment and change base class to use as FormTool
-    def _run_when_complete(self) -> str:
+    def _run_when_complete(
+        self,
+        summary: str,
+        description: str,
+        start: datetime,
+        end: datetime
+    ) -> str:
         """Use the tool."""
         credentials = get_redis_client().hget(
             self.chat_id,
@@ -53,10 +59,10 @@ class GoogleCalendarCreator(FormTool):
         )
         google_client = GoogleClient(pickle.loads(credentials))
         payload = CreateCalendarEventPayload(
-            summary=self.form.summary,
-            description=self.form.description,
-            start=self.form.start,
-            end=self.form.end
+            summary=summary,
+            description=description,
+            start=start,
+            end=end
         )
         google_client.create_calendar_event(payload)
         return "The event was created successfully"
