@@ -1,41 +1,1682 @@
 [
     {
         "id": 0,
-        "prompt": "\n\nYou are impersonating a user testing an AI system.\nYour job is to use the AI system to purchase an item.\nThe data necessary to purchase an item is the following:\n\n    {'item': 'Book', 'ebook': True, 'quantity': None, 'region': None, 'province': None, 'address': None}\n\n    Give all the data necessary to the AI in the first message.\n\n\nUser:        \n\n",
-        "tool": "OnlinePurchase",
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Page two price lose.\ndescription: Television understand police get sign fish raise. Fine sort forward cup source. Approach wait hand.\nSeveral ability present.\nstart: 2024-02-03 03:46:00\nend: 2024-02-05 05:33:00\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
         "payload": {
-            "item": "Book",
-            "ebook": true,
-            "quantity": null,
-            "region": null,
-            "province": null,
-            "address": null
+            "summary": "Page two price lose.",
+            "description": "Television understand police get sign fish raise. Fine sort forward cup source. Approach wait hand.\nSeveral ability present.",
+            "start": "2024-02-03 03:46:00",
+            "end": "2024-02-05 05:33:00"
         }
     },
     {
         "id": 1,
-        "prompt": "\n\nYou are impersonating a user testing an AI system.\nYour job is to use the AI system to purchase an item.\nThe data necessary to purchase an item is the following:\n\n    {'item': 'Shoes', 'ebook': None, 'quantity': 1, 'region': 'Toscana', 'province': 'Siena', 'address': '3740 Justin Plaza\\nRonnieborough, OK 73107'}\n\n    Give all the data necessary to the AI in the first message.\n\n\nUser:        \n\n",
-        "tool": "OnlinePurchase",
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Page two price lose.\ndescription: Television understand police get sign fish raise. Fine sort forward cup source. Approach wait hand.\nSeveral ability present.\nstart: 2024-02-03 03:46:00\nend: 2024-02-05 05:33:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
         "payload": {
-            "item": "Shoes",
-            "ebook": null,
-            "quantity": 1,
-            "region": "Toscana",
-            "province": "Siena",
-            "address": "3740 Justin Plaza\nRonnieborough, OK 73107"
+            "summary": "Page two price lose.",
+            "description": "Television understand police get sign fish raise. Fine sort forward cup source. Approach wait hand.\nSeveral ability present.",
+            "start": "2024-02-03 03:46:00",
+            "end": "2024-02-05 05:33:00"
         }
     },
     {
         "id": 2,
-        "prompt": "\n\nYou are impersonating a user testing an AI system.\nYour job is to use the AI system to purchase an item.\nThe data necessary to purchase an item is the following:\n\n    {'item': 'Book', 'ebook': False, 'quantity': 5, 'region': 'Toscana', 'province': 'Arezzo', 'address': '55385 Taylor Walk\\nRichardfurt, IL 75907'}\n\n    Give all the data necessary to the AI in the first message.\n\n\nUser:        \n\n",
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Page two price lose.\ndescription: Television understand police get sign fish raise. Fine sort forward cup source. Approach wait hand.\nSeveral ability present.\nstart: 2024-02-03 03:46:00\nend: 2024-02-05 05:33:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Page two price lose.",
+            "description": "Television understand police get sign fish raise. Fine sort forward cup source. Approach wait hand.\nSeveral ability present.",
+            "start": "2024-02-03 03:46:00",
+            "end": "2024-02-05 05:33:00"
+        }
+    },
+    {
+        "id": 3,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Court one stop rock child.\ndescription: Good or national quality every positive stand. Beautiful wife next same science with.\nYoung keep senior rock these I.\nstart: 2024-02-15 23:33:00\nend: 2024-02-20 02:16:00\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Court one stop rock child.",
+            "description": "Good or national quality every positive stand. Beautiful wife next same science with.\nYoung keep senior rock these I.",
+            "start": "2024-02-15 23:33:00",
+            "end": "2024-02-20 02:16:00"
+        }
+    },
+    {
+        "id": 4,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Court one stop rock child.\ndescription: Good or national quality every positive stand. Beautiful wife next same science with.\nYoung keep senior rock these I.\nstart: 2024-02-15 23:33:00\nend: 2024-02-20 02:16:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Court one stop rock child.",
+            "description": "Good or national quality every positive stand. Beautiful wife next same science with.\nYoung keep senior rock these I.",
+            "start": "2024-02-15 23:33:00",
+            "end": "2024-02-20 02:16:00"
+        }
+    },
+    {
+        "id": 5,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Court one stop rock child.\ndescription: Good or national quality every positive stand. Beautiful wife next same science with.\nYoung keep senior rock these I.\nstart: 2024-02-15 23:33:00\nend: 2024-02-20 02:16:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Court one stop rock child.",
+            "description": "Good or national quality every positive stand. Beautiful wife next same science with.\nYoung keep senior rock these I.",
+            "start": "2024-02-15 23:33:00",
+            "end": "2024-02-20 02:16:00"
+        }
+    },
+    {
+        "id": 6,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Should memory step.\ndescription: Side receive agent official science material. Five claim stop item speech large whatever.\nstart: 2024-02-20 04:15:00\nend: 2024-02-23 07:35:00\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Should memory step.",
+            "description": "Side receive agent official science material. Five claim stop item speech large whatever.",
+            "start": "2024-02-20 04:15:00",
+            "end": "2024-02-23 07:35:00"
+        }
+    },
+    {
+        "id": 7,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Should memory step.\ndescription: Side receive agent official science material. Five claim stop item speech large whatever.\nstart: 2024-02-20 04:15:00\nend: 2024-02-23 07:35:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Should memory step.",
+            "description": "Side receive agent official science material. Five claim stop item speech large whatever.",
+            "start": "2024-02-20 04:15:00",
+            "end": "2024-02-23 07:35:00"
+        }
+    },
+    {
+        "id": 8,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Should memory step.\ndescription: Side receive agent official science material. Five claim stop item speech large whatever.\nstart: 2024-02-20 04:15:00\nend: 2024-02-23 07:35:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Should memory step.",
+            "description": "Side receive agent official science material. Five claim stop item speech large whatever.",
+            "start": "2024-02-20 04:15:00",
+            "end": "2024-02-23 07:35:00"
+        }
+    },
+    {
+        "id": 9,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Safe follow own eat.\ndescription: Officer approach analysis morning. Media political toward participant stay.\nReady protect describe whether claim. Remain teach information put public deal table.\nstart: 2024-02-17 17:48:00\nend: 2024-02-24 21:32:00\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Safe follow own eat.",
+            "description": "Officer approach analysis morning. Media political toward participant stay.\nReady protect describe whether claim. Remain teach information put public deal table.",
+            "start": "2024-02-17 17:48:00",
+            "end": "2024-02-24 21:32:00"
+        }
+    },
+    {
+        "id": 10,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Safe follow own eat.\ndescription: Officer approach analysis morning. Media political toward participant stay.\nReady protect describe whether claim. Remain teach information put public deal table.\nstart: 2024-02-17 17:48:00\nend: 2024-02-24 21:32:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Safe follow own eat.",
+            "description": "Officer approach analysis morning. Media political toward participant stay.\nReady protect describe whether claim. Remain teach information put public deal table.",
+            "start": "2024-02-17 17:48:00",
+            "end": "2024-02-24 21:32:00"
+        }
+    },
+    {
+        "id": 11,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Safe follow own eat.\ndescription: Officer approach analysis morning. Media political toward participant stay.\nReady protect describe whether claim. Remain teach information put public deal table.\nstart: 2024-02-17 17:48:00\nend: 2024-02-24 21:32:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Safe follow own eat.",
+            "description": "Officer approach analysis morning. Media political toward participant stay.\nReady protect describe whether claim. Remain teach information put public deal table.",
+            "start": "2024-02-17 17:48:00",
+            "end": "2024-02-24 21:32:00"
+        }
+    },
+    {
+        "id": 12,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Source newspaper word.\ndescription: Treatment listen positive activity. Store thought trial everything key kitchen per report. Remember yeah try. Carry rock politics whom pull stand talk near.\nstart: 2024-02-10 02:21:00\nend: 2024-02-12 06:11:00\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Source newspaper word.",
+            "description": "Treatment listen positive activity. Store thought trial everything key kitchen per report. Remember yeah try. Carry rock politics whom pull stand talk near.",
+            "start": "2024-02-10 02:21:00",
+            "end": "2024-02-12 06:11:00"
+        }
+    },
+    {
+        "id": 13,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Source newspaper word.\ndescription: Treatment listen positive activity. Store thought trial everything key kitchen per report. Remember yeah try. Carry rock politics whom pull stand talk near.\nstart: 2024-02-10 02:21:00\nend: 2024-02-12 06:11:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Source newspaper word.",
+            "description": "Treatment listen positive activity. Store thought trial everything key kitchen per report. Remember yeah try. Carry rock politics whom pull stand talk near.",
+            "start": "2024-02-10 02:21:00",
+            "end": "2024-02-12 06:11:00"
+        }
+    },
+    {
+        "id": 14,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Source newspaper word.\ndescription: Treatment listen positive activity. Store thought trial everything key kitchen per report. Remember yeah try. Carry rock politics whom pull stand talk near.\nstart: 2024-02-10 02:21:00\nend: 2024-02-12 06:11:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Source newspaper word.",
+            "description": "Treatment listen positive activity. Store thought trial everything key kitchen per report. Remember yeah try. Carry rock politics whom pull stand talk near.",
+            "start": "2024-02-10 02:21:00",
+            "end": "2024-02-12 06:11:00"
+        }
+    },
+    {
+        "id": 15,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Task once show.\ndescription: Country try eight approach. Understand easy everything language standard various court.\nPerson happen expert too report face whom. Half decade suggest no sound. Rich catch seat later.\nstart: 2024-02-13 00:36:00\nend: 2024-02-16 01:53:00\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Task once show.",
+            "description": "Country try eight approach. Understand easy everything language standard various court.\nPerson happen expert too report face whom. Half decade suggest no sound. Rich catch seat later.",
+            "start": "2024-02-13 00:36:00",
+            "end": "2024-02-16 01:53:00"
+        }
+    },
+    {
+        "id": 16,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Task once show.\ndescription: Country try eight approach. Understand easy everything language standard various court.\nPerson happen expert too report face whom. Half decade suggest no sound. Rich catch seat later.\nstart: 2024-02-13 00:36:00\nend: 2024-02-16 01:53:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Task once show.",
+            "description": "Country try eight approach. Understand easy everything language standard various court.\nPerson happen expert too report face whom. Half decade suggest no sound. Rich catch seat later.",
+            "start": "2024-02-13 00:36:00",
+            "end": "2024-02-16 01:53:00"
+        }
+    },
+    {
+        "id": 17,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Task once show.\ndescription: Country try eight approach. Understand easy everything language standard various court.\nPerson happen expert too report face whom. Half decade suggest no sound. Rich catch seat later.\nstart: 2024-02-13 00:36:00\nend: 2024-02-16 01:53:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Task once show.",
+            "description": "Country try eight approach. Understand easy everything language standard various court.\nPerson happen expert too report face whom. Half decade suggest no sound. Rich catch seat later.",
+            "start": "2024-02-13 00:36:00",
+            "end": "2024-02-16 01:53:00"
+        }
+    },
+    {
+        "id": 18,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: That beautiful woman born.\ndescription: Sure why care information south. Chair executive dog.\nPurpose dinner until area. Federal radio interview tax authority though.\nstart: 2024-02-22 05:55:00\nend: 2024-02-24 07:46:00\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "That beautiful woman born.",
+            "description": "Sure why care information south. Chair executive dog.\nPurpose dinner until area. Federal radio interview tax authority though.",
+            "start": "2024-02-22 05:55:00",
+            "end": "2024-02-24 07:46:00"
+        }
+    },
+    {
+        "id": 19,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: That beautiful woman born.\ndescription: Sure why care information south. Chair executive dog.\nPurpose dinner until area. Federal radio interview tax authority though.\nstart: 2024-02-22 05:55:00\nend: 2024-02-24 07:46:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "That beautiful woman born.",
+            "description": "Sure why care information south. Chair executive dog.\nPurpose dinner until area. Federal radio interview tax authority though.",
+            "start": "2024-02-22 05:55:00",
+            "end": "2024-02-24 07:46:00"
+        }
+    },
+    {
+        "id": 20,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: That beautiful woman born.\ndescription: Sure why care information south. Chair executive dog.\nPurpose dinner until area. Federal radio interview tax authority though.\nstart: 2024-02-22 05:55:00\nend: 2024-02-24 07:46:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "That beautiful woman born.",
+            "description": "Sure why care information south. Chair executive dog.\nPurpose dinner until area. Federal radio interview tax authority though.",
+            "start": "2024-02-22 05:55:00",
+            "end": "2024-02-24 07:46:00"
+        }
+    },
+    {
+        "id": 21,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Issue source include heart.\ndescription: Task common each carry care business. Story space money note figure opportunity art. Those serve before leave. Eight notice type set member mission.\nstart: 2024-02-15 08:17:00\nend: 2024-02-22 10:47:00\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Issue source include heart.",
+            "description": "Task common each carry care business. Story space money note figure opportunity art. Those serve before leave. Eight notice type set member mission.",
+            "start": "2024-02-15 08:17:00",
+            "end": "2024-02-22 10:47:00"
+        }
+    },
+    {
+        "id": 22,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Issue source include heart.\ndescription: Task common each carry care business. Story space money note figure opportunity art. Those serve before leave. Eight notice type set member mission.\nstart: 2024-02-15 08:17:00\nend: 2024-02-22 10:47:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Issue source include heart.",
+            "description": "Task common each carry care business. Story space money note figure opportunity art. Those serve before leave. Eight notice type set member mission.",
+            "start": "2024-02-15 08:17:00",
+            "end": "2024-02-22 10:47:00"
+        }
+    },
+    {
+        "id": 23,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Issue source include heart.\ndescription: Task common each carry care business. Story space money note figure opportunity art. Those serve before leave. Eight notice type set member mission.\nstart: 2024-02-15 08:17:00\nend: 2024-02-22 10:47:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Issue source include heart.",
+            "description": "Task common each carry care business. Story space money note figure opportunity art. Those serve before leave. Eight notice type set member mission.",
+            "start": "2024-02-15 08:17:00",
+            "end": "2024-02-22 10:47:00"
+        }
+    },
+    {
+        "id": 24,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Action then take TV.\ndescription: Green health green. Population back such on shake. What woman Mrs affect.\nEspecially fill whatever. Drop process month important.\nClaim which class politics. Often data us defense focus yet writer.\nstart: 2024-02-05 18:12:00\nend: 2024-02-07 20:04:00\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Action then take TV.",
+            "description": "Green health green. Population back such on shake. What woman Mrs affect.\nEspecially fill whatever. Drop process month important.\nClaim which class politics. Often data us defense focus yet writer.",
+            "start": "2024-02-05 18:12:00",
+            "end": "2024-02-07 20:04:00"
+        }
+    },
+    {
+        "id": 25,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Action then take TV.\ndescription: Green health green. Population back such on shake. What woman Mrs affect.\nEspecially fill whatever. Drop process month important.\nClaim which class politics. Often data us defense focus yet writer.\nstart: 2024-02-05 18:12:00\nend: 2024-02-07 20:04:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Action then take TV.",
+            "description": "Green health green. Population back such on shake. What woman Mrs affect.\nEspecially fill whatever. Drop process month important.\nClaim which class politics. Often data us defense focus yet writer.",
+            "start": "2024-02-05 18:12:00",
+            "end": "2024-02-07 20:04:00"
+        }
+    },
+    {
+        "id": 26,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: Action then take TV.\ndescription: Green health green. Population back such on shake. What woman Mrs affect.\nEspecially fill whatever. Drop process month important.\nClaim which class politics. Often data us defense focus yet writer.\nstart: 2024-02-05 18:12:00\nend: 2024-02-07 20:04:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "Action then take TV.",
+            "description": "Green health green. Population back such on shake. What woman Mrs affect.\nEspecially fill whatever. Drop process month important.\nClaim which class politics. Often data us defense focus yet writer.",
+            "start": "2024-02-05 18:12:00",
+            "end": "2024-02-07 20:04:00"
+        }
+    },
+    {
+        "id": 27,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: When series these among.\ndescription: Control drop once water machine series one. Rest artist theory.\nMiss improve pull poor.\nCampaign than notice author new million prevent.\nstart: 2024-02-15 16:04:00\nend: 2024-02-19 19:35:00\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "When series these among.",
+            "description": "Control drop once water machine series one. Rest artist theory.\nMiss improve pull poor.\nCampaign than notice author new million prevent.",
+            "start": "2024-02-15 16:04:00",
+            "end": "2024-02-19 19:35:00"
+        }
+    },
+    {
+        "id": 28,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: When series these among.\ndescription: Control drop once water machine series one. Rest artist theory.\nMiss improve pull poor.\nCampaign than notice author new million prevent.\nstart: 2024-02-15 16:04:00\nend: 2024-02-19 19:35:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "When series these among.",
+            "description": "Control drop once water machine series one. Rest artist theory.\nMiss improve pull poor.\nCampaign than notice author new million prevent.",
+            "start": "2024-02-15 16:04:00",
+            "end": "2024-02-19 19:35:00"
+        }
+    },
+    {
+        "id": 29,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to create an event on Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to create an event on Google Calendar is the following:\nsummary: When series these among.\ndescription: Control drop once water machine series one. Rest artist theory.\nMiss improve pull poor.\nCampaign than notice author new million prevent.\nstart: 2024-02-15 16:04:00\nend: 2024-02-19 19:35:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarCreator",
+        "payload": {
+            "summary": "When series these among.",
+            "description": "Control drop once water machine series one. Rest artist theory.\nMiss improve pull poor.\nCampaign than notice author new million prevent.",
+            "start": "2024-02-15 16:04:00",
+            "end": "2024-02-19 19:35:00"
+        }
+    },
+    {
+        "id": 30,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-18 14:06:00\nend: 2024-02-23 16:06:00\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-18 14:06:00",
+            "end": "2024-02-23 16:06:00"
+        }
+    },
+    {
+        "id": 31,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-18 14:06:00\nend: 2024-02-23 16:06:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-18 14:06:00",
+            "end": "2024-02-23 16:06:00"
+        }
+    },
+    {
+        "id": 32,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-18 14:06:00\nend: 2024-02-23 16:06:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-18 14:06:00",
+            "end": "2024-02-23 16:06:00"
+        }
+    },
+    {
+        "id": 33,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-22 16:04:00\nend: 2024-02-28 18:52:00\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-22 16:04:00",
+            "end": "2024-02-28 18:52:00"
+        }
+    },
+    {
+        "id": 34,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-22 16:04:00\nend: 2024-02-28 18:52:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-22 16:04:00",
+            "end": "2024-02-28 18:52:00"
+        }
+    },
+    {
+        "id": 35,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-22 16:04:00\nend: 2024-02-28 18:52:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-22 16:04:00",
+            "end": "2024-02-28 18:52:00"
+        }
+    },
+    {
+        "id": 36,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-03 06:37:00\nend: 2024-02-04 10:25:00\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-03 06:37:00",
+            "end": "2024-02-04 10:25:00"
+        }
+    },
+    {
+        "id": 37,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-03 06:37:00\nend: 2024-02-04 10:25:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-03 06:37:00",
+            "end": "2024-02-04 10:25:00"
+        }
+    },
+    {
+        "id": 38,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-03 06:37:00\nend: 2024-02-04 10:25:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-03 06:37:00",
+            "end": "2024-02-04 10:25:00"
+        }
+    },
+    {
+        "id": 39,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-06 13:38:00\nend: 2024-02-10 14:56:00\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-06 13:38:00",
+            "end": "2024-02-10 14:56:00"
+        }
+    },
+    {
+        "id": 40,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-06 13:38:00\nend: 2024-02-10 14:56:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-06 13:38:00",
+            "end": "2024-02-10 14:56:00"
+        }
+    },
+    {
+        "id": 41,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-06 13:38:00\nend: 2024-02-10 14:56:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-06 13:38:00",
+            "end": "2024-02-10 14:56:00"
+        }
+    },
+    {
+        "id": 42,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-22 00:23:00\nend: 2024-02-28 03:57:00\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-22 00:23:00",
+            "end": "2024-02-28 03:57:00"
+        }
+    },
+    {
+        "id": 43,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-22 00:23:00\nend: 2024-02-28 03:57:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-22 00:23:00",
+            "end": "2024-02-28 03:57:00"
+        }
+    },
+    {
+        "id": 44,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-22 00:23:00\nend: 2024-02-28 03:57:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-22 00:23:00",
+            "end": "2024-02-28 03:57:00"
+        }
+    },
+    {
+        "id": 45,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-19 04:06:00\nend: 2024-02-25 07:35:00\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-19 04:06:00",
+            "end": "2024-02-25 07:35:00"
+        }
+    },
+    {
+        "id": 46,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-19 04:06:00\nend: 2024-02-25 07:35:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-19 04:06:00",
+            "end": "2024-02-25 07:35:00"
+        }
+    },
+    {
+        "id": 47,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-19 04:06:00\nend: 2024-02-25 07:35:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-19 04:06:00",
+            "end": "2024-02-25 07:35:00"
+        }
+    },
+    {
+        "id": 48,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-21 10:02:00\nend: 2024-02-27 11:36:00\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-21 10:02:00",
+            "end": "2024-02-27 11:36:00"
+        }
+    },
+    {
+        "id": 49,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-21 10:02:00\nend: 2024-02-27 11:36:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-21 10:02:00",
+            "end": "2024-02-27 11:36:00"
+        }
+    },
+    {
+        "id": 50,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-21 10:02:00\nend: 2024-02-27 11:36:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-21 10:02:00",
+            "end": "2024-02-27 11:36:00"
+        }
+    },
+    {
+        "id": 51,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-18 16:26:00\nend: 2024-02-23 19:41:00\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-18 16:26:00",
+            "end": "2024-02-23 19:41:00"
+        }
+    },
+    {
+        "id": 52,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-18 16:26:00\nend: 2024-02-23 19:41:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-18 16:26:00",
+            "end": "2024-02-23 19:41:00"
+        }
+    },
+    {
+        "id": 53,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-18 16:26:00\nend: 2024-02-23 19:41:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-18 16:26:00",
+            "end": "2024-02-23 19:41:00"
+        }
+    },
+    {
+        "id": 54,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-10 03:28:00\nend: 2024-02-11 05:54:00\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-10 03:28:00",
+            "end": "2024-02-11 05:54:00"
+        }
+    },
+    {
+        "id": 55,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-10 03:28:00\nend: 2024-02-11 05:54:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-10 03:28:00",
+            "end": "2024-02-11 05:54:00"
+        }
+    },
+    {
+        "id": 56,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-10 03:28:00\nend: 2024-02-11 05:54:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-10 03:28:00",
+            "end": "2024-02-11 05:54:00"
+        }
+    },
+    {
+        "id": 57,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-07 12:15:00\nend: 2024-02-12 14:53:00\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-07 12:15:00",
+            "end": "2024-02-12 14:53:00"
+        }
+    },
+    {
+        "id": 58,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-07 12:15:00\nend: 2024-02-12 14:53:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-07 12:15:00",
+            "end": "2024-02-12 14:53:00"
+        }
+    },
+    {
+        "id": 59,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve events from Google Calendar.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve events from Google Calendar is the following:\nstart: 2024-02-07 12:15:00\nend: 2024-02-12 14:53:00\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GoogleCalendarRetriever",
+        "payload": {
+            "start": "2024-02-07 12:15:00",
+            "end": "2024-02-12 14:53:00"
+        }
+    },
+    {
+        "id": 60,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: jamesguzman@example.net\nsubject: Them cost ability student key design human. Clear action sport opportunity author might who. Admit condition back pass majority pattern.\nbody: Least indicate similar effort physical over. Turn this could back. We marriage land.\nExpert simply yet air. Science lay home their call head. Add hear institution but century area.\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "jamesguzman@example.net",
+            "subject": "Them cost ability student key design human. Clear action sport opportunity author might who. Admit condition back pass majority pattern.",
+            "body": "Least indicate similar effort physical over. Turn this could back. We marriage land.\nExpert simply yet air. Science lay home their call head. Add hear institution but century area."
+        }
+    },
+    {
+        "id": 61,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: jamesguzman@example.net\nsubject: Them cost ability student key design human. Clear action sport opportunity author might who. Admit condition back pass majority pattern.\nbody: Least indicate similar effort physical over. Turn this could back. We marriage land.\nExpert simply yet air. Science lay home their call head. Add hear institution but century area.\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "jamesguzman@example.net",
+            "subject": "Them cost ability student key design human. Clear action sport opportunity author might who. Admit condition back pass majority pattern.",
+            "body": "Least indicate similar effort physical over. Turn this could back. We marriage land.\nExpert simply yet air. Science lay home their call head. Add hear institution but century area."
+        }
+    },
+    {
+        "id": 62,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: jamesguzman@example.net\nsubject: Them cost ability student key design human. Clear action sport opportunity author might who. Admit condition back pass majority pattern.\nbody: Least indicate similar effort physical over. Turn this could back. We marriage land.\nExpert simply yet air. Science lay home their call head. Add hear institution but century area.\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "jamesguzman@example.net",
+            "subject": "Them cost ability student key design human. Clear action sport opportunity author might who. Admit condition back pass majority pattern.",
+            "body": "Least indicate similar effort physical over. Turn this could back. We marriage land.\nExpert simply yet air. Science lay home their call head. Add hear institution but century area."
+        }
+    },
+    {
+        "id": 63,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: kcarson@example.com\nsubject: Change those imagine skill make. Up scientist contain then.\nData cultural also finish care direction red energy. Increase game responsibility heart north idea.\nbody: Black official nature eight. State budget authority remember thing write unit public. Bag position hair.\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "kcarson@example.com",
+            "subject": "Change those imagine skill make. Up scientist contain then.\nData cultural also finish care direction red energy. Increase game responsibility heart north idea.",
+            "body": "Black official nature eight. State budget authority remember thing write unit public. Bag position hair."
+        }
+    },
+    {
+        "id": 64,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: kcarson@example.com\nsubject: Change those imagine skill make. Up scientist contain then.\nData cultural also finish care direction red energy. Increase game responsibility heart north idea.\nbody: Black official nature eight. State budget authority remember thing write unit public. Bag position hair.\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "kcarson@example.com",
+            "subject": "Change those imagine skill make. Up scientist contain then.\nData cultural also finish care direction red energy. Increase game responsibility heart north idea.",
+            "body": "Black official nature eight. State budget authority remember thing write unit public. Bag position hair."
+        }
+    },
+    {
+        "id": 65,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: kcarson@example.com\nsubject: Change those imagine skill make. Up scientist contain then.\nData cultural also finish care direction red energy. Increase game responsibility heart north idea.\nbody: Black official nature eight. State budget authority remember thing write unit public. Bag position hair.\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "kcarson@example.com",
+            "subject": "Change those imagine skill make. Up scientist contain then.\nData cultural also finish care direction red energy. Increase game responsibility heart north idea.",
+            "body": "Black official nature eight. State budget authority remember thing write unit public. Bag position hair."
+        }
+    },
+    {
+        "id": 66,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: william79@example.net\nsubject: Hundred along drive very against she hold.\nPrice agree weight job. Tonight concern yeah however major nice table. Let difference recognize against central in data technology.\nbody: Design also authority might program south need. Center meet someone above dark fear. Include debate go despite ask simply.\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "william79@example.net",
+            "subject": "Hundred along drive very against she hold.\nPrice agree weight job. Tonight concern yeah however major nice table. Let difference recognize against central in data technology.",
+            "body": "Design also authority might program south need. Center meet someone above dark fear. Include debate go despite ask simply."
+        }
+    },
+    {
+        "id": 67,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: william79@example.net\nsubject: Hundred along drive very against she hold.\nPrice agree weight job. Tonight concern yeah however major nice table. Let difference recognize against central in data technology.\nbody: Design also authority might program south need. Center meet someone above dark fear. Include debate go despite ask simply.\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "william79@example.net",
+            "subject": "Hundred along drive very against she hold.\nPrice agree weight job. Tonight concern yeah however major nice table. Let difference recognize against central in data technology.",
+            "body": "Design also authority might program south need. Center meet someone above dark fear. Include debate go despite ask simply."
+        }
+    },
+    {
+        "id": 68,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: william79@example.net\nsubject: Hundred along drive very against she hold.\nPrice agree weight job. Tonight concern yeah however major nice table. Let difference recognize against central in data technology.\nbody: Design also authority might program south need. Center meet someone above dark fear. Include debate go despite ask simply.\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "william79@example.net",
+            "subject": "Hundred along drive very against she hold.\nPrice agree weight job. Tonight concern yeah however major nice table. Let difference recognize against central in data technology.",
+            "body": "Design also authority might program south need. Center meet someone above dark fear. Include debate go despite ask simply."
+        }
+    },
+    {
+        "id": 69,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: stanleyadam@example.com\nsubject: Trade public up security social special middle. Alone kid near magazine. Would organization base thought benefit institution majority.\nbody: Keep wish value rate me whether. Right above place news citizen study.\nOfficer receive born no family customer on third. Memory article worry which image course may main. Test popular decide.\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "stanleyadam@example.com",
+            "subject": "Trade public up security social special middle. Alone kid near magazine. Would organization base thought benefit institution majority.",
+            "body": "Keep wish value rate me whether. Right above place news citizen study.\nOfficer receive born no family customer on third. Memory article worry which image course may main. Test popular decide."
+        }
+    },
+    {
+        "id": 70,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: stanleyadam@example.com\nsubject: Trade public up security social special middle. Alone kid near magazine. Would organization base thought benefit institution majority.\nbody: Keep wish value rate me whether. Right above place news citizen study.\nOfficer receive born no family customer on third. Memory article worry which image course may main. Test popular decide.\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "stanleyadam@example.com",
+            "subject": "Trade public up security social special middle. Alone kid near magazine. Would organization base thought benefit institution majority.",
+            "body": "Keep wish value rate me whether. Right above place news citizen study.\nOfficer receive born no family customer on third. Memory article worry which image course may main. Test popular decide."
+        }
+    },
+    {
+        "id": 71,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: stanleyadam@example.com\nsubject: Trade public up security social special middle. Alone kid near magazine. Would organization base thought benefit institution majority.\nbody: Keep wish value rate me whether. Right above place news citizen study.\nOfficer receive born no family customer on third. Memory article worry which image course may main. Test popular decide.\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "stanleyadam@example.com",
+            "subject": "Trade public up security social special middle. Alone kid near magazine. Would organization base thought benefit institution majority.",
+            "body": "Keep wish value rate me whether. Right above place news citizen study.\nOfficer receive born no family customer on third. Memory article worry which image course may main. Test popular decide."
+        }
+    },
+    {
+        "id": 72,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: teresayates@example.net\nsubject: Trade training memory baby writer available owner. List again tax instead carry Mr. Music tough avoid high him clearly all.\nGuess address meeting let can tend include.\nbody: Baby begin continue necessary do visit note. Create community citizen value push. Give season yard pick life direction.\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "teresayates@example.net",
+            "subject": "Trade training memory baby writer available owner. List again tax instead carry Mr. Music tough avoid high him clearly all.\nGuess address meeting let can tend include.",
+            "body": "Baby begin continue necessary do visit note. Create community citizen value push. Give season yard pick life direction."
+        }
+    },
+    {
+        "id": 73,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: teresayates@example.net\nsubject: Trade training memory baby writer available owner. List again tax instead carry Mr. Music tough avoid high him clearly all.\nGuess address meeting let can tend include.\nbody: Baby begin continue necessary do visit note. Create community citizen value push. Give season yard pick life direction.\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "teresayates@example.net",
+            "subject": "Trade training memory baby writer available owner. List again tax instead carry Mr. Music tough avoid high him clearly all.\nGuess address meeting let can tend include.",
+            "body": "Baby begin continue necessary do visit note. Create community citizen value push. Give season yard pick life direction."
+        }
+    },
+    {
+        "id": 74,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: teresayates@example.net\nsubject: Trade training memory baby writer available owner. List again tax instead carry Mr. Music tough avoid high him clearly all.\nGuess address meeting let can tend include.\nbody: Baby begin continue necessary do visit note. Create community citizen value push. Give season yard pick life direction.\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "teresayates@example.net",
+            "subject": "Trade training memory baby writer available owner. List again tax instead carry Mr. Music tough avoid high him clearly all.\nGuess address meeting let can tend include.",
+            "body": "Baby begin continue necessary do visit note. Create community citizen value push. Give season yard pick life direction."
+        }
+    },
+    {
+        "id": 75,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: vanessa75@example.net\nsubject: Peace ask weight population father carry.\nShort defense store improve however spring then. Race wait I chance new. Office ask strong return respond tonight participant. Feeling there still mission.\nbody: Every hand effort contain pressure minute later. Name style many western lead option vote because.\nI serious themselves.\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "vanessa75@example.net",
+            "subject": "Peace ask weight population father carry.\nShort defense store improve however spring then. Race wait I chance new. Office ask strong return respond tonight participant. Feeling there still mission.",
+            "body": "Every hand effort contain pressure minute later. Name style many western lead option vote because.\nI serious themselves."
+        }
+    },
+    {
+        "id": 76,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: vanessa75@example.net\nsubject: Peace ask weight population father carry.\nShort defense store improve however spring then. Race wait I chance new. Office ask strong return respond tonight participant. Feeling there still mission.\nbody: Every hand effort contain pressure minute later. Name style many western lead option vote because.\nI serious themselves.\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "vanessa75@example.net",
+            "subject": "Peace ask weight population father carry.\nShort defense store improve however spring then. Race wait I chance new. Office ask strong return respond tonight participant. Feeling there still mission.",
+            "body": "Every hand effort contain pressure minute later. Name style many western lead option vote because.\nI serious themselves."
+        }
+    },
+    {
+        "id": 77,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: vanessa75@example.net\nsubject: Peace ask weight population father carry.\nShort defense store improve however spring then. Race wait I chance new. Office ask strong return respond tonight participant. Feeling there still mission.\nbody: Every hand effort contain pressure minute later. Name style many western lead option vote because.\nI serious themselves.\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "vanessa75@example.net",
+            "subject": "Peace ask weight population father carry.\nShort defense store improve however spring then. Race wait I chance new. Office ask strong return respond tonight participant. Feeling there still mission.",
+            "body": "Every hand effort contain pressure minute later. Name style many western lead option vote because.\nI serious themselves."
+        }
+    },
+    {
+        "id": 78,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: stephanie51@example.net\nsubject: Stay but moment practice yeah owner until. Design represent education year.\nStudy toward Mr region Mrs white. Wife discuss next successful benefit chance. Add particularly begin house.\nbody: Right fast anything director stop stop. Newspaper admit difference future surface sign.\nTravel economy ahead course forget rate. Open dream live main personal alone religious. Civil citizen tonight.\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "stephanie51@example.net",
+            "subject": "Stay but moment practice yeah owner until. Design represent education year.\nStudy toward Mr region Mrs white. Wife discuss next successful benefit chance. Add particularly begin house.",
+            "body": "Right fast anything director stop stop. Newspaper admit difference future surface sign.\nTravel economy ahead course forget rate. Open dream live main personal alone religious. Civil citizen tonight."
+        }
+    },
+    {
+        "id": 79,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: stephanie51@example.net\nsubject: Stay but moment practice yeah owner until. Design represent education year.\nStudy toward Mr region Mrs white. Wife discuss next successful benefit chance. Add particularly begin house.\nbody: Right fast anything director stop stop. Newspaper admit difference future surface sign.\nTravel economy ahead course forget rate. Open dream live main personal alone religious. Civil citizen tonight.\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "stephanie51@example.net",
+            "subject": "Stay but moment practice yeah owner until. Design represent education year.\nStudy toward Mr region Mrs white. Wife discuss next successful benefit chance. Add particularly begin house.",
+            "body": "Right fast anything director stop stop. Newspaper admit difference future surface sign.\nTravel economy ahead course forget rate. Open dream live main personal alone religious. Civil citizen tonight."
+        }
+    },
+    {
+        "id": 80,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: stephanie51@example.net\nsubject: Stay but moment practice yeah owner until. Design represent education year.\nStudy toward Mr region Mrs white. Wife discuss next successful benefit chance. Add particularly begin house.\nbody: Right fast anything director stop stop. Newspaper admit difference future surface sign.\nTravel economy ahead course forget rate. Open dream live main personal alone religious. Civil citizen tonight.\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "stephanie51@example.net",
+            "subject": "Stay but moment practice yeah owner until. Design represent education year.\nStudy toward Mr region Mrs white. Wife discuss next successful benefit chance. Add particularly begin house.",
+            "body": "Right fast anything director stop stop. Newspaper admit difference future surface sign.\nTravel economy ahead course forget rate. Open dream live main personal alone religious. Civil citizen tonight."
+        }
+    },
+    {
+        "id": 81,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: laura82@example.com\nsubject: Baby pattern Mrs site doctor suddenly for. Despite usually wind brother of today mean. Eye cold hand almost. Present song production move south they.\nbody: Economic need summer thus allow of read gun. Prevent along reality available foot democratic.\nResult same resource catch subject. Personal start number wait recently feeling happen.\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "laura82@example.com",
+            "subject": "Baby pattern Mrs site doctor suddenly for. Despite usually wind brother of today mean. Eye cold hand almost. Present song production move south they.",
+            "body": "Economic need summer thus allow of read gun. Prevent along reality available foot democratic.\nResult same resource catch subject. Personal start number wait recently feeling happen."
+        }
+    },
+    {
+        "id": 82,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: laura82@example.com\nsubject: Baby pattern Mrs site doctor suddenly for. Despite usually wind brother of today mean. Eye cold hand almost. Present song production move south they.\nbody: Economic need summer thus allow of read gun. Prevent along reality available foot democratic.\nResult same resource catch subject. Personal start number wait recently feeling happen.\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "laura82@example.com",
+            "subject": "Baby pattern Mrs site doctor suddenly for. Despite usually wind brother of today mean. Eye cold hand almost. Present song production move south they.",
+            "body": "Economic need summer thus allow of read gun. Prevent along reality available foot democratic.\nResult same resource catch subject. Personal start number wait recently feeling happen."
+        }
+    },
+    {
+        "id": 83,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: laura82@example.com\nsubject: Baby pattern Mrs site doctor suddenly for. Despite usually wind brother of today mean. Eye cold hand almost. Present song production move south they.\nbody: Economic need summer thus allow of read gun. Prevent along reality available foot democratic.\nResult same resource catch subject. Personal start number wait recently feeling happen.\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "laura82@example.com",
+            "subject": "Baby pattern Mrs site doctor suddenly for. Despite usually wind brother of today mean. Eye cold hand almost. Present song production move south they.",
+            "body": "Economic need summer thus allow of read gun. Prevent along reality available foot democratic.\nResult same resource catch subject. Personal start number wait recently feeling happen."
+        }
+    },
+    {
+        "id": 84,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: kathleenavila@example.org\nsubject: Throughout material direction man citizen total. Stock today fire late.\nEasy should after. Marriage house affect bit box into.\nbody: But campaign all view economic. Little participant option meeting together husband see. Than expert pick.\nEarly hear later mean model in value.\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "kathleenavila@example.org",
+            "subject": "Throughout material direction man citizen total. Stock today fire late.\nEasy should after. Marriage house affect bit box into.",
+            "body": "But campaign all view economic. Little participant option meeting together husband see. Than expert pick.\nEarly hear later mean model in value."
+        }
+    },
+    {
+        "id": 85,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: kathleenavila@example.org\nsubject: Throughout material direction man citizen total. Stock today fire late.\nEasy should after. Marriage house affect bit box into.\nbody: But campaign all view economic. Little participant option meeting together husband see. Than expert pick.\nEarly hear later mean model in value.\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "kathleenavila@example.org",
+            "subject": "Throughout material direction man citizen total. Stock today fire late.\nEasy should after. Marriage house affect bit box into.",
+            "body": "But campaign all view economic. Little participant option meeting together husband see. Than expert pick.\nEarly hear later mean model in value."
+        }
+    },
+    {
+        "id": 86,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: kathleenavila@example.org\nsubject: Throughout material direction man citizen total. Stock today fire late.\nEasy should after. Marriage house affect bit box into.\nbody: But campaign all view economic. Little participant option meeting together husband see. Than expert pick.\nEarly hear later mean model in value.\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "kathleenavila@example.org",
+            "subject": "Throughout material direction man citizen total. Stock today fire late.\nEasy should after. Marriage house affect bit box into.",
+            "body": "But campaign all view economic. Little participant option meeting together husband see. Than expert pick.\nEarly hear later mean model in value."
+        }
+    },
+    {
+        "id": 87,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: xchambers@example.org\nsubject: Human population control. Factor always themselves issue. Read night station trade second meeting. Show either miss ten.\nbody: Sometimes degree above certain take couple child age. Past administration get avoid quality serious style. Young manage no seat.\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "xchambers@example.org",
+            "subject": "Human population control. Factor always themselves issue. Read night station trade second meeting. Show either miss ten.",
+            "body": "Sometimes degree above certain take couple child age. Past administration get avoid quality serious style. Young manage no seat."
+        }
+    },
+    {
+        "id": 88,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: xchambers@example.org\nsubject: Human population control. Factor always themselves issue. Read night station trade second meeting. Show either miss ten.\nbody: Sometimes degree above certain take couple child age. Past administration get avoid quality serious style. Young manage no seat.\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "xchambers@example.org",
+            "subject": "Human population control. Factor always themselves issue. Read night station trade second meeting. Show either miss ten.",
+            "body": "Sometimes degree above certain take couple child age. Past administration get avoid quality serious style. Young manage no seat."
+        }
+    },
+    {
+        "id": 89,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to send an email.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to send an email is the following:\nto: xchambers@example.org\nsubject: Human population control. Factor always themselves issue. Read night station trade second meeting. Show either miss ten.\nbody: Sometimes degree above certain take couple child age. Past administration get avoid quality serious style. Young manage no seat.\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GmailSender",
+        "payload": {
+            "to": "xchambers@example.org",
+            "subject": "Human population control. Factor always themselves issue. Read night station trade second meeting. Show either miss ten.",
+            "body": "Sometimes degree above certain take couple child age. Past administration get avoid quality serious style. Young manage no seat."
+        }
+    },
+    {
+        "id": 90,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 3\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 3
+        }
+    },
+    {
+        "id": 91,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 3\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 3
+        }
+    },
+    {
+        "id": 92,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 3\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 3
+        }
+    },
+    {
+        "id": 93,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 5\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 5
+        }
+    },
+    {
+        "id": 94,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 5\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 5
+        }
+    },
+    {
+        "id": 95,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 5\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 5
+        }
+    },
+    {
+        "id": 96,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 4\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 4
+        }
+    },
+    {
+        "id": 97,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 4\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 4
+        }
+    },
+    {
+        "id": 98,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 4\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 4
+        }
+    },
+    {
+        "id": 99,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 3\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 3
+        }
+    },
+    {
+        "id": 100,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 3\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 3
+        }
+    },
+    {
+        "id": 101,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 3\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 3
+        }
+    },
+    {
+        "id": 102,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 6\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 6
+        }
+    },
+    {
+        "id": 103,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 6\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 6
+        }
+    },
+    {
+        "id": 104,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 6\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 6
+        }
+    },
+    {
+        "id": 105,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 1\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 1
+        }
+    },
+    {
+        "id": 106,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 1\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 1
+        }
+    },
+    {
+        "id": 107,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 1\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 1
+        }
+    },
+    {
+        "id": 108,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 1\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 1
+        }
+    },
+    {
+        "id": 109,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 1\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 1
+        }
+    },
+    {
+        "id": 110,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 1\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 1
+        }
+    },
+    {
+        "id": 111,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 2\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 2
+        }
+    },
+    {
+        "id": 112,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 2\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 2
+        }
+    },
+    {
+        "id": 113,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 2\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 2
+        }
+    },
+    {
+        "id": 114,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 10\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 10
+        }
+    },
+    {
+        "id": 115,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 10\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 10
+        }
+    },
+    {
+        "id": 116,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 10\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 10
+        }
+    },
+    {
+        "id": 117,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 8\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 8
+        }
+    },
+    {
+        "id": 118,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 8\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 8
+        }
+    },
+    {
+        "id": 119,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to retrieve emails.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to retrieve emails is the following:\nnumber_of_emails: 8\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "GmailRetriever",
+        "payload": {
+            "number_of_emails": 8
+        }
+    },
+    {
+        "id": 120,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: shoes\nquantity: 7\nregion: sicilia\nprovince: enna\naddress: USCGC Hughes\nFPO AP 02418\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
         "tool": "OnlinePurchase",
         "payload": {
-            "item": "Book",
+            "item": "shoes",
+            "ebook": null,
+            "quantity": 7,
+            "region": "sicilia",
+            "province": "enna",
+            "address": "USCGC Hughes\nFPO AP 02418"
+        }
+    },
+    {
+        "id": 121,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: shoes\nquantity: 7\nregion: sicilia\nprovince: enna\naddress: USCGC Hughes\nFPO AP 02418\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "shoes",
+            "ebook": null,
+            "quantity": 7,
+            "region": "sicilia",
+            "province": "enna",
+            "address": "USCGC Hughes\nFPO AP 02418"
+        }
+    },
+    {
+        "id": 122,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: shoes\nquantity: 7\nregion: sicilia\nprovince: enna\naddress: USCGC Hughes\nFPO AP 02418\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "shoes",
+            "ebook": null,
+            "quantity": 7,
+            "region": "sicilia",
+            "province": "enna",
+            "address": "USCGC Hughes\nFPO AP 02418"
+        }
+    },
+    {
+        "id": 123,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: shoes\nquantity: 3\nregion: puglia\nprovince: foggia\naddress: 891 Pamela Estate Apt. 416\nMichaelshire, OR 61589\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "shoes",
+            "ebook": null,
+            "quantity": 3,
+            "region": "puglia",
+            "province": "foggia",
+            "address": "891 Pamela Estate Apt. 416\nMichaelshire, OR 61589"
+        }
+    },
+    {
+        "id": 124,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: shoes\nquantity: 3\nregion: puglia\nprovince: foggia\naddress: 891 Pamela Estate Apt. 416\nMichaelshire, OR 61589\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "shoes",
+            "ebook": null,
+            "quantity": 3,
+            "region": "puglia",
+            "province": "foggia",
+            "address": "891 Pamela Estate Apt. 416\nMichaelshire, OR 61589"
+        }
+    },
+    {
+        "id": 125,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: shoes\nquantity: 3\nregion: puglia\nprovince: foggia\naddress: 891 Pamela Estate Apt. 416\nMichaelshire, OR 61589\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "shoes",
+            "ebook": null,
+            "quantity": 3,
+            "region": "puglia",
+            "province": "foggia",
+            "address": "891 Pamela Estate Apt. 416\nMichaelshire, OR 61589"
+        }
+    },
+    {
+        "id": 126,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: book\nquantity: 10\nregion: puglia\nprovince: foggia\naddress: 4862 Allen Mount Suite 374\nEast Samantha, VT 40230\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "book",
             "ebook": false,
-            "quantity": 5,
-            "region": "Toscana",
-            "province": "Arezzo",
-            "address": "55385 Taylor Walk\nRichardfurt, IL 75907"
+            "quantity": 10,
+            "region": "puglia",
+            "province": "foggia",
+            "address": "4862 Allen Mount Suite 374\nEast Samantha, VT 40230"
+        }
+    },
+    {
+        "id": 127,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: book\nquantity: 10\nregion: puglia\nprovince: foggia\naddress: 4862 Allen Mount Suite 374\nEast Samantha, VT 40230\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "book",
+            "ebook": false,
+            "quantity": 10,
+            "region": "puglia",
+            "province": "foggia",
+            "address": "4862 Allen Mount Suite 374\nEast Samantha, VT 40230"
+        }
+    },
+    {
+        "id": 128,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: book\nquantity: 10\nregion: puglia\nprovince: foggia\naddress: 4862 Allen Mount Suite 374\nEast Samantha, VT 40230\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "book",
+            "ebook": false,
+            "quantity": 10,
+            "region": "puglia",
+            "province": "foggia",
+            "address": "4862 Allen Mount Suite 374\nEast Samantha, VT 40230"
+        }
+    },
+    {
+        "id": 129,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: watch\nquantity: 3\nregion: toscana\nprovince: lucca\naddress: 5103 Bonnie Villages\nLake Leslie, VA 47966\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "watch",
+            "ebook": null,
+            "quantity": 3,
+            "region": "toscana",
+            "province": "lucca",
+            "address": "5103 Bonnie Villages\nLake Leslie, VA 47966"
+        }
+    },
+    {
+        "id": 130,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: watch\nquantity: 3\nregion: toscana\nprovince: lucca\naddress: 5103 Bonnie Villages\nLake Leslie, VA 47966\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "watch",
+            "ebook": null,
+            "quantity": 3,
+            "region": "toscana",
+            "province": "lucca",
+            "address": "5103 Bonnie Villages\nLake Leslie, VA 47966"
+        }
+    },
+    {
+        "id": 131,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: watch\nquantity: 3\nregion: toscana\nprovince: lucca\naddress: 5103 Bonnie Villages\nLake Leslie, VA 47966\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "watch",
+            "ebook": null,
+            "quantity": 3,
+            "region": "toscana",
+            "province": "lucca",
+            "address": "5103 Bonnie Villages\nLake Leslie, VA 47966"
+        }
+    },
+    {
+        "id": 132,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: shoes\nquantity: 6\nregion: puglia\nprovince: foggia\naddress: 1945 Thomas Throughway Suite 534\nPort Jeffery, UT 95987\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "shoes",
+            "ebook": null,
+            "quantity": 6,
+            "region": "puglia",
+            "province": "foggia",
+            "address": "1945 Thomas Throughway Suite 534\nPort Jeffery, UT 95987"
+        }
+    },
+    {
+        "id": 133,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: shoes\nquantity: 6\nregion: puglia\nprovince: foggia\naddress: 1945 Thomas Throughway Suite 534\nPort Jeffery, UT 95987\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "shoes",
+            "ebook": null,
+            "quantity": 6,
+            "region": "puglia",
+            "province": "foggia",
+            "address": "1945 Thomas Throughway Suite 534\nPort Jeffery, UT 95987"
+        }
+    },
+    {
+        "id": 134,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: shoes\nquantity: 6\nregion: puglia\nprovince: foggia\naddress: 1945 Thomas Throughway Suite 534\nPort Jeffery, UT 95987\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "shoes",
+            "ebook": null,
+            "quantity": 6,
+            "region": "puglia",
+            "province": "foggia",
+            "address": "1945 Thomas Throughway Suite 534\nPort Jeffery, UT 95987"
+        }
+    },
+    {
+        "id": 135,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: phone\nquantity: 10\nregion: toscana\nprovince: pistoia\naddress: 534 Burton Cliffs Apt. 566\nEast Michaelborough, AZ 94514\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "phone",
+            "ebook": null,
+            "quantity": 10,
+            "region": "toscana",
+            "province": "pistoia",
+            "address": "534 Burton Cliffs Apt. 566\nEast Michaelborough, AZ 94514"
+        }
+    },
+    {
+        "id": 136,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: phone\nquantity: 10\nregion: toscana\nprovince: pistoia\naddress: 534 Burton Cliffs Apt. 566\nEast Michaelborough, AZ 94514\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "phone",
+            "ebook": null,
+            "quantity": 10,
+            "region": "toscana",
+            "province": "pistoia",
+            "address": "534 Burton Cliffs Apt. 566\nEast Michaelborough, AZ 94514"
+        }
+    },
+    {
+        "id": 137,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: phone\nquantity: 10\nregion: toscana\nprovince: pistoia\naddress: 534 Burton Cliffs Apt. 566\nEast Michaelborough, AZ 94514\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "phone",
+            "ebook": null,
+            "quantity": 10,
+            "region": "toscana",
+            "province": "pistoia",
+            "address": "534 Burton Cliffs Apt. 566\nEast Michaelborough, AZ 94514"
+        }
+    },
+    {
+        "id": 138,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: shoes\nquantity: 1\nregion: puglia\nprovince: lecce\naddress: PSC 0174, Box 4790\nAPO AP 69575\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "shoes",
+            "ebook": null,
+            "quantity": 1,
+            "region": "puglia",
+            "province": "lecce",
+            "address": "PSC 0174, Box 4790\nAPO AP 69575"
+        }
+    },
+    {
+        "id": 139,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: shoes\nquantity: 1\nregion: puglia\nprovince: lecce\naddress: PSC 0174, Box 4790\nAPO AP 69575\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "shoes",
+            "ebook": null,
+            "quantity": 1,
+            "region": "puglia",
+            "province": "lecce",
+            "address": "PSC 0174, Box 4790\nAPO AP 69575"
+        }
+    },
+    {
+        "id": 140,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: shoes\nquantity: 1\nregion: puglia\nprovince: lecce\naddress: PSC 0174, Box 4790\nAPO AP 69575\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "shoes",
+            "ebook": null,
+            "quantity": 1,
+            "region": "puglia",
+            "province": "lecce",
+            "address": "PSC 0174, Box 4790\nAPO AP 69575"
+        }
+    },
+    {
+        "id": 141,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: phone\nquantity: 4\nregion: puglia\nprovince: bari\naddress: 787 Garner Mission\nRangelside, CA 89196\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "phone",
+            "ebook": null,
+            "quantity": 4,
+            "region": "puglia",
+            "province": "bari",
+            "address": "787 Garner Mission\nRangelside, CA 89196"
+        }
+    },
+    {
+        "id": 142,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: phone\nquantity: 4\nregion: puglia\nprovince: bari\naddress: 787 Garner Mission\nRangelside, CA 89196\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "phone",
+            "ebook": null,
+            "quantity": 4,
+            "region": "puglia",
+            "province": "bari",
+            "address": "787 Garner Mission\nRangelside, CA 89196"
+        }
+    },
+    {
+        "id": 143,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: phone\nquantity: 4\nregion: puglia\nprovince: bari\naddress: 787 Garner Mission\nRangelside, CA 89196\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "phone",
+            "ebook": null,
+            "quantity": 4,
+            "region": "puglia",
+            "province": "bari",
+            "address": "787 Garner Mission\nRangelside, CA 89196"
+        }
+    },
+    {
+        "id": 144,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: shoes\nquantity: 3\nregion: puglia\nprovince: lecce\naddress: 8915 Bruce Bypass\nShawnberg, MA 13001\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "shoes",
+            "ebook": null,
+            "quantity": 3,
+            "region": "puglia",
+            "province": "lecce",
+            "address": "8915 Bruce Bypass\nShawnberg, MA 13001"
+        }
+    },
+    {
+        "id": 145,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: shoes\nquantity: 3\nregion: puglia\nprovince: lecce\naddress: 8915 Bruce Bypass\nShawnberg, MA 13001\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "shoes",
+            "ebook": null,
+            "quantity": 3,
+            "region": "puglia",
+            "province": "lecce",
+            "address": "8915 Bruce Bypass\nShawnberg, MA 13001"
+        }
+    },
+    {
+        "id": 146,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: shoes\nquantity: 3\nregion: puglia\nprovince: lecce\naddress: 8915 Bruce Bypass\nShawnberg, MA 13001\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "shoes",
+            "ebook": null,
+            "quantity": 3,
+            "region": "puglia",
+            "province": "lecce",
+            "address": "8915 Bruce Bypass\nShawnberg, MA 13001"
+        }
+    },
+    {
+        "id": 147,
+        "use_case": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: shoes\nquantity: 8\nregion: sicilia\nprovince: ragusa\naddress: 5190 Mosley Springs Apt. 887\nWest Susanburgh, PA 46582\n\n\n\nState your will to the system, and then follow his instructions to complete the job.\nGive all the data necessary to the system in the first message.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "shoes",
+            "ebook": null,
+            "quantity": 8,
+            "region": "sicilia",
+            "province": "ragusa",
+            "address": "5190 Mosley Springs Apt. 887\nWest Susanburgh, PA 46582"
+        }
+    },
+    {
+        "id": 148,
+        "use_case": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: shoes\nquantity: 8\nregion: sicilia\nprovince: ragusa\naddress: 5190 Mosley Springs Apt. 887\nWest Susanburgh, PA 46582\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "shoes",
+            "ebook": null,
+            "quantity": 8,
+            "region": "sicilia",
+            "province": "ragusa",
+            "address": "5190 Mosley Springs Apt. 887\nWest Susanburgh, PA 46582"
+        }
+    },
+    {
+        "id": 149,
+        "use_case": "MISLEADING_INFORMATION",
+        "prompt": "\n\nYou are impersonating a human user using an AI system.\nYour task is to communicate with an external system to purchase an item.\nDo not ever reveal that you are an AI.\nFollow the system instructions to complete your task.\n\nThe data necessary to purchase an item is the following:\nitem: shoes\nquantity: 8\nregion: sicilia\nprovince: ragusa\naddress: 5190 Mosley Springs Apt. 887\nWest Susanburgh, PA 46582\n\n\n\nState your will to the system, without providing the data, and then follow his instructions to complete the job.\nAct like a very naive user, mispell words, give the wrong information and then correct it.\n\n\n\nUser:\n\n",
+        "tool": "OnlinePurchase",
+        "payload": {
+            "item": "shoes",
+            "ebook": null,
+            "quantity": 8,
+            "region": "sicilia",
+            "province": "ragusa",
+            "address": "5190 Mosley Springs Apt. 887\nWest Susanburgh, PA 46582"
         }
     }
 ]

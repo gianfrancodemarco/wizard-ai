@@ -5,11 +5,16 @@ from pydantic import BaseModel
 
 from wizard_ai.clients import SendEmailPayload
 
-from .structured_tool_for_evaluation import StructuredToolForEvaluation
 
-
-class GmailSender(StructuredTool, StructuredToolForEvaluation):
+class GmailSenderEvaluation(StructuredTool):
     name = "GmailSender"
     description = """Useful to send emails from Gmail"""
     args_schema: Type[BaseModel] = SendEmailPayload
     chat_id: Optional[str] = None
+
+    def _run(
+        self,
+        *args,
+        **kwargs
+    ) -> str:
+        return "OK"

@@ -1,31 +1,77 @@
+import json
 from textwrap import dedent
 
 from tools.form_tools import *
-import json
+
+NUMBER_OF_TESTS_PER_USE_CASE = 10
 
 configs = {
-    # "GoogleCalendarCreator": {
-    #     "tool": GoogleCalendarCreator(),
-    #     "task": "create an event on Google Calendar"
-    # },
-    # "GoogleCalendarRetriever": {
-    #     "tool": GoogleCalendarRetriever(),
-    #     "task": "retrieve events from Google Calendar"
-    # },
-    # "GmailSender": {
-    #     "tool": GmailSender(),
-    #     "task": "send an email"
-    # },
-    # "GmailRetriever": {
-    #     "tool": GmailRetriever(),
-    #     "task": "retrieve emails"
-    # },
+    "GoogleCalendarCreator": {
+        "tool": GoogleCalendarCreatorEvaluation(),
+        "task": "create an event on Google Calendar"
+    },
+    "GoogleCalendarRetriever": {
+        "tool": GoogleCalendarRetrieverEvaluation(),
+        "task": "retrieve events from Google Calendar"
+    },
+    "GmailSender": {
+        "tool": GmailSenderEvaluation(),
+        "task": "send an email"
+    },
+    "GmailRetriever": {
+        "tool": GmailRetrieverEvaluation(),
+        "task": "retrieve emails"
+    },
     "OnlinePurchase": {
-        "tool": OnlinePurchase(),
+        "tool": OnlinePurchaseEvaluation(),
         "task": "purchase an item"
     },
 }
 
+BASE_PROMPT = dedent("""
+    You are impersonating a human user using an AI system.
+    Your task is to communicate with an external system to {task}.
+    Do not ever reveal that you are an AI.
+    Follow the system instructions to complete your task.
+                     
+    The data necessary to {task} is the following:
+    {data}
+""")
+
+USE_CASES = [
+    {
+        "name": "ALL_INFORMATION_FIRST_MESSAGE",
+        "prompt": dedent("""
+
+            State your will to the system, and then follow his instructions to complete the job.
+            Give all the data necessary to the system in the first message.
+            \n
+
+            User:
+        """)
+    },
+    {
+        "name": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "prompt": dedent("""
+
+            State your will to the system, without providing the data, and then follow his instructions to complete the job.
+            \n
+
+            User:
+        """)
+    },
+    {
+        "name": "MISLEADING_INFORMATION",
+        "prompt": dedent("""
+
+            State your will to the system, without providing the data, and then follow his instructions to complete the job.
+            Act like a very naive user, mispell words, give the wrong information and then correct it.
+            \n
+
+            User:
+        """)
+    }
+]
 
 def create_prompts():
 
@@ -33,77 +79,22 @@ def create_prompts():
     idx = 0
 
     for key, config in configs.items():
-
         task, tool = config["task"], config["tool"]
-
-        prompt_header = f"""
-                You are impersonating a user testing an AI system.
-                Your job is to use the AI system to {task}.
-                The data necessary to {task} is the following:
-        """
-
-        prompt_footer = f"""
-                User:        
-        """
-
-        for i in range(3):
+        for i in range(NUMBER_OF_TESTS_PER_USE_CASE):
 
             payload = tool.get_random_payload()
+            payload_str = "\n".join([f"{key}: {value}" for key, value in payload.items() if value])
+ 
+            for use_case in USE_CASES:
 
-            prompt_templates = [
-                f"""
-                    {prompt_header}
-                    {payload}
-
-                    Give all the data necessary to the AI in the first message.
-
-                    {prompt_footer}
-                """,
-                # f"""
-                #     {prompt_header}
-                #     {payload}
-
-                #     State your will to the AI, without providing the data, and then follow his instructions to complete the job.
-                #     Act like a very naive user, mispell words, give the wrong information and then correct it.
-
-                #     {prompt_footer}
-                # """,
-                # f"""
-                #     {prompt_header}
-                #     {payload}
-
-                #     State your will to the AI, without providing the data, and then follow his instructions to complete the job.
-                #     Act like you don't know what data is necessary to complete the job, and let the AI guide you.
-                #     Only provide the single information when requested by the AI.
-                #     Be as direct as possible, and do not provide any unnecessary information.
-
-                #     {prompt_footer}
-                # """,
-                # f"""
-                #     {prompt_header}
-                #     {payload}
-
-                #     State your will to the AI, without providing the data, and then follow his instructions to complete the job.
-                #     Be as direct as possible, and do not provide any unnecessary information.
-
-                #     {prompt_footer}
-                # """,
-                # f"""
-                #     {prompt_header}
-                #     {payload}
-
-                #     State your will to the AI, and then follow his instructions to complete the job.
-                #     Be as direct as possible, and do not provide any unnecessary information.
-                #     Give all the necessary information to the AI in the first message.
-                #     {prompt_footer}
-                # """
-            ]
-
-            for j, prompt_template in enumerate(prompt_templates):
-                prompt = dedent(prompt_template)
+                prompt = dedent(f"""
+                    {BASE_PROMPT.format(task=task, data=payload_str)}
+                    {use_case["prompt"]}
+                """)
 
                 test_case = {
                     "id": idx,
+                    "use_case": use_case["name"],
                     "prompt": prompt,
                     "tool": key,
                     "payload": payload

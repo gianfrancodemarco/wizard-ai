@@ -16,25 +16,25 @@ class OnlinePurchaseEvaluation(OnlinePurchase, FormToolForEvaluation):
 
         fake = faker.Faker()
         
-        item = fake.random_element(elements=("Watch", "Shoes", "Phone", "Book"))
+        item = fake.random_element(elements=("watch", "shoes", "phone", "book"))
         ebook = None
         quantity = None
         region = None
         province = None
         address = None
 
-        if item == "Book":
+        if item == "book":
             ebook = fake.random_element(elements=(True, False))
 
-        if item != "Book" or ebook == False:
+        if item != "book" or ebook == False:
             quantity = fake.random_int(min=1, max=10)
-            region = fake.random_element(elements=("Puglia", "Sicilia", "Toscana"))
-            if region == "Puglia":
-                province = fake.random_element(elements=("Bari", "Brindisi", "Foggia", "Lecce", "Taranto"))
-            if region == "Sicilia":
-                province = fake.random_element(elements=("Agrigento", "Caltanissetta", "Catania", "Enna", "Messina", "Palermo", "Ragusa", "Siracusa", "Trapani"))
-            if region == "Toscana":
-                province = fake.random_element(elements=("Arezzo", "Firenze", "Grosseto", "Livorno", "Lucca", "Massa-Carrara", "Pisa", "Pistoia", "Prato", "Siena"))
+            region = fake.random_element(elements=("puglia", "sicilia", "toscana"))
+            if region == "puglia":
+                province = fake.random_element(elements=("bari", "brindisi", "foggia", "lecce", "taranto"))
+            if region == "sicilia":
+                province = fake.random_element(elements=("agrigento", "caltanissetta", "catania", "enna", "messina", "palermo", "ragusa", "siracusa", "trapani"))
+            if region == "toscana":
+                province = fake.random_element(elements=("arezzo", "firenze", "grosseto", "livorno", "lucca", "massa-carrara", "pisa", "pistoia", "prato", "siena"))
             address = fake.address()
             
         return {

@@ -5,13 +5,17 @@ from pydantic import BaseModel
 
 from wizard_ai.clients import GetEmailsPayload
 
-from .structured_tool_for_evaluation import StructuredToolForEvaluation
-
-
-class GmailRetriever(StructuredTool, StructuredToolForEvaluation):
+class GmailRetrieverEvaluation(StructuredTool):
     name = "GmailRetriever"
     description = """Useful to retrieve emails from Gmail"""
     args_schema: Type[BaseModel] = GetEmailsPayload
 
     return_direct = True
     chat_id: Optional[str] = None
+
+    def _run(
+        self,
+        *args,
+        **kwargs
+    ) -> str:
+        return "OK"

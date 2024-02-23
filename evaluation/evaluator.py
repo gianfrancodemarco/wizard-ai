@@ -1,3 +1,24 @@
+"""
+Module used to evaluate the conversational engine.
+
+The evaluation is done by using an LLM to simulate the user, and the conversational engine to be tested.
+
+The module reads the test cases from the prompts.json file, and for each test case, it executes the conversational engine.
+Each test case contains a prompt, a tool, and a payload. 
+The prompt is the system message for the LLM that simulates the user.
+The tool is the tool that the conversational engine should call and the payload is the expected input for the tool.
+A test is successful if the conversational engine calls the correct tool with the correct input.
+
+For each output of every node of the conversational engine, the evaluator checks if the target tool call is reached.
+If it is, the evaluator raises a SuccessfulExecution exception.
+If the maximum number of iterations is reached, the evaluator raises a MaxIterationsReached exception and the test is considered failed.
+
+The results of the evaluation are logged in the logs folder.
+
+The evaluation is done for 2 different types of agents:
+- the BasicAgent, which uses the structured tools from Langchain
+- the FormAgent, which uses the form tools extension from Wizard AI
+"""
 import json
 import os
 from datetime import datetime
@@ -12,262 +33,8 @@ from wizard_ai.conversational_engine.form_agent.form_agent_executor import \
 
 TEST_CASES_PATH = os.path.join(
     os.path.dirname(__file__), "prompts/prompts.json")
-LLM_MODEL = os.environ.get("LLM_MODEL", "gpt-3.5-turbo-0125")
 
-
-class MaxIterationsReached(Exception):
-    pass
-
-
-class SuccessfulExecution(Exception):
-    pass
-
-
-def normalize_json(json_data):
-    """
-    The LLM can call the correct tool with the correct output, but it may differ from the expected one by small details.
-    For examples, the dates may be in different formats, or the whitespace may be different, there may be dots at the end of the sentences, etc.
-
-    This function normalizes the JSON string so that it can be compared with the expected output.
-    We assume that these small differences are not relevant for the evaluation.
-    """
-
-    # Normalize date format
-    for key, value in json_data.items():
-        if key in ['start', 'end']:
-            json_data[key] = datetime.fromisoformat(
-                value.replace('T', ' ')).strftime('%Y-%m-%d %H:%M:%S')
-
-        if type(value) == str:
-            json_data[key] = json_data[key].replace("\n", " ").replace(".", " ").replace(
-                ",", " ").replace("  ", " ").lower()
-
-    # Normalize whitespace
-    json_data = {key: value.strip() if isinstance(
-        value, str) else value for key, value in json_data.items()}
-    print(json_data)
-    return json_data
-
-
-class UserLLMForEvaluation:
-    def __init__(self):
-        self.llm = ChatOpenAI(
-            model=LLM_MODEL,
-            temperature=0,
-            verbose=True
-        )
-        self.history = []
-
-    def execute_first(self, message):
-        response = self.llm([SystemMessage(content=message)])
-        self.history.extend([
-            SystemMessage(content=message),
-            response
-        ])
-        return response.content
-
-    def execute(self, message):
-        response = self.llm([
-            *self.history,
-            HumanMessage(content=message)
-        ])
-        self.history.extend([
-            HumanMessage(content=message),
-            response
-        ])
-        return response.content
-
-
-class ExecutorForEvaluation:
-    def __init__(
-        self,
-        target_tool_call: Dict[str, Any] = None,
-    ):
-        self.target_tool_call = target_tool_call
-        self.max_iterations = 10
-        self.current_iteration = 1
-        self.tools = [
-            GoogleCalendarCreator(),
-            GoogleCalendarRetriever(),
-            GmailRetriever(),
-            GmailSender(),
-            OnlinePurchase()
-        ]
-        self.graph = FormAgentExecutor(tools=self.tools)
-        self.state = {
-            "input": "",
-            "chat_history": [],
-            "intermediate_steps": [],
-            "active_form_tool": None
-        }
-
-    def execute(self, input_data):
-
-        inputs = {
-            "input": input_data,
-            "chat_history": self.state["chat_history"],
-            "intermediate_steps": self.state["intermediate_steps"],
-            "active_form_tool": self.state["active_form_tool"]
-        }
-
-        for output in self.graph.app.stream(inputs, config={"recursion_limit": 25}):
-            for key, value in output.items():
-                self.check_successful_execution(key, value)
-        output = self.graph.parse_output(output)
-
-        # Update state
-        self.state.update({
-            "chat_history": [
-                *self.state["chat_history"],
-                HumanMessage(content=input_data),
-                AIMessage(content=output)
-            ],
-            "active_form_tool": value["active_form_tool"]
-        })
-
-        if self.current_iteration >= self.max_iterations:
-            raise MaxIterationsReached()
-
-        self.current_iteration += 1
-
-        return output
-
-    def check_successful_execution(self, key, value):
-        raise NotImplementedError()
-
-
-class FormAgentExecutorForEvaluation(ExecutorForEvaluation):
-    """
-    This class is used to execute the form agent in the conversational engine.
-
-    Args:
-        target_tool_call (Dict[str, Any], optional): The target tool call that we want to reach.
-        The executor will raise a SuccessfulExecution exception if the target tool call is reached, or 
-        a MaxIterationsReached exception if the maximum number of iterations is reached.
-    """
-
-    def check_successful_execution(self, key, value):
-        """
-        Check if the target tool call is reached. If it is, raise a SuccessfulExecution exception.
-        This is done by checking that when the agent is confirming the tool call, the current form of the FormTool is the same as the expected one.
-        When checking the form, the JSON is normalized string so that it can be compared with the expected output.
-        """
-
-        if key != "agent":
-            return
-
-        if not isinstance(value["agent_outcome"], list):
-            return
-        
-        if not isinstance(value["agent_outcome"][0], OpenAIToolAgentAction):
-            return
-
-        agent_outcome = value["agent_outcome"][0]
-        target_tool_name = f"{self.target_tool_call['tool']}Finalize"
-
-        if not agent_outcome.tool == target_tool_name:
-            return
-
-        if not agent_outcome.tool_input == {'confirm': True}:
-            return
-
-        target_tool = next(filter(
-            lambda tool: tool.name == target_tool_name,
-            self.graph._tools
-        ))
-
-        normalized_expected_output = normalize_json(
-            self.target_tool_call['payload'])
-        normalized_actual_output = normalize_json(
-            json.loads(target_tool.form.model_dump_json()))
-
-        if normalized_expected_output == normalized_actual_output:
-            raise SuccessfulExecution()
-
-
-class BasicAgentExecutorForEvaluation(ExecutorForEvaluation):
-    """
-    This class is used to execute the basic agent in the conversational engine.
-
-    Args:
-        target_tool_call (Dict[str, Any], optional): The target tool call that we want to reach.
-        The executor will raise a SuccessfulExecution exception if the target tool call is reached, or 
-        a MaxIterationsReached exception if the maximum number of iterations is reached.
-    """
-
-    def check_successful_execution(self, key, value):
-        """
-        Check if the target tool call is reached. If it is, raise a SuccessfulExecution exception.
-        """
-
-        if key != "agent":
-            return
-
-        if not isinstance(value["agent_outcome"], OpenAIToolAgentAction):
-            return
-
-        agent_outcome = value["agent_outcome"]
-        target_tool_name = self.target_tool_call['tool']
-
-        if not agent_outcome.tool == target_tool_name:
-            return
-
-        normalized_expected_output = normalize_json(
-            self.target_tool_call['payload'])
-        normalized_actual_output = normalize_json(agent_outcome.tool_input)
-
-        if normalized_expected_output == normalized_actual_output:
-            raise SuccessfulExecution()
-
-
-class EvaluationLogger:
-
-    def __init__(
-        self,
-        type: str
-    ) -> None:
-        self.type = type
-        self.logfile = os.path.join(
-            os.path.dirname(__file__), "logs", self.type, f"{datetime.now().strftime('%Y-%m-%d-%H%M%S')}.json")
-
-        self.log = {
-            "id": None,
-            "prompt": None,
-            "messages": []
-        }
-
-    def start_new_log(self, id, prompt):
-        self.log = {
-            "id": id,
-            "prompt": prompt,
-            "messages": [],
-            "result": None
-        }
-
-    def log_ai_message(self, message):
-        self.log["messages"].append({
-            "AI": message
-        })
-
-    def log_user_message(self, message):
-        self.log["messages"].append({
-            "User": message
-        })
-
-    def log_result(self, result):
-        self.log["result"] = result
-
-    def dump(self):
-        if not os.path.exists(self.logfile):
-            open(self.logfile, "w").write("[]")
-
-        logs = json.loads(open(self.logfile).read())
-        logs.append(self.log)
-        with open(self.logfile, "w") as f:
-            f.write(json.dumps(logs, indent=4))
-
-
-EVALUATE_FORM_AGENT = True
+EVALUATE_FORM_AGENT = False
 if EVALUATE_FORM_AGENT:
     from tools.form_tools import *
     evaluation_logger = EvaluationLogger(type="form")
@@ -284,33 +51,36 @@ for test_case in test_cases:
         prompt = test_case["prompt"]
         tool = test_case["tool"]
         payload = test_case["payload"]
+        use_case = test_case["use_case"]
 
         user_model = UserLLMForEvaluation()
         system_model = SystemModelClass(
+            tools = [
+                GoogleCalendarCreatorEvaluation(),
+                GoogleCalendarRetrieverEvaluation(),
+                GmailRetrieverEvaluation(),
+                GmailSenderEvaluation(),
+                OnlinePurchaseEvaluation()
+            ],
             target_tool_call={
                 "tool": tool,
                 "payload": payload
             }
         )
 
-        evaluation_logger.start_new_log(id, prompt)
+        evaluation_logger.start_new_log(id, prompt, use_case)
 
         user_response = user_model.execute_first(prompt)
-        print(user_response)
         evaluation_logger.log_user_message(user_response)
 
         while True:
             system_response = system_model.execute(user_response)
-            print(system_response)
             evaluation_logger.log_ai_message(system_response)
             user_response = user_model.execute(system_response)
-            print(user_response)
             evaluation_logger.log_user_message(user_response)
     except SuccessfulExecution:
-        print("Successful execution")
         evaluation_logger.log_result("Successful execution")
     except MaxIterationsReached:
-        print("Max iterations reached")
         evaluation_logger.log_result("Max iterations reached")
     finally:
         evaluation_logger.dump()
