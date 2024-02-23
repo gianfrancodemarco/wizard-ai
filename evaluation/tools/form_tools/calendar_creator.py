@@ -1,39 +1,17 @@
 import random
 from datetime import datetime, timedelta
-from typing import Dict, Optional, Type, Union
+from typing import Dict, Optional, Union
 
-from pydantic import BaseModel
+import faker
 
-from wizard_ai.clients import CreateCalendarEventPayload
 from wizard_ai.conversational_engine.tools import GoogleCalendarCreator
 
+from .form_tool_for_evaluation import FormToolForEvaluation
 
-class GoogleCalendarCreatorEvaluation(GoogleCalendarCreator):
+fake = faker.Faker()
 
-    name = "GoogleCalendarCreator"
-    description = """Useful to create events/memos/reminders on Google Calendar."""
-    args_schema: Type[BaseModel] = CreateCalendarEventPayload
-
-    chat_id: Optional[str] = None
-
-    def _run_when_complete(
-        self,
-        summary: str,
-        description: str,
-        start: datetime,
-        end: datetime
-    ) -> str:
-        return "OK"
-
-    def get_random_payload(self) -> Dict[str, Union[str, datetime]]:
-        """
-        Use library faker to generate random data for the form.
-        """
-
-        import faker
-
-        fake = faker.Faker()
-        
+class GoogleCalendarCreatorEvaluation(GoogleCalendarCreator, FormToolForEvaluation):
+    def get_random_payload(self) -> Dict[str, Union[str, datetime]]:        
         start = fake.date_time_this_month()
         start = start.replace(second=0, microsecond=0)
 

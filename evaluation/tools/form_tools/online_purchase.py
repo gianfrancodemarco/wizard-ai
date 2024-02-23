@@ -1,23 +1,12 @@
 from datetime import datetime
-from typing import Dict, Type, Union
+from typing import Dict, Union
 
-from pydantic import BaseModel
+from wizard_ai.conversational_engine.tools import OnlinePurchase
 
-from wizard_ai.conversational_engine.tools import (OnlinePurchase,
-                                                   OnlinePurchasePayload)
+from .form_tool_for_evaluation import FormToolForEvaluation
 
 
-class OnlinePurchaseEvaluation(OnlinePurchase):
-
-    name = "OnlinePurchase"
-    description = """Purchase an item from an online store"""
-    args_schema: Type[BaseModel] = OnlinePurchasePayload
-
-    def _run_when_complete(
-        self,
-    ) -> str:
-        return "OK"
-    
+class OnlinePurchaseEvaluation(OnlinePurchase, FormToolForEvaluation):    
     def get_random_payload(self) -> Dict[str, Union[str, datetime]]:
         """
         Use library faker to generate random data for the form.

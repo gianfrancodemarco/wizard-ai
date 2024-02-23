@@ -1,40 +1,21 @@
 
 import random
 from datetime import datetime, timedelta
-from typing import Dict, Optional, Type, Union
+from typing import Dict, Union
 
-from pydantic import BaseModel
+import faker
 
-from wizard_ai.clients import GetCalendarEventsPayload
 from wizard_ai.conversational_engine.tools import GoogleCalendarRetriever
 
+from .form_tool_for_evaluation import FormToolForEvaluation
 
-class GoogleCalendarRetrieverEvaluation(GoogleCalendarRetriever):
+fake = faker.Faker()
 
-    name = "GoogleCalendarRetriever"
-    description = """Useful to retrieve events from Google Calendar"""
-    args_schema: Type[BaseModel] = GetCalendarEventsPayload
-
-    return_direct = True
-    chat_id: Optional[str] = None
-
-    def _run_when_complete(
-        self,
-        start: datetime,
-        end: datetime
-    ) -> str:
-        return "OK"
-
+class GoogleCalendarRetrieverEvaluation(GoogleCalendarRetriever, FormToolForEvaluation):
+    # We need to override the skip_confirm attribute from the parent class for evaluation purposes
+    skip_confirm = False
 
     def get_random_payload(self) -> Dict[str, Union[str, datetime]]:
-        """
-        Use library faker to generate random data for the form.
-        """
-
-        import faker
-
-        fake = faker.Faker()
-
         start = fake.date_time_this_month()
         start = start.replace(second=0, microsecond=0)
         

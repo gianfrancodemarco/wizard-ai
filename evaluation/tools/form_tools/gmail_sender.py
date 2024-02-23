@@ -1,37 +1,16 @@
 from datetime import datetime
-from typing import Dict, Optional, Type, Union
+from typing import Dict, Union
 
-from pydantic import BaseModel
+import faker
 
-from wizard_ai.clients import SendEmailPayload
 from wizard_ai.conversational_engine.tools import GmailSender
 
+from .form_tool_for_evaluation import FormToolForEvaluation
 
-class GmailSenderEvaluation(GmailSender):
+fake = faker.Faker()
 
-    name = "GmailSender"
-    description = """Useful to send emails from Gmail"""
-    args_schema: Type[BaseModel] = SendEmailPayload
-
-    chat_id: Optional[str] = None
-
-    def _run_when_complete(
-        self,
-        to: str,
-        subject: str,
-        body: str
-    ) -> str:
-        return "OK"
-
+class GmailSenderEvaluation(GmailSender, FormToolForEvaluation):
     def get_random_payload(self) -> Dict[str, Union[str, datetime]]:
-        """
-        Use library faker to generate random data for the form.
-        """
-
-        import faker
-
-        fake = faker.Faker()
-
         return {
             "to": fake.email(),
             "subject": fake.text(),
