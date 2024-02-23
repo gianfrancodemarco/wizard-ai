@@ -6,7 +6,11 @@ from typing import Any, Dict
 from langchain.agents.output_parsers.openai_tools import OpenAIToolAgentAction
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
-from tools.structured_tools import *
+
+if True:
+    from tools.form_tools import *
+else:
+    from tools.structured_tools import *
 
 from wizard_ai.conversational_engine.form_agent.form_agent_executor import \
     FormAgentExecutor
@@ -25,6 +29,7 @@ class MaxIterationsReached(Exception):
 class SuccessfulExecution(Exception):
     pass
 
+
 def normalize_json(json_data):
     """
     The LLM can call the correct tool with the correct output, but it may differ from the expected one by small details.
@@ -37,13 +42,16 @@ def normalize_json(json_data):
     # Normalize date format
     for key, value in json_data.items():
         if key in ['start', 'end']:
-            json_data[key] = datetime.fromisoformat(value.replace('T', ' ')).strftime('%Y-%m-%d %H:%M:%S')
+            json_data[key] = datetime.fromisoformat(
+                value.replace('T', ' ')).strftime('%Y-%m-%d %H:%M:%S')
         json_data[key] = json_data[key].replace("\n", " ").replace(".", " ")
 
     # Normalize whitespace
-    json_data = {key: value.strip() if isinstance(value, str) else value for key, value in json_data.items()}
+    json_data = {key: value.strip() if isinstance(
+        value, str) else value for key, value in json_data.items()}
     print(json_data)
     return json_data
+
 
 class UserLLMForEvaluation:
     def __init__(self):
@@ -67,7 +75,10 @@ class UserLLMForEvaluation:
             *self.history,
             HumanMessage(content=message)
         ])
-        self.history.append(response)
+        self.history.extend([
+            HumanMessage(content=message),
+            response
+        ])
         return response.content
 
 
@@ -140,7 +151,6 @@ class FormAgentExecutorForEvaluation:
         When checking the form, the JSON is normalized string so that it can be compared with the expected output.
         """
 
-
         if key != "agent":
             return
 
@@ -155,44 +165,100 @@ class FormAgentExecutorForEvaluation:
 
         if not agent_outcome.tool_input == {'confirm': True}:
             return
-        
+
         target_tool = next(filter(
             lambda tool: tool.name == target_tool_name,
             self.graph._tools
         ))
 
-        normalized_expected_output = normalize_json(self.target_tool_call['payload'])
-        normalized_actual_output = normalize_json(json.loads(target_tool.form.model_dump_json()))
+        normalized_expected_output = normalize_json(
+            self.target_tool_call['payload'])
+        normalized_actual_output = normalize_json(
+            json.loads(target_tool.form.model_dump_json()))
 
         if normalized_expected_output == normalized_actual_output:
             raise SuccessfulExecution()
 
 
-for test_case in test_cases[:1]:
+class EvaluationLogger:
+
+    def __init__(self) -> None:
+        # logfile as yyyy-mm-dd-hhmms.json
+        self.logfile = os.path.join(
+            os.path.dirname(__file__), "logs", f"{datetime.now().strftime('%Y-%m-%d-%H%M%S')}.json")
+
+        self.log = {
+            "id": None,
+            "prompt": None,
+            "messages": []
+        }
+
+    def start_new_log(self, id, prompt):
+        self.log = {
+            "id": id,
+            "prompt": prompt,
+            "messages": [],
+            "result": None
+        }
+
+    def log_ai_message(self, message):
+        self.log["messages"].append({
+            "AI": message
+        })
+
+    def log_user_message(self, message):
+        self.log["messages"].append({
+            "User": message
+        })
+
+    def log_result(self, result):
+        self.log["result"] = result
+
+    def dump(self):
+        if not os.path.exists(self.logfile):
+            open(self.logfile, "w").write("[]")
+
+        logs = json.loads(open(self.logfile).read())
+        logs.append(self.log)
+        with open(self.logfile, "w") as f:
+            f.write(json.dumps(logs, indent=4))
+
+
+evaluation_logger = EvaluationLogger()
+user_model = UserLLMForEvaluation()
+
+for test_case in test_cases[:5]:
     try:
         # Get user message
-
+        id = test_case["id"]
         prompt = test_case["prompt"]
         tool = test_case["tool"]
         payload = test_case["payload"]
 
-        user_model = UserLLMForEvaluation()
         system_model = FormAgentExecutorForEvaluation(
             target_tool_call={
                 "tool": tool,
                 "payload": payload
             }
         )
+        evaluation_logger.start_new_log(id, prompt)
 
         user_response = user_model.execute_first(prompt)
         print(user_response)
+        evaluation_logger.log_user_message(user_response)
 
         while True:
             system_response = system_model.execute(user_response)
             print(system_response)
+            evaluation_logger.log_ai_message(system_response)
             user_response = user_model.execute(system_response)
             print(user_response)
+            evaluation_logger.log_user_message(user_response)
     except SuccessfulExecution:
         print("Successful execution")
+        evaluation_logger.log_result("Successful execution")
     except MaxIterationsReached:
         print("Max iterations reached")
+        evaluation_logger.log_result("Max iterations reached")
+    finally:
+        evaluation_logger.dump()

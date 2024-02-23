@@ -52,6 +52,15 @@ def create_prompts():
                     {payload}
 
                     State your will to the AI, without providing the data, and then follow his instructions to complete the job.
+                    Act like a very naive user, not giving all of the information at once, and let the AI guide you.
+
+                    {prompt_footer}
+                """,
+                f"""
+                    {prompt_header}
+                    {payload}
+
+                    State your will to the AI, without providing the data, and then follow his instructions to complete the job.
                     Act like you don't know what data is necessary to complete the job, and let the AI guide you.
                     Only provide the single information when requested by the AI.
                     Be as direct as possible, and do not provide any unnecessary information.
