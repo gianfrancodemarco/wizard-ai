@@ -96,7 +96,7 @@ async def process_message(data: dict) -> None:
         GoogleCalendarRetriever(chat_id=chat_id),
         GmailRetriever(chat_id=chat_id),
         GmailSender(chat_id=chat_id),
-        PythonCodeInterpreter(),
+        PythonCodeInterpreter()
     ]
 
     stored_agent_state = get_stored_agent_state(redis_client, data.chat_id)

@@ -7,19 +7,12 @@ from langchain.agents.output_parsers.openai_tools import OpenAIToolAgentAction
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
-if True:
-    from tools.form_tools import *
-else:
-    from tools.structured_tools import *
-
 from wizard_ai.conversational_engine.form_agent.form_agent_executor import \
     FormAgentExecutor
 
 TEST_CASES_PATH = os.path.join(
     os.path.dirname(__file__), "prompts/prompts.json")
 LLM_MODEL = os.environ.get("LLM_MODEL", "gpt-3.5-turbo-0125")
-
-test_cases = json.loads(open(TEST_CASES_PATH).read())
 
 
 class MaxIterationsReached(Exception):
@@ -44,7 +37,10 @@ def normalize_json(json_data):
         if key in ['start', 'end']:
             json_data[key] = datetime.fromisoformat(
                 value.replace('T', ' ')).strftime('%Y-%m-%d %H:%M:%S')
-        json_data[key] = json_data[key].replace("\n", " ").replace(".", " ")
+
+        if type(value) == str:
+            json_data[key] = json_data[key].replace("\n", " ").replace(".", " ").replace(
+                ",", " ").replace("  ", " ").lower()
 
     # Normalize whitespace
     json_data = {key: value.strip() if isinstance(
@@ -82,16 +78,7 @@ class UserLLMForEvaluation:
         return response.content
 
 
-class FormAgentExecutorForEvaluation:
-    """
-    This class is used to execute the form agent in the conversational engine.
-
-    Args:
-        target_tool_call (Dict[str, Any], optional): The target tool call that we want to reach.
-        The executor will raise a SuccessfulExecution exception if the target tool call is reached, or 
-        a MaxIterationsReached exception if the maximum number of iterations is reached.
-    """
-
+class ExecutorForEvaluation:
     def __init__(
         self,
         target_tool_call: Dict[str, Any] = None,
@@ -103,7 +90,8 @@ class FormAgentExecutorForEvaluation:
             GoogleCalendarCreator(),
             GoogleCalendarRetriever(),
             GmailRetriever(),
-            GmailSender()
+            GmailSender(),
+            OnlinePurchase()
         ]
         self.graph = FormAgentExecutor(tools=self.tools)
         self.state = {
@@ -145,6 +133,20 @@ class FormAgentExecutorForEvaluation:
         return output
 
     def check_successful_execution(self, key, value):
+        raise NotImplementedError()
+
+
+class FormAgentExecutorForEvaluation(ExecutorForEvaluation):
+    """
+    This class is used to execute the form agent in the conversational engine.
+
+    Args:
+        target_tool_call (Dict[str, Any], optional): The target tool call that we want to reach.
+        The executor will raise a SuccessfulExecution exception if the target tool call is reached, or 
+        a MaxIterationsReached exception if the maximum number of iterations is reached.
+    """
+
+    def check_successful_execution(self, key, value):
         """
         Check if the target tool call is reached. If it is, raise a SuccessfulExecution exception.
         This is done by checking that when the agent is confirming the tool call, the current form of the FormTool is the same as the expected one.
@@ -154,10 +156,13 @@ class FormAgentExecutorForEvaluation:
         if key != "agent":
             return
 
-        if not isinstance(value["agent_outcome"], OpenAIToolAgentAction):
+        if not isinstance(value["agent_outcome"], list):
+            return
+        
+        if not isinstance(value["agent_outcome"][0], OpenAIToolAgentAction):
             return
 
-        agent_outcome = value["agent_outcome"]
+        agent_outcome = value["agent_outcome"][0]
         target_tool_name = f"{self.target_tool_call['tool']}Finalize"
 
         if not agent_outcome.tool == target_tool_name:
@@ -180,12 +185,50 @@ class FormAgentExecutorForEvaluation:
             raise SuccessfulExecution()
 
 
+class BasicAgentExecutorForEvaluation(ExecutorForEvaluation):
+    """
+    This class is used to execute the basic agent in the conversational engine.
+
+    Args:
+        target_tool_call (Dict[str, Any], optional): The target tool call that we want to reach.
+        The executor will raise a SuccessfulExecution exception if the target tool call is reached, or 
+        a MaxIterationsReached exception if the maximum number of iterations is reached.
+    """
+
+    def check_successful_execution(self, key, value):
+        """
+        Check if the target tool call is reached. If it is, raise a SuccessfulExecution exception.
+        """
+
+        if key != "agent":
+            return
+
+        if not isinstance(value["agent_outcome"], OpenAIToolAgentAction):
+            return
+
+        agent_outcome = value["agent_outcome"]
+        target_tool_name = self.target_tool_call['tool']
+
+        if not agent_outcome.tool == target_tool_name:
+            return
+
+        normalized_expected_output = normalize_json(
+            self.target_tool_call['payload'])
+        normalized_actual_output = normalize_json(agent_outcome.tool_input)
+
+        if normalized_expected_output == normalized_actual_output:
+            raise SuccessfulExecution()
+
+
 class EvaluationLogger:
 
-    def __init__(self) -> None:
-        # logfile as yyyy-mm-dd-hhmms.json
+    def __init__(
+        self,
+        type: str
+    ) -> None:
+        self.type = type
         self.logfile = os.path.join(
-            os.path.dirname(__file__), "logs", f"{datetime.now().strftime('%Y-%m-%d-%H%M%S')}.json")
+            os.path.dirname(__file__), "logs", self.type, f"{datetime.now().strftime('%Y-%m-%d-%H%M%S')}.json")
 
         self.log = {
             "id": None,
@@ -224,23 +267,32 @@ class EvaluationLogger:
             f.write(json.dumps(logs, indent=4))
 
 
-evaluation_logger = EvaluationLogger()
-user_model = UserLLMForEvaluation()
+EVALUATE_FORM_AGENT = True
+if EVALUATE_FORM_AGENT:
+    from tools.form_tools import *
+    evaluation_logger = EvaluationLogger(type="form")
+    SystemModelClass = FormAgentExecutorForEvaluation
+else:
+    from tools.structured_tools import *
+    evaluation_logger = EvaluationLogger(type="basic")
+    SystemModelClass = BasicAgentExecutorForEvaluation
 
-for test_case in test_cases[:5]:
+test_cases = json.loads(open(TEST_CASES_PATH).read())
+for test_case in test_cases:
     try:
-        # Get user message
         id = test_case["id"]
         prompt = test_case["prompt"]
         tool = test_case["tool"]
         payload = test_case["payload"]
 
-        system_model = FormAgentExecutorForEvaluation(
+        user_model = UserLLMForEvaluation()
+        system_model = SystemModelClass(
             target_tool_call={
                 "tool": tool,
                 "payload": payload
             }
         )
+
         evaluation_logger.start_new_log(id, prompt)
 
         user_response = user_model.execute_first(prompt)

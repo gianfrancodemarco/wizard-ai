@@ -4,10 +4,10 @@ from typing import Dict, Optional, Type, Union
 from pydantic import BaseModel
 
 from wizard_ai.clients import SendEmailPayload
-from wizard_ai.conversational_engine.form_agent import FormTool
+from wizard_ai.conversational_engine.tools import GmailSender
 
 
-class GmailSender(FormTool):
+class GmailSenderEvaluation(GmailSender):
 
     name = "GmailSender"
     description = """Useful to send emails from Gmail"""

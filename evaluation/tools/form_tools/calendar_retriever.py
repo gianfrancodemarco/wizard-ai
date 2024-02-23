@@ -1,26 +1,21 @@
-import pickle
-import textwrap
-from datetime import datetime
-from typing import Optional, Type
+
+import random
+from datetime import datetime, timedelta
+from typing import Dict, Optional, Type, Union
 
 from pydantic import BaseModel
 
-from wizard_ai.clients import (GetCalendarEventsPayload, GoogleClient,
-                               get_redis_client)
-from wizard_ai.constants import RedisKeys
-from wizard_ai.conversational_engine.form_agent.form_tool import (
-    FormTool, FormToolState)
-from typing import Dict, Optional, Type, Union
+from wizard_ai.clients import GetCalendarEventsPayload
+from wizard_ai.conversational_engine.tools import GoogleCalendarRetriever
 
 
-class GoogleCalendarRetriever(FormTool):
+class GoogleCalendarRetrieverEvaluation(GoogleCalendarRetriever):
 
     name = "GoogleCalendarRetriever"
     description = """Useful to retrieve events from Google Calendar"""
     args_schema: Type[BaseModel] = GetCalendarEventsPayload
 
     return_direct = True
-    skip_confirm = True
     chat_id: Optional[str] = None
 
     def _run_when_complete(
@@ -28,10 +23,8 @@ class GoogleCalendarRetriever(FormTool):
         start: datetime,
         end: datetime
     ) -> str:
-        return {
-            "start": start,
-            "end": end
-        }
+        return "OK"
+
 
     def get_random_payload(self) -> Dict[str, Union[str, datetime]]:
         """
@@ -47,5 +40,5 @@ class GoogleCalendarRetriever(FormTool):
         
         return {
             "start": start,
-            "end": start + fake.time_delta()
+            "end": start + timedelta(days=random.randint(1, 7), hours=random.randint(1, 3), minutes=random.randint(0, 59))
         }

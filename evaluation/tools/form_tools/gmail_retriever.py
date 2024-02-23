@@ -1,15 +1,14 @@
-import pickle
 from datetime import datetime
 from typing import Dict, Optional, Type, Union
 
-from langchain.tools.base import StructuredTool
 from langchain_core.callbacks import CallbackManagerForToolRun
 from pydantic import BaseModel
 
 from wizard_ai.clients import GetEmailsPayload
+from wizard_ai.conversational_engine.tools import GmailRetriever
 
 
-class GmailRetriever(StructuredTool):
+class GmailRetrieverEvaluation(GmailRetriever):
 
     name = "GmailRetriever"
     description = """Useful to retrieve emails from Gmail"""
@@ -18,7 +17,7 @@ class GmailRetriever(StructuredTool):
     return_direct = True
     chat_id: Optional[str] = None
 
-    def _run(
+    def _run_when_complete(
         self,
         number_of_emails: Optional[int] = None,
         run_manager: Optional[CallbackManagerForToolRun] = None

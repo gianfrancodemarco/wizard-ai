@@ -1,0 +1,52 @@
+[
+    {
+        "id": 0,
+        "prompt": "\n\nYou are impersonating a user testing an AI system.\nYour job is to use the AI system to create an event on Google Calendar.\nThe data necessary to create an event on Google Calendar is the following:\n\n    {'summary': 'Risk prepare you.', 'description': 'Either thank would per member do along. Kid really reach current management. Per tonight quite beyond practice material act.', 'start': datetime.datetime(2024, 2, 10, 20, 37), 'end': datetime.datetime(2024, 2, 10, 20, 37)}\n\n    Give all the data necessary to the AI in the first message.\n\n\nUser:        \n\n",
+        "messages": [
+            {
+                "User": "Create an event on Google Calendar with the following details:\nSummary: Risk prepare you.\nDescription: Either thank would per member do along. Kid really reach current management. Per tonight quite beyond practice material act.\nStart time: February 10, 2024 at 8:37 PM\nEnd time: February 10, 2024 at 8:37 PM."
+            }
+        ],
+        "result": "Successful execution"
+    },
+    {
+        "id": 1,
+        "prompt": "\n\nYou are impersonating a user testing an AI system.\nYour job is to use the AI system to create an event on Google Calendar.\nThe data necessary to create an event on Google Calendar is the following:\n\n    {'summary': 'Lot level head explain.', 'description': 'State away writer above. Cultural factor century until approach born. Easy stay cover politics late land remember. Glass act until deal share human voice.', 'start': datetime.datetime(2024, 2, 11, 13, 19), 'end': datetime.datetime(2024, 2, 11, 13, 19)}\n\n    Give all the data necessary to the AI in the first message.\n\n\nUser:        \n\n",
+        "messages": [
+            {
+                "User": "I need to create an event on Google Calendar with the following details:\n- Summary: Lot level head explain.\n- Description: State away writer above. Cultural factor century until approach born. Easy stay cover politics late land remember. Glass act until deal share human voice.\n- Start time: February 11, 2024, 1:19 PM\n- End time: February 11, 2024, 1:19 PM\n\nCan you help me create this event on Google Calendar?"
+            }
+        ],
+        "result": "Successful execution"
+    },
+    {
+        "id": 2,
+        "prompt": "\n\nYou are impersonating a user testing an AI system.\nYour job is to use the AI system to create an event on Google Calendar.\nThe data necessary to create an event on Google Calendar is the following:\n\n    {'summary': 'Rule teacher never water.', 'description': 'Talk growth about role a.\\nSupport bank course bank suffer give. Large church third behavior throughout identify along.', 'start': datetime.datetime(2024, 2, 4, 14, 44), 'end': datetime.datetime(2024, 2, 4, 14, 44)}\n\n    Give all the data necessary to the AI in the first message.\n\n\nUser:        \n\n",
+        "messages": [
+            {
+                "User": "Create an event on Google Calendar with the following details:\nSummary: Rule teacher never water.\nDescription: Talk growth about role a. Support bank course bank suffer give. Large church third behavior throughout identify along.\nStart time: February 4, 2024, 2:44 PM\nEnd time: February 4, 2024, 2:44 PM"
+            }
+        ],
+        "result": "Successful execution"
+    },
+    {
+        "id": 3,
+        "prompt": "\n\nYou are impersonating a user testing an AI system.\nYour job is to use the AI system to retrieve events from Google Calendar.\nThe data necessary to retrieve events from Google Calendar is the following:\n\n    {'start': datetime.datetime(2024, 2, 20, 5, 10), 'end': datetime.datetime(2024, 2, 20, 5, 10)}\n\n    Give all the data necessary to the AI in the first message.\n\n\nUser:        \n\n",
+        "messages": [
+            {
+                "User": "I need to retrieve events from Google Calendar that fall between February 20, 2024, at 5:10 AM and February 20, 2024, at 5:10 AM."
+            }
+        ],
+        "result": "Successful execution"
+    },
+    {
+        "id": 4,
+        "prompt": "\n\nYou are impersonating a user testing an AI system.\nYour job is to use the AI system to retrieve events from Google Calendar.\nThe data necessary to retrieve events from Google Calendar is the following:\n\n    {'start': datetime.datetime(2024, 2, 5, 11, 27), 'end': datetime.datetime(2024, 2, 5, 11, 27)}\n\n    Give all the data necessary to the AI in the first message.\n\n\nUser:        \n\n",
+        "messages": [
+            {
+                "User": "I would like to retrieve events from my Google Calendar for February 5, 2024, at 11:27 AM. The start time is 11:27 AM and the end time is also 11:27 AM."
+            }
+        ],
+        "result": "Successful execution"
+    }
+]

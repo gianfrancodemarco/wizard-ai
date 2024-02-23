@@ -1,17 +1,14 @@
-import pickle
-import textwrap
-from datetime import datetime
+import random
+from datetime import datetime, timedelta
 from typing import Dict, Optional, Type, Union
 
 from pydantic import BaseModel
 
-from wizard_ai.clients import (CreateCalendarEventPayload, GoogleClient,
-                               get_redis_client)
-from wizard_ai.constants.redis_keys import RedisKeys
-from wizard_ai.conversational_engine.form_agent import FormTool, FormToolState
+from wizard_ai.clients import CreateCalendarEventPayload
+from wizard_ai.conversational_engine.tools import GoogleCalendarCreator
 
 
-class GoogleCalendarCreator(FormTool):
+class GoogleCalendarCreatorEvaluation(GoogleCalendarCreator):
 
     name = "GoogleCalendarCreator"
     description = """Useful to create events/memos/reminders on Google Calendar."""
@@ -26,12 +23,7 @@ class GoogleCalendarCreator(FormTool):
         start: datetime,
         end: datetime
     ) -> str:
-        return {
-            "summary": summary,
-            "description": description,
-            "start": start,
-            "end": end
-        }
+        return "OK"
 
     def get_random_payload(self) -> Dict[str, Union[str, datetime]]:
         """
@@ -49,5 +41,5 @@ class GoogleCalendarCreator(FormTool):
             "summary": fake.text(max_nb_chars=30),
             "description": fake.text(),
             "start": start,
-            "end": start + fake.time_delta()
+            "end": start + timedelta(days=random.randint(1, 7), hours=random.randint(1, 3), minutes=random.randint(0, 59))
         }

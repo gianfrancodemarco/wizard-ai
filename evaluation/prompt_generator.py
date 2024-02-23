@@ -4,22 +4,26 @@ from tools.form_tools import *
 import json
 
 configs = {
-    "GoogleCalendarCreator": {
-        "tool": GoogleCalendarCreator(),
-        "task": "create an event on Google Calendar"
+    # "GoogleCalendarCreator": {
+    #     "tool": GoogleCalendarCreator(),
+    #     "task": "create an event on Google Calendar"
+    # },
+    # "GoogleCalendarRetriever": {
+    #     "tool": GoogleCalendarRetriever(),
+    #     "task": "retrieve events from Google Calendar"
+    # },
+    # "GmailSender": {
+    #     "tool": GmailSender(),
+    #     "task": "send an email"
+    # },
+    # "GmailRetriever": {
+    #     "tool": GmailRetriever(),
+    #     "task": "retrieve emails"
+    # },
+    "OnlinePurchase": {
+        "tool": OnlinePurchase(),
+        "task": "purchase an item"
     },
-    "GoogleCalendarRetriever": {
-        "tool": GoogleCalendarRetriever(),
-        "task": "retrieve events from Google Calendar"
-    },
-    "GmailSender": {
-        "tool": GmailSender(),
-        "task": "send an email"
-    },
-    "GmailRetriever": {
-        "tool": GmailRetriever(),
-        "task": "retrieve emails"
-    }
 }
 
 
@@ -51,40 +55,48 @@ def create_prompts():
                     {prompt_header}
                     {payload}
 
-                    State your will to the AI, without providing the data, and then follow his instructions to complete the job.
-                    Act like a very naive user, not giving all of the information at once, and let the AI guide you.
+                    Give all the data necessary to the AI in the first message.
 
                     {prompt_footer}
                 """,
-                f"""
-                    {prompt_header}
-                    {payload}
+                # f"""
+                #     {prompt_header}
+                #     {payload}
 
-                    State your will to the AI, without providing the data, and then follow his instructions to complete the job.
-                    Act like you don't know what data is necessary to complete the job, and let the AI guide you.
-                    Only provide the single information when requested by the AI.
-                    Be as direct as possible, and do not provide any unnecessary information.
+                #     State your will to the AI, without providing the data, and then follow his instructions to complete the job.
+                #     Act like a very naive user, mispell words, give the wrong information and then correct it.
 
-                    {prompt_footer}
-                """,
-                f"""
-                    {prompt_header}
-                    {payload}
+                #     {prompt_footer}
+                # """,
+                # f"""
+                #     {prompt_header}
+                #     {payload}
 
-                    State your will to the AI, without providing the data, and then follow his instructions to complete the job.
-                    Be as direct as possible, and do not provide any unnecessary information.
+                #     State your will to the AI, without providing the data, and then follow his instructions to complete the job.
+                #     Act like you don't know what data is necessary to complete the job, and let the AI guide you.
+                #     Only provide the single information when requested by the AI.
+                #     Be as direct as possible, and do not provide any unnecessary information.
 
-                    {prompt_footer}
-                """,
-                f"""
-                    {prompt_header}
-                    {payload}
+                #     {prompt_footer}
+                # """,
+                # f"""
+                #     {prompt_header}
+                #     {payload}
 
-                    State your will to the AI, and then follow his instructions to complete the job.
-                    Be as direct as possible, and do not provide any unnecessary information.
-                    Give all the necessary information to the AI in the first message.
-                    {prompt_footer}
-                """
+                #     State your will to the AI, without providing the data, and then follow his instructions to complete the job.
+                #     Be as direct as possible, and do not provide any unnecessary information.
+
+                #     {prompt_footer}
+                # """,
+                # f"""
+                #     {prompt_header}
+                #     {payload}
+
+                #     State your will to the AI, and then follow his instructions to complete the job.
+                #     Be as direct as possible, and do not provide any unnecessary information.
+                #     Give all the necessary information to the AI in the first message.
+                #     {prompt_footer}
+                # """
             ]
 
             for j, prompt_template in enumerate(prompt_templates):
