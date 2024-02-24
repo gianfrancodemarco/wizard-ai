@@ -107,12 +107,20 @@ class ModelFactory:
     def build_llm(
         tool_choice: str = None
     ):
-        return ChatOpenAI(
-            model=LLM_MODEL,
-            temperature=0,
-            verbose=True,
-            tool_choice={"type": "function", "function": {"name": tool_choice}} if tool_choice else None
-        )
+        params = {
+            "model": LLM_MODEL,
+            "temperature": 0,
+            "verbose": True
+        }
+        if tool_choice:
+            params["tool_choice"] = {
+                "type": "function",
+                "function": {
+                    "name": tool_choice
+                }
+            }
+
+        return ChatOpenAI(**params)
 
     def build_default_model(
         state: AgentState,

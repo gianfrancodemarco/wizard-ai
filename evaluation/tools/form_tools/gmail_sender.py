@@ -5,11 +5,16 @@ import faker
 
 from wizard_ai.conversational_engine.tools import GmailSender
 
-from .form_tool_for_evaluation import FormToolForEvaluation
-
 fake = faker.Faker()
 
-class GmailSenderEvaluation(GmailSender, FormToolForEvaluation):
+class GmailSenderEvaluation(GmailSender):
+    def _run_when_complete(
+        self,
+        *args,
+        **kwargs
+    ) -> str:
+        return "OK"
+
     def get_random_payload(self) -> Dict[str, Union[str, datetime]]:
         return {
             "to": fake.email(),

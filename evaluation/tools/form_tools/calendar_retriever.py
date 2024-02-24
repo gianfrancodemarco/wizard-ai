@@ -7,13 +7,18 @@ import faker
 
 from wizard_ai.conversational_engine.tools import GoogleCalendarRetriever
 
-from .form_tool_for_evaluation import FormToolForEvaluation
-
 fake = faker.Faker()
 
-class GoogleCalendarRetrieverEvaluation(GoogleCalendarRetriever, FormToolForEvaluation):
+class GoogleCalendarRetrieverEvaluation(GoogleCalendarRetriever):
     # We need to override the skip_confirm attribute from the parent class for evaluation purposes
     skip_confirm = False
+
+    def _run_when_complete(
+        self,
+        *args,
+        **kwargs
+    ) -> str:
+        return "OK"
 
     def get_random_payload(self) -> Dict[str, Union[str, datetime]]:
         start = fake.date_time_this_month()

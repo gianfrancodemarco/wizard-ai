@@ -96,6 +96,7 @@ async def process_message(data: dict) -> None:
         GoogleCalendarRetriever(chat_id=chat_id),
         GmailRetriever(chat_id=chat_id),
         GmailSender(chat_id=chat_id),
+        OnlinePurchase(),
         PythonCodeInterpreter()
     ]
 

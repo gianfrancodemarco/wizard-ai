@@ -3,10 +3,16 @@ from typing import Dict, Union
 
 from wizard_ai.conversational_engine.tools import OnlinePurchase
 
-from .form_tool_for_evaluation import FormToolForEvaluation
 
+class OnlinePurchaseEvaluation(OnlinePurchase):    
 
-class OnlinePurchaseEvaluation(OnlinePurchase, FormToolForEvaluation):    
+    def _run_when_complete(
+        self,
+        *args,
+        **kwargs
+    ) -> str:
+        return "OK"
+
     def get_random_payload(self) -> Dict[str, Union[str, datetime]]:
         """
         Use library faker to generate random data for the form.

@@ -6,11 +6,18 @@ import faker
 
 from wizard_ai.conversational_engine.tools import GoogleCalendarCreator
 
-from .form_tool_for_evaluation import FormToolForEvaluation
-
 fake = faker.Faker()
 
-class GoogleCalendarCreatorEvaluation(GoogleCalendarCreator, FormToolForEvaluation):
+class GoogleCalendarCreatorEvaluation(GoogleCalendarCreator):
+
+    def _run_when_complete(
+        self,
+        *args,
+        **kwargs
+    ) -> str:
+        return "OK"
+
+
     def get_random_payload(self) -> Dict[str, Union[str, datetime]]:        
         start = fake.date_time_this_month()
         start = start.replace(second=0, microsecond=0)

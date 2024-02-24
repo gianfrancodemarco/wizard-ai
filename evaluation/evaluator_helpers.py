@@ -34,7 +34,7 @@ def normalize_json(json_data):
     for key, value in json_data.items():
         if key in ['start', 'end']:
             json_data[key] = datetime.fromisoformat(
-                value.replace('T', ' ')).strftime('%Y-%m-%d %H:%M:%S')
+                value.replace('T', ' ').replace("Z", '')).strftime('%Y-%m-%d %H:%M:%S')
 
         if type(value) == str:
             json_data[key] = json_data[key].replace("\n", " ").replace(".", " ").replace(
