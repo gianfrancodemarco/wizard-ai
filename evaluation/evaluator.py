@@ -21,15 +21,15 @@ The evaluation is done for 2 different types of agents:
 """
 import json
 import os
-from datetime import datetime
-from typing import Any, Dict
 
-from langchain.agents.output_parsers.openai_tools import OpenAIToolAgentAction
-from langchain.schema import AIMessage, HumanMessage, SystemMessage
-from langchain_openai import ChatOpenAI
+from evaluator_helpers import *
 
-from wizard_ai.conversational_engine.form_agent.form_agent_executor import \
-    FormAgentExecutor
+os.environ["OPENAI_API_KEY"] = "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"
+
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
+os.environ["LANGCHAIN_API_KEY"] = "ls__fd0fe695f6734dedbf8536715ff000ee"
+os.environ["LANGCHAIN_PROJECT"] = "wizard-ai-evaluation"
 
 TEST_CASES_PATH = os.path.join(
     os.path.dirname(__file__), "prompts/prompts.json")
@@ -45,6 +45,10 @@ else:
     SystemModelClass = BasicAgentExecutorForEvaluation
 
 test_cases = json.loads(open(TEST_CASES_PATH).read())
+
+# Hack to resume after a crash
+test_cases = test_cases[49:]
+
 for test_case in test_cases:
     try:
         id = test_case["id"]
