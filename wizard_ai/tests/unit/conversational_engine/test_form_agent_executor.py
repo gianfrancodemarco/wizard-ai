@@ -85,8 +85,8 @@ class TestFormAgentExecutor:
     def test_should_continue_tool(self):
         graph = FormAgentExecutor()
         state = AgentState()
-        state["agent_outcome"] = AgentAction(
-            tool="MockBaseTool", tool_input={}, log="")
+        state["agent_outcome"] = [AgentAction(
+            tool="MockBaseTool", tool_input={}, log="")]
         result = graph.should_continue_after_agent(state)
         assert result == "tool"
 
@@ -146,8 +146,8 @@ class TestFormAgentExecutor:
             tools=[MockFormTool()],
         )
         state = AgentState()
-        state["agent_outcome"] = AgentAction(
-            tool="MockFormToolStart", tool_input={}, log="")
+        state["agent_outcome"] = [AgentAction(
+            tool="MockFormToolStart", tool_input={}, log="")]
         response = graph.call_tool(state)
         assert "intermediate_steps" in response
         assert "error" in response
@@ -158,8 +158,8 @@ class TestFormAgentExecutor:
             tools=[MockToolError()],
         )
         state = AgentState()
-        state["agent_outcome"] = AgentAction(
-            tool="MockToolError", tool_input={}, log="")
+        state["agent_outcome"] = [AgentAction(
+            tool="MockToolError", tool_input={}, log="")]
         response = graph.call_tool(state)
         assert "intermediate_steps" in response
         assert "error" in response
@@ -174,8 +174,8 @@ class TestFormAgentExecutor:
             on_tool_end=on_tool_end,
         )
         state = AgentState(
-            agent_outcome=AgentAction(
-                tool="MockFormToolStart", tool_input={}, log="")
+            agent_outcome=[AgentAction(
+                tool="MockFormToolStart", tool_input={}, log="")]
         )
         graph.call_tool(state)
         on_tool_start.assert_called_once()
@@ -188,8 +188,8 @@ class TestFormAgentExecutor:
         )
         state = AgentState(
             input="Hello",
-            agent_outcome=AgentAction(
-                tool="MockFormTool", tool_input={}, log=""),
+            agent_outcome=[AgentAction(
+                tool="MockFormTool", tool_input={}, log="")],
             intermediate_steps=(
                 (
                     AgentAction(tool="MockFormTool", tool_input={}, log=""),
