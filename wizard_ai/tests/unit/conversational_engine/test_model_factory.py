@@ -1,8 +1,8 @@
 from langchain_core.prompts.chat import ChatPromptTemplate
 
-from wizard_ai.conversational_engine.intent_agent import (AgentState,
-                                                          IntentAgentExecutor,
-                                                          ModelFactory)
+from wizard_ai.conversational_engine.form_agent import (AgentState,
+                                                        FormAgentExecutor,
+                                                        ModelFactory)
 
 from .mocks import *
 
@@ -15,28 +15,28 @@ class TestModelFactory:
         basic_template = "You are a personal assistant trying to help the user. You always answer in English."
         assert prompt_template.startswith(basic_template)
 
-    def test_build_model_active_intent_tool(self):
+    def test_build_model_active_form_tool(self):
         state = AgentState()
-        active_intent_tool = MockIntentTool()
-        active_intent_tool.set_active_state()
-        state["active_intent_tool"] = active_intent_tool
+        active_form_tool = MockFormTool()
+        active_form_tool.enter_active_state()
+        state["active_form_tool"] = active_form_tool
         model = ModelFactory.build_model(state=state)
         assert isinstance(model.steps[1], ChatPromptTemplate)
 
-    def test_build_model_active_intent_tool_information_to_collect(self):
+    def test_build_model_active_form_tool_information_to_collect(self):
         state = AgentState()
-        active_intent_tool = MockIntentToolWithFields()
-        active_intent_tool.set_active_state()
-        state["active_intent_tool"] = active_intent_tool
+        active_form_tool = MockFormToolWithFields()
+        active_form_tool.enter_active_state()
+        state["active_form_tool"] = active_form_tool
         model = ModelFactory.build_model(state=state)
         assert isinstance(model.steps[1], ChatPromptTemplate)
 
     def test_build_model_error(self):
         state = AgentState()
-        active_intent_tool = MockIntentTool()
-        active_intent_tool.set_active_state()
+        active_form_tool = MockFormTool()
+        active_form_tool.enter_active_state()
         state.update({
-            "active_intent_tool": active_intent_tool,
+            "active_form_tool": active_form_tool,
             "error": "Mocked error"
         })
         model = ModelFactory.build_model(state=state)

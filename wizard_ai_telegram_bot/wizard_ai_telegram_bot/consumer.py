@@ -57,6 +57,8 @@ class MAIAssistantConsumer:
 
         text = self._sanitize_text_for_telegram(
             f"""{Emojis.LOADING.value} {message["content"]}""")
+
+        # TODO: text is too long
         sent_message = await self.bot.send_message(
             chat_id=message["chat_id"],
             text=text,

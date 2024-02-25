@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 conversations_router = APIRouter(prefix="/conversations")
 
 
-@conversations_router.delete
+@conversations_router.delete("/")
 def delete_conversations(redis_client: RedisClientDep):
     """Delete all conversations"""
     redis_client.flushdb()

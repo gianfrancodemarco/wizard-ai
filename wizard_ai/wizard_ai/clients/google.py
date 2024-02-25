@@ -14,6 +14,7 @@ from wizard_ai.helpers import HtmlProcessor
 
 REDIS_HOST = os.environ.get('REDIS_HOST')
 REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
+GET_FULL_CONTENT = True
 
 
 class CreateCalendarEventPayload(BaseModel):
@@ -40,15 +41,12 @@ class CreateCalendarEventPayload(BaseModel):
 
 
 class GetCalendarEventsPayload(BaseModel):
-    number_of_events: Optional[int] = Field(
-        default=None,
-        description="Number of events to retrieve. Null if start and end are not null")
     start: Optional[datetime] = Field(
         default=None,
-        description="Start date to retrieve events from. Null if number_of_events is not null")
+        description="Start date to retrieve events from.")
     end: Optional[datetime] = Field(
         default=None,
-        description="End date to retrieve events from. Null if number_of_events is not null")
+        description="End date to retrieve events from.")
 
 
 class GetEmailsPayload(BaseModel):
@@ -68,6 +66,14 @@ class SendEmailPayload(BaseModel):
     body: str = Field(
         description="Body of the email"
     )
+
+    # @field_validator("to")
+    # def validate_email(cls, v):
+    #     import re
+    #     if not v:
+    #         return v
+    #     if not re.match(r"[^@]+@[^@]+\.[^@]+", v):
+    #         raise ValueError("Invalid email address")
 
 
 class GoogleClient:
@@ -99,13 +105,9 @@ class GoogleClient:
     ) -> List[Any]:
         service = build('calendar', 'v3', credentials=self.credentials)
 
-        if data.start and data.end:
-            # Google API need the timezone. For simplicity we set UTC
-            data.start = data.start.replace(tzinfo=timezone.utc)
-            data.end = data.end.replace(tzinfo=timezone.utc)
-        elif data.number_of_events:
-            data.start = datetime.now().replace(tzinfo=timezone.utc)
-            data.end = None
+        # Google API need the timezone. For simplicity we set UTC
+        data.start = data.start.replace(tzinfo=timezone.utc)
+        data.end = data.end.replace(tzinfo=timezone.utc)
 
         events_result = service.events().list(
             calendarId='primary',
@@ -132,7 +134,7 @@ class GoogleClient:
             event_start = event['start'].get(
                 'dateTime', event['start'].get('date'))
             event_end = event['end'].get('dateTime', event['end'].get('date'))
-            event_summary = event['summary']
+            event_summary = event.get('summary')
             event_link = event['htmlLink']
             event_string = f"{idx+1}. {event_start} - <a href=\"{event_link}\">{event_summary}</a>\n"
             events_string += event_string
@@ -167,7 +169,7 @@ class GoogleClient:
                            ['headers'] if header['name'] == 'Subject'), None)
 
             full_content = ''
-            GET_FULL_CONTENT = False
+
             if GET_FULL_CONTENT:
                 # Check if the email is in multipart format
                 if 'multipart' in msg['payload']['mimeType']:

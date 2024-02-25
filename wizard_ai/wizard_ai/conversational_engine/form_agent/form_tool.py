@@ -2,7 +2,7 @@ import json
 import operator
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import (Annotated, Any, Dict, Optional, Sequence, Type, TypedDict,
+from typing import (Annotated, Any, Dict, Optional, Type, TypedDict,
                     Union)
 
 from langchain.callbacks.manager import CallbackManagerForToolRun
@@ -13,7 +13,7 @@ from langchain_core.tools import BaseTool, StructuredTool, ToolException
 from pydantic import BaseModel, Field, ValidationError, create_model
 
 
-class IntentToolState(Enum):
+class FormToolState(Enum):
     INACTIVE = "INACTIVE"
     ACTIVE = "ACTIVE"
     FILLED = "FILLED"
@@ -22,17 +22,17 @@ class IntentToolState(Enum):
 # so we need to create a dummy class that inherits from BaseModel.
 
 
-class IntentToolInactivePayload(BaseModel):
+class FormToolInactivePayload(BaseModel):
     pass
 
 
-class IntentToolConfirmPayload(BaseModel):
+class FormToolConfirmPayload(BaseModel):
     confirm: bool = Field(
-        description="True if the user confirms the intent, False if not or wants to change something."
+        description="True if the user confirms the form, False if not or wants to change something."
     )
 
 
-class IntentToolOutcome(BaseModel):
+class FormToolOutcome(BaseModel):
     """
     Represents a form tool output.
     The output is returned as str.
@@ -81,57 +81,122 @@ def make_optional_model(original_model: BaseModel) -> BaseModel:
     return OptionalModel
 
 
-class IntentTool(StructuredTool, ABC):
+class FormTool(StructuredTool, ABC):
     form: BaseModel = None
+    state: Union[FormToolState | None] = None
+    skip_confirm: Optional[bool] = False
+
+    # Backup attributes for handling changes in the state
     args_schema_: Optional[Type[BaseModel]] = None
     description_: Optional[str] = None
-    state: Union[IntentToolState | None] = None
-    skip_confirm: Optional[bool] = False
+    name_: Optional[str] = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.args_schema_ = None
+        self.name_ = None
         self.description_ = None
         self.init_state()
 
     def init_state(self):
         state_initializer = {
-            None: self.set_inactive_state,
-            IntentToolState.INACTIVE: self.set_inactive_state,
-            IntentToolState.ACTIVE: self.set_active_state,
-            IntentToolState.FILLED: self.set_filled_state
+            None: self.enter_inactive_state,
+            FormToolState.INACTIVE: self.enter_inactive_state,
+            FormToolState.ACTIVE: self.enter_active_state,
+            FormToolState.FILLED: self.enter_filled_state
         }
         state_initializer[self.state]()
 
-    def set_inactive_state(self):
+    def enter_inactive_state(self):
         # Guard so that we don't overwrite the original args_schema if
         # set_inactive_state is called multiple times
-        if not self.state == IntentToolState.INACTIVE:
-            self.state = IntentToolState.INACTIVE
+        if not self.state == FormToolState.INACTIVE:
+            self.state = FormToolState.INACTIVE
+            self.name_ = self.name
+            self.name = f"{self.name_}Start"
             self.description_ = self.description
-            self.description = f"Starts the intent {self.name}, which {self.description_}"
+            self.description = f"Starts the form {self.name}, which {self.description_}"
             self.args_schema_ = self.args_schema
-            self.args_schema = IntentToolInactivePayload
+            self.args_schema = FormToolInactivePayload
 
-    def set_active_state(self):
+    def enter_active_state(self):
         # if not self.state == FormToolState.ACTIVE:
-        self.state = IntentToolState.ACTIVE
-        self.description = f"Updates data for intent {self.name}, which {self.description_}"
+        self.state = FormToolState.ACTIVE
+        self.name = f"{self.name_}Update"
+        self.description = f"Updates data for form {self.name}, which {self.description_}"
         self.args_schema = make_optional_model(self.args_schema_)
         if not self.form:
             self.form = self.args_schema()
         elif isinstance(self.form, str):
             self.form = self.args_schema(**json.loads(self.form))
 
-    def set_filled_state(self):
-        self.state = IntentToolState.FILLED
-        self.description = f"Finalizes intent {self.name}, which {self.description_}"
+    def enter_filled_state(self):
+        self.state = FormToolState.FILLED
+        self.name = f"{self.name_}Finalize"
+        self.description = f"Finalizes form {self.name}, which {self.description_}"
         self.args_schema = make_optional_model(self.args_schema_)
         if not self.form:
             self.form = self.args_schema()
         elif isinstance(self.form, str):
             self.form = self.args_schema(**json.loads(self.form))
-        self.args_schema = IntentToolConfirmPayload
+        self.args_schema = FormToolConfirmPayload
+
+    def activate(
+        self,
+        *args,
+        run_manager: Optional[CallbackManagerForToolRun] = None,
+        **kwargs
+    ) -> FormToolOutcome:
+        self.enter_active_state()
+        return FormToolOutcome(
+            output=f"Starting form {self.name}. If the user as already provided some information, call {self.name}.",
+            active_form_tool=self,
+            tool_choice=self.name
+        )
+
+    def update(
+        self,
+        *args,
+        run_manager: Optional[CallbackManagerForToolRun] = None,
+        **kwargs
+    ) -> FormToolOutcome:
+        self._update_form(**kwargs)
+        if self.is_form_filled():
+            self.enter_filled_state()
+            if self.skip_confirm:
+                return self.finalize(confirm=True)
+            else:
+                return FormToolOutcome(
+                    active_form_tool=self,
+                    output="Form is filled. Ask the user to confirm the information."
+                )
+        else:
+            return FormToolOutcome(
+                active_form_tool=self,
+                output="Form updated with the provided information. Ask the user for the next field."
+            )
+
+    def finalize(
+        self,
+        *args,
+        run_manager: Optional[CallbackManagerForToolRun] = None,
+        **kwargs
+    ) -> FormToolOutcome:
+        if kwargs.get("confirm"):
+            # The FormTool could use self.form to get the data, but we pass it as kwargs to
+            # keep the signature consistent with _run
+            result = self._run_when_complete(**self.form.model_dump())
+            return FormToolOutcome(
+                active_form_tool=None,
+                output=result,
+                return_direct=self.return_direct
+            )
+        else:
+            self.enter_active_state()
+            return FormToolOutcome(
+                active_form_tool=self,
+                output="Ask the user to update the form."
+            )
 
     def _run(
         self,
@@ -140,50 +205,14 @@ class IntentTool(StructuredTool, ABC):
         **kwargs
     ) -> str:
         match self.state:
-            case IntentToolState.INACTIVE:
-                self.set_active_state()
-                return IntentToolOutcome(
-                    output=f"Starting intent {self.name}. If the user as already provided some information, call {self.name}.",
-                    active_intent_tool=self,
-                    function_call=self.name
-                )
-            case IntentToolState.ACTIVE:
-                self._update_form(**kwargs)
-                if self.is_form_filled():
-                    self.set_filled_state()
-                    if self.skip_confirm:
-                        result = self._run_when_complete()
-                        return IntentToolOutcome(
-                            active_intent_tool=None,
-                            output=result,
-                            return_direct=self.return_direct
-                        )
-                    else:
-                        return IntentToolOutcome(
-                            active_intent_tool=self,
-                            output="Form is filled. Ask the user to confirm the information."
-                        )
-                else:
-                    return IntentToolOutcome(
-                        active_intent_tool=self,
-                        output="Form updated with the provided information. Ask the user for the next field."
-                    )
-            case IntentToolState.FILLED:
-                if kwargs.get("confirm"):
-                    result = self._run_when_complete()
-                    # if no exception is raised, the form is complete and the tool is
-                    # done, so reset the active form tool
-                    return IntentToolOutcome(
-                        active_intent_tool=None,
-                        output=result,
-                        return_direct=self.return_direct
-                    )
-                else:
-                    self.set_active_state()
-                    return IntentToolOutcome(
-                        active_intent_tool=self,
-                        output="Ask the user to update the form."
-                    )
+            case FormToolState.INACTIVE:
+                return self.activate(*args, **kwargs, run_manager=run_manager)
+
+            case FormToolState.ACTIVE:
+                return self.update(*args, **kwargs, run_manager=run_manager)
+
+            case FormToolState.FILLED:
+                return self.finalize(*args, **kwargs, run_manager=run_manager)
 
     def is_form_filled(self) -> bool:
         """
@@ -222,7 +251,7 @@ class IntentTool(StructuredTool, ABC):
         """
         The default implementation returns the first field that is not set.
         """
-        if self.state == IntentToolState.FILLED:
+        if self.state == FormToolState.FILLED:
             return None
 
         for field_name, field_info in self.args_schema.__fields__.items():
@@ -232,11 +261,11 @@ class IntentTool(StructuredTool, ABC):
     def get_tool_start_message(self, input: dict) -> str:
         message = ""
         match self.state:
-            case IntentToolState.INACTIVE:
+            case FormToolState.INACTIVE:
                 message = f"Starting {self.name}"
-            case IntentToolState.ACTIVE:
+            case FormToolState.ACTIVE:
                 message = f"Updating form for {self.name}"
-            case IntentToolState.FILLED:
+            case FormToolState.FILLED:
                 message = f"Completed {self.name}"
         return message
 
@@ -255,7 +284,7 @@ class AgentState(TypedDict):
                                             AgentFinish, None]], operator.setitem]
     # The outcome of a given call to a tool
     # Needs `None` as a valid type, since this is what this will start as
-    tool_outcome: Annotated[Optional[Union[IntentToolOutcome,
+    tool_outcome: Annotated[Optional[Union[FormToolOutcome,
                                            str, None]], operator.setitem]
     # List of actions and corresponding observations
     # Here we annotate this with `operator.add` to indicate that operations to
@@ -264,40 +293,19 @@ class AgentState(TypedDict):
                                                       FunctionMessage]]], operator.add]
     error: Annotated[Optional[str], operator.setitem]
 
-    active_intent_tool: Annotated[Optional[IntentTool], operator.setitem]
+    active_form_tool: Annotated[Optional[FormTool], operator.setitem]
 
-    function_call: Annotated[Optional[str], operator.setitem]
+    # Used to force the agent to call a specific tool
+    tool_choice: Annotated[Optional[str], operator.setitem]
 
 
-class ContextReset(BaseTool):
-    name = "ContextReset"
-    description = """Call this tool when the user doesn't want to complete the intent anymore. DON'T call it when he wants to change some data."""
-    args_schema: Type[BaseModel] = IntentToolInactivePayload
+class FormReset(BaseTool):
+    name = "FormReset"
+    description = """Call this tool when the user doesn't want to complete the form anymore. DON'T call it when he wants to change some data."""
+    args_schema: Type[BaseModel] = FormToolInactivePayload
 
     def _run(self, *args: Any, **kwargs: Any) -> Any:
-        return IntentToolOutcome(
-            state_update={
-                "active_intent_tool": None
-            },
-            output="Context reset. Form cleared. Ask the user what he wants to do next."
+        return FormToolOutcome(
+            active_form_tool=None,
+            output="Form reset. Form cleared. Ask the user what he wants to do next."
         )
-
-
-def filter_active_tools(
-    tools: Sequence[BaseTool],
-    context: AgentState
-):
-    """
-    Form tools are replaced by their activators if they are not active.
-    """
-    if context.get("active_intent_tool"):
-        # If a form_tool is active, it is the only form tool available
-        base_tools = [
-            tool for tool in tools if not isinstance(
-                tool, IntentTool)]
-        tools = [
-            *base_tools,
-            context.get("active_intent_tool"),
-            ContextReset(context=context)
-        ]
-    return tools

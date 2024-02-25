@@ -10,18 +10,18 @@ from langchain_core.language_models.chat_models import *
 from langchain_core.messages import FunctionMessage
 from langgraph.graph import END, StateGraph
 
-from wizard_ai.conversational_engine.intent_agent.intent_tool import (
-    AgentState, IntentToolOutcome, filter_active_tools)
-from wizard_ai.conversational_engine.intent_agent.intent_tool_executor import \
-    IntentToolExecutor
-from wizard_ai.conversational_engine.intent_agent.model_factory import \
+from wizard_ai.conversational_engine.form_agent.form_tool import (
+    AgentState, FormReset, FormTool, FormToolOutcome)
+from wizard_ai.conversational_engine.form_agent.form_tool_executor import \
+    FormToolExecutor
+from wizard_ai.conversational_engine.form_agent.model_factory import \
     ModelFactory
 
 logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)
 
 
-class IntentAgentExecutor(StateGraph):
+class FormAgentExecutor(StateGraph):
 
     MAX_INTERMEDIATE_STEPS = 5
 
@@ -74,7 +74,7 @@ class IntentAgentExecutor(StateGraph):
             agent_state) if tool.name == name), None)
 
     def get_tool_executor(self, state: AgentState):
-        return IntentToolExecutor(self.get_tools(state))
+        return FormToolExecutor(self.get_tools(state))
 
     def should_continue_after_agent(self, state: AgentState):
         if state.get("error"):
@@ -87,7 +87,7 @@ class IntentAgentExecutor(StateGraph):
     def should_continue_after_tool(self, state: AgentState):
         if state.get("error"):
             return "error"
-        elif isinstance(state.get("tool_outcome"), IntentToolOutcome) and state.get("tool_outcome").return_direct:
+        elif isinstance(state.get("tool_outcome"), FormToolOutcome) and state.get("tool_outcome").return_direct:
             return "end"
         else:
             return "continue"
@@ -108,9 +108,15 @@ class IntentAgentExecutor(StateGraph):
                     "intermediate_steps")[-self.MAX_INTERMEDIATE_STEPS:]
 
             agent_outcome = self.build_model(state=state).invoke(state)
+
+            # TODO: workaround for migrating from functions to tools
+            if isinstance(agent_outcome, list) and isinstance(
+                    agent_outcome[0], AgentAction):
+                agent_outcome = agent_outcome[0]
+
             updates = {
                 "agent_outcome": agent_outcome,
-                "function_call": None,  # Reset the function call
+                "tool_choice": None,  # Reset the function call
                 "tool_outcome": None,  # Reset the tool outcome
                 "error": None  # Reset the error
             }
@@ -155,7 +161,7 @@ class IntentAgentExecutor(StateGraph):
             traceback.print_exc()
             updates = {
                 "intermediate_steps": [(action, FunctionMessage(
-                    content=str(e),
+                    content=f"{type(e).__name__}: {str(e)}",
                     name=action.tool
                 ))],
                 "error": str(e)
@@ -179,3 +185,23 @@ class IntentAgentExecutor(StateGraph):
             output = state.get("agent_outcome").return_values["output"]
 
         return output
+
+
+def filter_active_tools(
+    tools: Sequence[BaseTool],
+    context: AgentState
+):
+    """
+    Form tools are replaced by their activators if they are not active.
+    """
+    if context.get("active_form_tool"):
+        # If a form_tool is active, it is the only form tool available
+        base_tools = [
+            tool for tool in tools if not isinstance(
+                tool, FormTool)]
+        tools = [
+            *base_tools,
+            context.get("active_form_tool"),
+            FormReset(context=context)
+        ]
+    return tools

@@ -80,38 +80,6 @@ def test_get_calendar_events():
     assert events[2]['summary'] == 'Event 3'
 
 
-def test_get_calendar_events_by_number_of_events():
-    credentials = MagicMock(spec=Credentials)
-    client = GoogleClient(credentials)
-
-    payload = GetCalendarEventsPayload(
-        number_of_events=5
-    )
-
-    # Mock the build and events().list().execute() methods
-    service_mock = MagicMock()
-    events_mock = MagicMock()
-    events_mock.list.return_value.execute.return_value = {
-        'items': [
-            {'summary': 'Event 1'},
-            {'summary': 'Event 2'},
-            {'summary': 'Event 3'},
-        ]
-    }
-    service_mock.events.return_value = events_mock
-
-    with patch('wizard_ai.clients.google.build', return_value=service_mock):
-        events = client.get_calendar_events(payload)
-
-    # Verify that the correct events were retrieved
-    events_mock.list.assert_called_once()
-    events_mock.list.return_value.execute.assert_called_once()
-    assert len(events) == 3
-    assert events[0]['summary'] == 'Event 1'
-    assert events[1]['summary'] == 'Event 2'
-    assert events[2]['summary'] == 'Event 3'
-
-
 def test_get_calendar_events_html():
     credentials = MagicMock(spec=Credentials)
     client = GoogleClient(credentials)
@@ -225,7 +193,11 @@ def test_get_emails():
                 {'name': 'From', 'value': 'sender@example.com'},
                 {'name': 'Date', 'value': '2022-01-01'},
                 {'name': 'Subject', 'value': 'Test Email'},
-            ]
+            ],
+            'mimeType': 'text/plain',
+            'body': {
+                'data': 'VGhpcyBpcyBhIHRlc3QgZW1haWw='
+            }
         },
         'snippet': 'This is a test email'
     }

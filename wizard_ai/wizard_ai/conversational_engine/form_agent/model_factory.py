@@ -5,7 +5,7 @@ import re
 from datetime import datetime
 from textwrap import dedent
 
-from langchain.agents import create_openai_functions_agent
+from langchain.agents import create_openai_tools_agent
 from langchain.tools import BaseTool
 from langchain_core.language_models.chat_models import *
 from langchain_core.prompts.chat import (ChatPromptTemplate,
@@ -15,7 +15,7 @@ from langchain_core.prompts.chat import (ChatPromptTemplate,
 from langchain_core.prompts.prompt import PromptTemplate
 from langchain_openai import ChatOpenAI
 
-from wizard_ai.conversational_engine.intent_agent.intent_tool import AgentState
+from wizard_ai.conversational_engine.form_agent.form_tool import AgentState
 
 logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)
@@ -75,10 +75,14 @@ def information_to_collect_prompt_template(
 def ask_for_confirmation_prompt_template(
     form_tool: BaseTool
 ):
+    information_collected = re.sub("}", "}}", re.sub("{", "{{", str(
+        {name: value for name, value in form_tool.form.__dict__.items() if value})))
+
     return SystemMessagePromptTemplate.from_template(dedent(
         f"""
         Help the user fill data for {form_tool.name}. You have all the information you need.
-        Show the user all of the information and ask for confirmation.
+        Show the user all of the information using bullet points and ask for confirmation:
+        {information_collected}
         If he agrees, call the {form_tool.name} tool one more time with confirm=True.
         If he doesn't or want to change something, call it with confirm=False.
         """
@@ -95,19 +99,20 @@ class ModelFactory:
         builder = ModelFactory.build_default_model
         if state.get("error"):
             builder = ModelFactory.build_error_model
-        elif state.get("active_intent_tool"):
-            builder = ModelFactory.build_intent_model
+        elif state.get("active_form_tool"):
+            builder = ModelFactory.build_form_model
 
         return builder(state, tools)
 
     def build_llm(
-        function_call: str = None
+        tool_choice: str = None
     ):
         return ChatOpenAI(
             model=LLM_MODEL,
             temperature=0,
             verbose=True,
-            function_call={"name": function_call} if function_call else None
+            tool_choice={"type": "function", "function": {
+                "name": tool_choice}} if tool_choice else None
         )
 
     def build_default_model(
@@ -120,14 +125,12 @@ class ModelFactory:
             tools=tools
         )
 
-    def build_intent_model(
+    def build_form_model(
         state: AgentState,
         tools: List[BaseTool] = []
     ):
 
-        form_tool = state.get("active_intent_tool")
-        information_collected = re.sub("}", "}}", re.sub("{", "{{", str(
-            {name: value for name, value in form_tool.form.__dict__.items() if value})))
+        form_tool = state.get("active_form_tool")
 
         information_to_collect = form_tool.get_next_field_to_collect()
         if information_to_collect:
@@ -163,8 +166,8 @@ class ModelFactory:
         prompt: ChatPromptTemplate,
         tools: List[BaseTool] = []
     ):
-        return create_openai_functions_agent(
-            ModelFactory.build_llm(state.get("function_call")),
+        return create_openai_tools_agent(
+            ModelFactory.build_llm(state.get("tool_choice")),
             tools,
             prompt=prompt
         )
