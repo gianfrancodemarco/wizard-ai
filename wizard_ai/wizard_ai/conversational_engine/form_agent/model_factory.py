@@ -1,3 +1,16 @@
+"""
+The code provided seems to be a Python script that contains classes and methods related to building models for conversational agents using openAI tools. 
+
+Here is a summary of the main components in the code:
+1. Import statements to import necessary modules and classes.
+2. Definition of various prompt templates for guiding the behavior of the conversational agent, such as system messages, error corrections, data collection prompts, and confirmation prompts.
+3. Definition of a ModelFactory class that contains methods for building different types of models based on the state of the conversational agent, including default models, error models, and form models.
+4. The build_llm method within the ModelFactory class creates an instance of the ChatOpenAI class for utilizing the specified language model.
+5. The build_default_model, build_form_model, and build_error_model methods within the ModelFactory class are used to construct specific types of conversational models based on the agent's current state.
+6. Private helper method __build_model_from_state_and_prompt is called by the above methods to create the model using the specified prompt template.
+
+If you have any specific questions or need further clarification on any part of the code, please let me know!
+"""
 import logging
 import os
 import pprint
