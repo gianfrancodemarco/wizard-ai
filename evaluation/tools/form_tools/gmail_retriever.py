@@ -8,7 +8,9 @@ from wizard_ai.conversational_engine.tools import GmailRetriever
 fake = faker.Faker()
 
 class GmailRetrieverEvaluation(GmailRetriever):
-    
+    # We need to override the skip_confirm attribute from the parent class for evaluation purposes
+    skip_confirm = False
+
     def _run_when_complete(
         self,
         *args,

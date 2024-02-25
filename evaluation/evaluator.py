@@ -82,9 +82,14 @@ for test_case in test_cases:
             evaluation_logger.log_ai_message(system_response)
             user_response = user_model.execute(system_response)
             evaluation_logger.log_user_message(user_response)
+
+            if user_response in ["Goodbye!", "Thank you!", "Thank you, you too!", "Thank you! Goodbye!"]:
+                raise ConversationAborted()
     except SuccessfulExecution:
         evaluation_logger.log_result("Successful execution")
     except MaxIterationsReached:
         evaluation_logger.log_result("Max iterations reached")
+    except ConversationAborted:
+        evaluation_logger.log_result("Conversation aborted")
     finally:
         evaluation_logger.dump()

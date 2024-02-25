@@ -21,6 +21,14 @@ class SuccessfulExecution(Exception):
     pass
 
 
+class ConversationAborted(Exception):
+    """
+    This exception is raised when the conversation reaches an unrecoverable state.
+    For example, when the agents are stuck in a loop saying Goodbye to each other.
+    """
+    pass
+
+
 def normalize_json(json_data):
     """
     The LLM can call the correct tool with the correct output, but it may differ from the expected one by small details.
@@ -28,9 +36,12 @@ def normalize_json(json_data):
 
     This function normalizes the JSON string so that it can be compared with the expected output.
     We assume that these small differences are not relevant for the evaluation.
+
+    Also, remove attributes that end in _, as by convention they are not relevant for the evaluation.
     """
 
-    # Normalize date format
+    json_data = {key: value for key, value in json_data.items() if not key.endswith('_')}
+
     for key, value in json_data.items():
         if key in ['start', 'end']:
             json_data[key] = datetime.fromisoformat(
@@ -38,8 +49,8 @@ def normalize_json(json_data):
 
         if type(value) == str:
             json_data[key] = json_data[key].replace("\n", " ").replace(".", " ").replace(
-                ",", " ").replace("  ", " ").lower()
-
+                ",", " ").replace("  ", " ").lower().strip()
+            
     # Normalize whitespace
     json_data = {key: value.strip() if isinstance(
         value, str) else value for key, value in json_data.items()}

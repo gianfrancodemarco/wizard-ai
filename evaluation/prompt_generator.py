@@ -51,21 +51,33 @@ USE_CASES = [
         """)
     },
     {
-        "name": "MINIMAL_INFORMATION_FIRST_MESSAGE",
+        "name": "NO_INFORMATION_FIRST_MESSAGE",
         "prompt": dedent("""
 
-            State your will to the system, without providing the data, and then follow his instructions to complete the job.
+            State your will to the system, without providing any data, and then follow his instructions to complete the job.
+            For example "I want to create an event", or "I want to buy something".
             \n
 
             User:
         """)
     },
     {
-        "name": "MISLEADING_INFORMATION",
+        "name": "MAIN_INFORMATION_FIRST_MESSAGE",
         "prompt": dedent("""
 
-            State your will to the system, without providing the data, and then follow his instructions to complete the job.
-            Act like a very naive user, mispell words, give the wrong information and then correct it.
+            State what you want to do, providing only the main information, and then follow his instructions to complete the job.
+            For example "I want to create an event called 'Meeting'", or "I want to buy a watch".
+            \n
+
+            User:
+        """)
+    },
+    {
+        "name": "CONFUSED_USER",
+        "prompt": dedent("""
+
+            State your will to the system, without providing any data, and then follow his instructions to complete the job.
+            Act like a very naive user who doesn't know what to do, mispell words, give the wrong information and then correct it.
             \n
 
             User:

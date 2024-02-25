@@ -14,7 +14,7 @@ class OnlinePurchasePayload(BaseModel):
     )
 
     ebook: Optional[bool] = Field(
-        description="Whether the book is an ebook"
+        description="If true, the book will be sent as an ebook, if false it will be sent as a physical copy. Required if item is book"
     )
 
     email: Optional[str] = Field(
@@ -53,8 +53,9 @@ class OnlinePurchasePayload(BaseModel):
     
     @model_validator(mode="before")
     def set_allowed_provinces(cls, values: Any) -> Any:
-        region = values.get("region")
-        province = values.get("province")
+        region = values.get("region").lower() if values.get("region") else None
+        province = values.get("province").lower() if values.get("province") else None
+        
         if region:
             allowed_provinces = []
             if region == "puglia":
@@ -64,8 +65,9 @@ class OnlinePurchasePayload(BaseModel):
             if region == "toscana":
                 allowed_provinces = ["arezzo", "firenze", "grosseto", "livorno", "lucca", "massa-carrara", "pisa", "pistoia", "prato", "siena"]
             values.update({
-                "allowed_provinces_": allowed_provinces,
-                "province": province
+                "region": region,
+                "province": province,
+                "allowed_provinces_": allowed_provinces
             })
         return values
 
