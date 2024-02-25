@@ -1,3 +1,20 @@
+"""
+This code defines a `FormAgentExecutor` class which is a state graph that orchestrates the execution of a series of tools in a conversational form agent. Here's an overview of what each part of the code does:
+
+1. The `FormAgentExecutor` class:
+   - Initializes with a list of tools, and optional start and end callback functions.
+   - Builds a state graph with two main nodes: "agent" for calling the agent and "tool" for calling individual tools.
+   - Contains methods to get tools, get a tool by name, get a tool executor, build a model, and define conditions to continue after the agent or a tool.
+   - Calls the agent and tools based on the current state, handling errors and updating the state accordingly.
+   - Provides methods to start and end a tool and parse the final output of the graph.
+
+2. Helper functions:
+   - `filter_active_tools`: Filters out inactive form tools and replaces them with their activators if there is an active form tool.
+
+3. Import statements and variable declarations at the beginning of the code.
+
+The `FormAgentExecutor` class is essentially a controller that manages the flow of interactions between the agent and various tools in a conversational agent scenario. The class handles the invocation of tools, tracks intermediate steps, and manages error handling. It provides a structured way to coordinate the dialogue flow in a conversational agent system.
+"""
 import logging
 import pprint
 import traceback
