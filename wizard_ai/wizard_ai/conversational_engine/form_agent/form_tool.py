@@ -212,16 +212,6 @@ class FormTool(StructuredTool, ABC):
             case FormToolState.FILLED:
                 return self.finalize(*args, **kwargs, run_manager=run_manager)
 
-    def is_form_filled(self) -> bool:
-        """
-        The default implementation checks if all values except optional ones are set.
-        """
-        for field_name, field_info in self.args_schema.__fields__.items():
-            # if field_info.is_required():
-            if not getattr(self.form, field_name):
-                return False
-        return True
-
     @abstractmethod
     def _run_when_complete(self) -> str:
         """
@@ -230,17 +220,15 @@ class FormTool(StructuredTool, ABC):
         """
 
     def _update_form(self, **kwargs):
-        for key, value in kwargs.items():
-            try:
-                setattr(self.form, key, value)
-            except ValidationError as e:
-                # build a string message with the error
-                messages = []
-                for error in e.errors():
-                    messages.append(
-                        f"Error at {error['loc'][0]}: {error['msg']}")
-                message = "\n".join(messages)
-                raise ToolException(message)
+        try:
+            model_class = type(self.form)
+            data = self.form.model_dump()
+            data.update(kwargs)
+            # Recreate the model with the new data merged to the old one
+            # This allows to validate multiple fields at once
+            self.form = model_class(**data)
+        except ValidationError as e:
+            raise ToolException(str(e))
 
     def get_next_field_to_collect(
         self,
@@ -256,6 +244,9 @@ class FormTool(StructuredTool, ABC):
             if not getattr(self.form, field_name):
                 return field_name
 
+    def is_form_filled(self) -> bool:
+        return self.get_next_field_to_collect() is None
+
     def get_tool_start_message(self, input: dict) -> str:
         message = ""
         match self.state:
@@ -266,10 +257,6 @@ class FormTool(StructuredTool, ABC):
             case FormToolState.FILLED:
                 message = f"Completed {self.name}"
         return message
-
-    def get_information_to_collect(self) -> str:
-        return str(list(self.args.keys()))
-
 
 class AgentState(TypedDict):
     # The input string

@@ -81,7 +81,7 @@ class FormAgentExecutor(StateGraph):
             return "error"
         elif isinstance(state.get("agent_outcome"), AgentFinish):
             return "end"
-        elif isinstance(state.get("agent_outcome"), AgentAction):
+        if isinstance(state.get("agent_outcome"), list):
             return "tool"
 
     def should_continue_after_tool(self, state: AgentState):
@@ -109,10 +109,6 @@ class FormAgentExecutor(StateGraph):
 
             agent_outcome = self.build_model(state=state).invoke(state)
 
-            # TODO: workaround for migrating from functions to tools
-            if isinstance(agent_outcome, list) and isinstance(agent_outcome[0], AgentAction):
-                agent_outcome = agent_outcome[0]
-
             updates = {
                 "agent_outcome": agent_outcome,
                 "tool_choice": None,  # Reset the function call
@@ -136,22 +132,30 @@ class FormAgentExecutor(StateGraph):
 
     def call_tool(self, state: AgentState):
         try:
-            action = state.get("agent_outcome")
-            tool = self.get_tool_by_name(action.tool, state)
+            actions = state.get("agent_outcome")
+            intermediate_steps = []
 
-            self.on_tool_start(tool=tool, tool_input=action.tool_input)
-            tool_outcome = self.get_tool_executor(state).invoke(action)
-            self.on_tool_end(tool=tool, tool_output=tool_outcome.output)
+            for action in actions:
+                tool = self.get_tool_by_name(action.tool, state)
+
+                self.on_tool_start(tool=tool, tool_input=action.tool_input)
+                tool_outcome = self.get_tool_executor(state).invoke(action)
+                self.on_tool_end(tool=tool, tool_output=tool_outcome.output)
+
+                intermediate_steps.append(
+                    (
+                        action,
+                        FunctionMessage(
+                            content=str(tool_outcome.output),
+                            name=action.tool
+                        )
+                    )
+                )
 
             updates = {
                 **tool_outcome.state_update,
-                "intermediate_steps": [(
-                    action,
-                    FunctionMessage(
-                        content=str(tool_outcome.output),
-                        name=action.tool
-                    ))],
-                "tool_outcome": tool_outcome,
+                "intermediate_steps": intermediate_steps,
+                "tool_outcome": tool_outcome, # this isn't really correct with multiple tools
                 "agent_outcome": None,
                 "error": None
             }

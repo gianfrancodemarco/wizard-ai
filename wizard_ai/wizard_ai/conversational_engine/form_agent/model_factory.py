@@ -66,7 +66,7 @@ def information_to_collect_prompt_template(
     return SystemMessagePromptTemplate.from_template(dedent(
         f"""
         Help the user fill data for {form_tool.name}. Ask to provide the needed information.
-        Now you MUST ask the user to provide a value for the field "{information_to_collect}".
+        Now you must should update the form with any information the user provided or ask the user to provide a value for the field "{information_to_collect}".
         You MUST use the {form_tool.name} tool to update the stored data each time the user provides one or more values.
         """
     ).strip())
@@ -107,12 +107,20 @@ class ModelFactory:
     def build_llm(
         tool_choice: str = None
     ):
-        return ChatOpenAI(
-            model=LLM_MODEL,
-            temperature=0,
-            verbose=True,
-            tool_choice={"type": "function", "function": {"name": tool_choice}} if tool_choice else None
-        )
+        params = {
+            "model": LLM_MODEL,
+            "temperature": 0,
+            "verbose": True
+        }
+        if tool_choice:
+            params["tool_choice"] = {
+                "type": "function",
+                "function": {
+                    "name": tool_choice
+                }
+            }
+
+        return ChatOpenAI(**params)
 
     def build_default_model(
         state: AgentState,
