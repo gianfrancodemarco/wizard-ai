@@ -47,7 +47,7 @@ else:
 test_cases = json.loads(open(TEST_CASES_PATH).read())
 
 # Hack to resume after a crash
-test_cases = test_cases[49:]
+test_cases = test_cases[160:]
 
 for test_case in test_cases:
     try:
