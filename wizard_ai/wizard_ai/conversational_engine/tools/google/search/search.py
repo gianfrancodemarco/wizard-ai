@@ -1,6 +1,6 @@
 from typing import Optional, Type
 
-from langchain.tools.base import BaseTool
+from langchain.tools.base import StructuredTool
 from langchain_core.callbacks import CallbackManagerForToolRun
 from pydantic import BaseModel
 
@@ -8,10 +8,10 @@ from wizard_ai.clients.google_search import (GoogleSearchClient,
                                              GoogleSearchClientPayload)
 
 
-class GoogleSearch(BaseTool):
+class GoogleSearch(StructuredTool):
 
     name: str = "GoogleSearch"
-    description: str = "Useful for searching the internet with Google to retrieve up to date information."
+    description: str = "Useful for searching the internet with Google to retrieve up-to-date information."
     args_schema: Type[BaseModel] = GoogleSearchClientPayload
     google_search_client: Optional[GoogleSearchClient] = None
     return_direct: bool = False

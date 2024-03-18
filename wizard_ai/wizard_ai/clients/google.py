@@ -44,7 +44,7 @@ class GetCalendarEventsPayload(BaseModel):
         description="Start date to retrieve events from.")
     end: Optional[datetime] = Field(
         default=None,
-        description="End date to retrieve events from.")
+        description="End date to retrieve events to.")
 
 class GetEmailsPayload(BaseModel):
     number_of_emails: Optional[int] = Field(

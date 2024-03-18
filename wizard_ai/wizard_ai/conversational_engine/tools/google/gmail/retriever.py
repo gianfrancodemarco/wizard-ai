@@ -1,15 +1,15 @@
 import pickle
 from typing import Optional, Type
 
+from langchain.tools import BaseTool
 from langchain_core.callbacks import CallbackManagerForToolRun
 from pydantic import BaseModel
 
 from wizard_ai.clients import GetEmailsPayload, GoogleClient, get_redis_client
 from wizard_ai.constants import RedisKeys
-from wizard_ai.conversational_engine.form_agent import FormTool
 
 
-class GmailRetriever(FormTool):
+class GmailRetriever(BaseTool):
 
     name = "GmailRetriever"
     description = """Useful to retrieve emails from Gmail"""
@@ -18,7 +18,7 @@ class GmailRetriever(FormTool):
     return_direct = True
     chat_id: Optional[str] = None
 
-    def _run_when_complete(
+    def _run(
         self,
         number_of_emails: Optional[int] = None,
         run_manager: Optional[CallbackManagerForToolRun] = None

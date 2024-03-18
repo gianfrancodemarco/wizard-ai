@@ -18,7 +18,7 @@ class OnlinePurchasePayload(BaseModel):
     )
 
     email: Optional[str] = Field(
-        description="Email to send the ebook"
+        description="Email to send the ebook to"
     )
 
     quantity: int = Field(
@@ -34,7 +34,7 @@ class OnlinePurchasePayload(BaseModel):
     )
 
     address: str = Field(
-        description="Address to ship the item"
+        description="Address to ship the item to"
     )
 
     @field_validator("quantity")

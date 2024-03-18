@@ -128,7 +128,7 @@ class StateGraphDrawer:
 
         # Create a directed graph
         graphviz_graph = pgv.AGraph(
-            directed=True, strict=False, nodesep=0.9, ranksep=1.0)
+            directed=True, nodesep=0.9, ranksep=1.0)
 
         # Add nodes, conditional edges, and edges to the graph
         self.add_nodes(graphviz_graph, state_graph)
