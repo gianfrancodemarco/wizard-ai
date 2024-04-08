@@ -3,7 +3,7 @@ from textwrap import dedent
 
 from tools.form_tools import *
 
-NUMBER_OF_TESTS_PER_USE_CASE = 10
+NUMBER_OF_TESTS_PER_USE_CASE = 20
 
 configs = {
     "GoogleCalendarCreator": {

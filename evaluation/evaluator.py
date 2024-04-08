@@ -24,17 +24,17 @@ import os
 
 from evaluator_helpers import *
 
-os.environ["OPENAI_API_KEY"] = "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"
+os.environ["OPENAI_API_KEY"] = "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"
 
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
-os.environ["LANGCHAIN_API_KEY"] = "ls__fd0fe695f6734dedbf8536715ff000ee"
-os.environ["LANGCHAIN_PROJECT"] = "wizard-ai-evaluation"
+os.environ["LANGCHAIN_API_KEY"] = "ls__f2958965106c4e02bb9d6ed6d2c11f36"
+os.environ["LANGCHAIN_PROJECT"] = "wizard-ai-cost-analysis3"
 
 TEST_CASES_PATH = os.path.join(
     os.path.dirname(__file__), "prompts/prompts.json")
 
-EVALUATE_FORM_AGENT = False
+EVALUATE_FORM_AGENT = True
 if EVALUATE_FORM_AGENT:
     from tools.form_tools import *
     evaluation_logger = EvaluationLogger(type="form")
@@ -47,7 +47,9 @@ else:
 test_cases = json.loads(open(TEST_CASES_PATH).read())
 
 # Hack to resume after a crash
-test_cases = test_cases[160:]
+#test_cases = [test_cases[240:]]
+
+test_cases = [test_case for test_case in test_cases if test_case["tool"] == "OnlinePurchase"]
 
 for test_case in test_cases:
     try:
