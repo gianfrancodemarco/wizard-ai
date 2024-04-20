@@ -8,6 +8,7 @@ from wizard_ai.clients import CreateCalendarEventPayload
 
 fake = faker.Faker()
 
+
 class GoogleCalendarCreatorEvaluation(StructuredTool):
     name = "GoogleCalendarCreator"
     description = """Useful to create events/memos/reminders on Google Calendar."""

@@ -74,9 +74,9 @@ def information_to_collect_prompt_template(
 
 def ask_for_confirmation_prompt_template(
     form_tool: BaseTool
-):    
+):
     information_collected = re.sub("}", "}}", re.sub("{", "{{", str(
-    {name: value for name, value in form_tool.form.__dict__.items() if value})))
+        {name: value for name, value in form_tool.form.__dict__.items() if value})))
 
     return SystemMessagePromptTemplate.from_template(dedent(
         f"""
