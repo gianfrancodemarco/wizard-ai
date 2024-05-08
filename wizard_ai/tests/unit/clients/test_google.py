@@ -79,6 +79,7 @@ def test_get_calendar_events():
     assert events[1]['summary'] == 'Event 2'
     assert events[2]['summary'] == 'Event 3'
 
+
 def test_get_calendar_events_html():
     credentials = MagicMock(spec=Credentials)
     client = GoogleClient(credentials)
@@ -200,7 +201,7 @@ def test_get_emails():
         },
         'snippet': 'This is a test email'
     }
-                    
+
     with patch('wizard_ai.clients.google.build', return_value=service_mock):
         emails = client.get_emails_html(payload)
 

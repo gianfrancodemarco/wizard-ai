@@ -3,7 +3,6 @@ import json
 import logging
 import pprint
 from textwrap import dedent
-from typing import Any
 
 from fastapi.responses import JSONResponse
 
@@ -28,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 rabbitmq_producer = get_rabbitmq_producer()
 redis_client = get_redis_client()
+
 
 async def process_message(data: dict) -> None:
 
@@ -87,6 +87,7 @@ async def process_message(data: dict) -> None:
 
     store_agent_state(redis_client, data.chat_id, stored_agent_state)
     publish_answer(rabbitmq_producer, data.chat_id, answer)
+
 
 def publish_answer(
         rabbitmq_client: RabbitMQProducer,

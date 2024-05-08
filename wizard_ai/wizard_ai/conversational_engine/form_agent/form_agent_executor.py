@@ -155,7 +155,7 @@ class FormAgentExecutor(StateGraph):
             updates = {
                 **tool_outcome.state_update,
                 "intermediate_steps": intermediate_steps,
-                "tool_outcome": tool_outcome, # this isn't really correct with multiple tools
+                "tool_outcome": tool_outcome,  # this isn't really correct with multiple tools
                 "agent_outcome": None,
                 "error": None
             }
@@ -188,6 +188,7 @@ class FormAgentExecutor(StateGraph):
             output = state.get("agent_outcome").return_values["output"]
 
         return output
+
 
 def filter_active_tools(
     tools: Sequence[BaseTool],

@@ -8,6 +8,7 @@ from wizard_ai.clients import GetCalendarEventsPayload
 
 fake = faker.Faker()
 
+
 class GoogleCalendarRetrieverEvaluation(StructuredTool):
     name = "GoogleCalendarRetriever"
     description = """Useful to retrieve events from Google Calendar"""
