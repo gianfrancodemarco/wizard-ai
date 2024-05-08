@@ -40,17 +40,19 @@ def normalize_json(json_data):
     Also, remove attributes that end in _, as by convention they are not relevant for the evaluation.
     """
 
-    json_data = {key: value for key, value in json_data.items() if not key.endswith('_')}
+    json_data = {
+        key: value for key,
+        value in json_data.items() if not key.endswith('_')}
 
     for key, value in json_data.items():
         if key in ['start', 'end']:
             json_data[key] = datetime.fromisoformat(
                 value.replace('T', ' ').replace("Z", '')).strftime('%Y-%m-%d %H:%M:%S')
 
-        if type(value) == str:
+        if isinstance(value, str):
             json_data[key] = json_data[key].replace("\n", " ").replace(".", " ").replace(
                 ",", " ").replace("  ", " ").lower().strip()
-            
+
     # Normalize whitespace
     json_data = {key: value.strip() if isinstance(
         value, str) else value for key, value in json_data.items()}
@@ -114,7 +116,8 @@ class ExecutorForEvaluation:
             "active_form_tool": self.state["active_form_tool"]
         }
 
-        for output in self.graph.app.stream(inputs, config={"recursion_limit": 25}):
+        for output in self.graph.app.stream(
+                inputs, config={"recursion_limit": 25}):
             for key, value in output.items():
                 self.check_successful_execution(key, value)
         output = self.graph.parse_output(output)
@@ -146,7 +149,7 @@ class FormAgentExecutorForEvaluation(ExecutorForEvaluation):
 
     Args:
         target_tool_call (Dict[str, Any], optional): The target tool call that we want to reach.
-        The executor will raise a SuccessfulExecution exception if the target tool call is reached, or 
+        The executor will raise a SuccessfulExecution exception if the target tool call is reached, or
         a MaxIterationsReached exception if the maximum number of iterations is reached.
     """
 
@@ -162,7 +165,7 @@ class FormAgentExecutorForEvaluation(ExecutorForEvaluation):
 
         if not isinstance(value["agent_outcome"], list):
             return
-        
+
         if not isinstance(value["agent_outcome"][0], OpenAIToolAgentAction):
             return
 
@@ -195,7 +198,7 @@ class BasicAgentExecutorForEvaluation(ExecutorForEvaluation):
 
     Args:
         target_tool_call (Dict[str, Any], optional): The target tool call that we want to reach.
-        The executor will raise a SuccessfulExecution exception if the target tool call is reached, or 
+        The executor will raise a SuccessfulExecution exception if the target tool call is reached, or
         a MaxIterationsReached exception if the maximum number of iterations is reached.
     """
 
@@ -209,7 +212,7 @@ class BasicAgentExecutorForEvaluation(ExecutorForEvaluation):
 
         if not isinstance(value["agent_outcome"], list):
             return
-        
+
         if not isinstance(value["agent_outcome"][0], OpenAIToolAgentAction):
             return
 

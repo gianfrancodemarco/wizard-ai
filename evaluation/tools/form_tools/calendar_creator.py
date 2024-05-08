@@ -8,6 +8,7 @@ from wizard_ai.conversational_engine.tools import GoogleCalendarCreator
 
 fake = faker.Faker()
 
+
 class GoogleCalendarCreatorEvaluation(GoogleCalendarCreator):
 
     def _run_when_complete(
@@ -17,8 +18,7 @@ class GoogleCalendarCreatorEvaluation(GoogleCalendarCreator):
     ) -> str:
         return "OK"
 
-
-    def get_random_payload(self) -> Dict[str, Union[str, datetime]]:        
+    def get_random_payload(self) -> Dict[str, Union[str, datetime]]:
         start = fake.date_time_this_month()
         start = start.replace(second=0, microsecond=0)
 
