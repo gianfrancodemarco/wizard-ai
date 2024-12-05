@@ -16,6 +16,7 @@ REDIS_HOST = os.environ.get('REDIS_HOST')
 REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
 GET_FULL_CONTENT = True
 
+
 class CreateCalendarEventPayload(BaseModel):
 
     summary: str = Field(
@@ -38,6 +39,7 @@ class CreateCalendarEventPayload(BaseModel):
         if isinstance(v, str):
             return parse(v)
 
+
 class GetCalendarEventsPayload(BaseModel):
     start: Optional[datetime] = Field(
         default=None,
@@ -45,6 +47,7 @@ class GetCalendarEventsPayload(BaseModel):
     end: Optional[datetime] = Field(
         default=None,
         description="End date to retrieve events to.")
+
 
 class GetEmailsPayload(BaseModel):
     number_of_emails: Optional[int] = Field(
@@ -166,7 +169,7 @@ class GoogleClient:
                            ['headers'] if header['name'] == 'Subject'), None)
 
             full_content = ''
-            
+
             if GET_FULL_CONTENT:
                 # Check if the email is in multipart format
                 if 'multipart' in msg['payload']['mimeType']:

@@ -6,7 +6,9 @@ import faker
 from wizard_ai.conversational_engine.tools import OnlinePurchase
 
 fake = faker.Faker()
-class OnlinePurchaseEvaluation(OnlinePurchase):    
+
+
+class OnlinePurchaseEvaluation(OnlinePurchase):
 
     def _run_when_complete(
         self,
@@ -19,8 +21,13 @@ class OnlinePurchaseEvaluation(OnlinePurchase):
         """
         Use library faker to generate random data for the form.
         """
-        
-        item = fake.random_element(elements=("watch", "shoes", "phone", "book"))
+
+        item = fake.random_element(
+            elements=(
+                "watch",
+                "shoes",
+                "phone",
+                "book"))
         ebook = None
         email = None
         quantity = None
@@ -35,15 +42,44 @@ class OnlinePurchaseEvaluation(OnlinePurchase):
 
         if item != "book" or ebook == False:
             quantity = fake.random_int(min=1, max=10)
-            region = fake.random_element(elements=("puglia", "sicilia", "toscana"))
+            region = fake.random_element(
+                elements=("puglia", "sicilia", "toscana"))
             if region == "puglia":
-                province = fake.random_element(elements=("bari", "bat", "brindisi", "foggia", "lecce", "taranto"))
+                province = fake.random_element(
+                    elements=(
+                        "bari",
+                        "bat",
+                        "brindisi",
+                        "foggia",
+                        "lecce",
+                        "taranto"))
             if region == "sicilia":
-                province = fake.random_element(elements=("agrigento", "caltanissetta", "catania", "enna", "messina", "palermo", "ragusa", "siracusa", "trapani"))
+                province = fake.random_element(
+                    elements=(
+                        "agrigento",
+                        "caltanissetta",
+                        "catania",
+                        "enna",
+                        "messina",
+                        "palermo",
+                        "ragusa",
+                        "siracusa",
+                        "trapani"))
             if region == "toscana":
-                province = fake.random_element(elements=("arezzo", "firenze", "grosseto", "livorno", "lucca", "massa-carrara", "pisa", "pistoia", "prato", "siena"))
+                province = fake.random_element(
+                    elements=(
+                        "arezzo",
+                        "firenze",
+                        "grosseto",
+                        "livorno",
+                        "lucca",
+                        "massa-carrara",
+                        "pisa",
+                        "pistoia",
+                        "prato",
+                        "siena"))
             address = fake.address()
-            
+
         return {
             "item": item,
             "ebook": ebook,
@@ -53,5 +89,3 @@ class OnlinePurchaseEvaluation(OnlinePurchase):
             "province": province,
             "address": address
         }
-            
-        

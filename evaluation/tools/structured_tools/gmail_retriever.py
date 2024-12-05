@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from wizard_ai.clients import GetEmailsPayload
 
+
 class GmailRetrieverEvaluation(StructuredTool):
     name = "GmailRetriever"
     description = """Useful to retrieve emails from Gmail"""

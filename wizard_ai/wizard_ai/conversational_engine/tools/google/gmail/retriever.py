@@ -30,7 +30,8 @@ class GmailRetriever(BaseTool):
             RedisKeys.GOOGLE_CREDENTIALS.value
         )
         if not credentials:
-            raise ValueError("No Google credentials found. User must login first.")
+            raise ValueError(
+                "No Google credentials found. User must login first.")
         credentials = pickle.loads(credentials)
 
         google_client = GoogleClient(credentials)
