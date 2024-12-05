@@ -1,3 +1,12 @@
+"""
+This code snippet defines a `FormToolExecutor` class that extends `ToolExecutor` and implements the `_execute` and `_parse_tool_outcome` methods. 
+
+The `_execute` method takes a `ToolInvocationInterface` object and an optional `AgentState` object as input parameters. It checks if the requested tool is in the tool map and then invokes the tool with the provided input. It then calls the `_parse_tool_outcome` method to parse the output and return it.
+
+The `_parse_tool_outcome` method takes the output of the tool invocation and the tool itself as input parameters. It checks the type of the output and creates a `FormToolOutcome` object accordingly. If the output is a string, it creates a `FormToolOutcome` object with an empty state update, the output string, and the return_direct flag from the tool. If the output is already a `FormToolOutcome` object, it simply returns it. If the output is neither a string nor a `FormToolOutcome` object, it raises a `ValueError`.
+
+The code seems well-structured and handles the tool outputs correctly based on their types.
+"""
 from langgraph.prebuilt.tool_executor import *
 
 from wizard_ai.conversational_engine.form_agent.form_tool import (

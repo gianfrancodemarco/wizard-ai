@@ -1,3 +1,14 @@
+"""
+This code defines a `FormTool` class that represents a form tool with different states and methods to interact with the form. The form tool can be in one of the states: `INACTIVE`, `ACTIVE`, or `FILLED`. It allows the user to activate, update, and finalize the form. The form can have optional fields, and the tool can be reset using the `FormReset` class.
+
+The `FormTool` class uses Pydantic models for defining the form schema and handling form data. It also includes methods to validate and update the form data, check if the form is filled, and get the next field to collect.
+
+The code also defines an `AgentState` TypedDict to store the state of the agent during conversations, including input, chat history, outcomes, and error messages.
+
+The `FormReset` class is a tool that can be called to reset the form and clear the form data.
+
+The code seems well-structured and provides a good foundation for creating and managing form tools within a conversational agent system.
+"""
 import json
 import operator
 from abc import ABC, abstractmethod

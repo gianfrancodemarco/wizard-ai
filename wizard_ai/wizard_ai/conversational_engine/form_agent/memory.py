@@ -1,3 +1,14 @@
+"""
+This code defines classes and functions related to storing and retrieving the state of an agent in a chat application using Redis as a backend. Here's a brief summary of what the code does:
+
+1. `StoredAgentState`: This class represents the state of an agent, including its chat memory and active form tool. It has methods to serialize the state into a pickle format and deserialize it back.
+
+2. `get_stored_agent_state`: This function retrieves the stored agent state from Redis based on a given chat ID. If the state exists in Redis, it loads it using `StoredAgentState.from_pickle` method, otherwise creates a new state.
+
+3. `store_agent_state`: This function stores the agent state into Redis for a specific chat ID. It creates a new `StoredAgentState` object with the provided agent state information and serializes it before storing in Redis.
+
+Overall, this code provides a mechanism to save and retrieve the state of an agent within a conversation using Redis as a data store.
+"""
 import logging
 import os
 import pickle
