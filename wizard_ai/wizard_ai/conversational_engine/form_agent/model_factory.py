@@ -66,7 +66,7 @@ def information_to_collect_prompt_template(
     return SystemMessagePromptTemplate.from_template(dedent(
         f"""
         Help the user fill data for {form_tool.name}. Ask to provide the needed information.
-        Now you must should update the form with any information the user provided or ask the user to provide a value for the field "{information_to_collect}".
+        Now you must update the form with any information the user provided or ask the user to provide a value for the field "{information_to_collect}".
         You MUST use the {form_tool.name} tool to update the stored data each time the user provides one or more values.
         """
     ).strip())
@@ -74,9 +74,9 @@ def information_to_collect_prompt_template(
 
 def ask_for_confirmation_prompt_template(
     form_tool: BaseTool
-):    
+):
     information_collected = re.sub("}", "}}", re.sub("{", "{{", str(
-    {name: value for name, value in form_tool.form.__dict__.items() if value})))
+        {name: value for name, value in form_tool.form.__dict__.items() if value})))
 
     return SystemMessagePromptTemplate.from_template(dedent(
         f"""

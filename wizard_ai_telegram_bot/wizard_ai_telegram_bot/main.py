@@ -8,7 +8,7 @@ from wizard_ai_telegram_bot.clients import (
 from wizard_ai_telegram_bot.constants import MessageQueues
 
 from wizard_ai_telegram_bot.bot.bot import MaiAssistantTelegramBot
-from wizard_ai_telegram_bot.consumer import MAIAssistantConsumer
+from wizard_ai_telegram_bot.consumer import WizardAIConsumer
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     bot = MaiAssistantTelegramBot()
 
     # Create a consumer for RabbitMQ that handles update from MAIAssistant
-    wizard_ai_consumer = MAIAssistantConsumer(bot=bot.telegram_bot)
+    wizard_ai_consumer = WizardAIConsumer(bot=bot.telegram_bot)
     rabbitmq_consumer = get_rabbitmq_consumer(
         queue_name=MessageQueues.wizard_ai_OUT.value,
         on_message_callback=wizard_ai_consumer.on_message_callback

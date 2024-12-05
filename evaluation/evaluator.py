@@ -4,7 +4,7 @@ Module used to evaluate the conversational engine.
 The evaluation is done by using an LLM to simulate the user, and the conversational engine to be tested.
 
 The module reads the test cases from the prompts.json file, and for each test case, it executes the conversational engine.
-Each test case contains a prompt, a tool, and a payload. 
+Each test case contains a prompt, a tool, and a payload.
 The prompt is the system message for the LLM that simulates the user.
 The tool is the tool that the conversational engine should call and the payload is the expected input for the tool.
 A test is successful if the conversational engine calls the correct tool with the correct input.
@@ -24,17 +24,17 @@ import os
 
 from evaluator_helpers import *
 
-os.environ["OPENAI_API_KEY"] = "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"
+os.environ["OPENAI_API_KEY"] = "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"
 
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
-os.environ["LANGCHAIN_API_KEY"] = "ls__fd0fe695f6734dedbf8536715ff000ee"
-os.environ["LANGCHAIN_PROJECT"] = "wizard-ai-evaluation"
+os.environ["LANGCHAIN_API_KEY"] = "ls__f2958965106c4e02bb9d6ed6d2c11f36"
+os.environ["LANGCHAIN_PROJECT"] = "wizard-ai-cost-analysis3"
 
 TEST_CASES_PATH = os.path.join(
     os.path.dirname(__file__), "prompts/prompts.json")
 
-EVALUATE_FORM_AGENT = False
+EVALUATE_FORM_AGENT = True
 if EVALUATE_FORM_AGENT:
     from tools.form_tools import *
     evaluation_logger = EvaluationLogger(type="form")
@@ -47,7 +47,10 @@ else:
 test_cases = json.loads(open(TEST_CASES_PATH).read())
 
 # Hack to resume after a crash
-test_cases = test_cases[160:]
+# test_cases = [test_cases[240:]]
+
+test_cases = [
+    test_case for test_case in test_cases if test_case["tool"] == "OnlinePurchase"]
 
 for test_case in test_cases:
     try:
@@ -59,7 +62,7 @@ for test_case in test_cases:
 
         user_model = UserLLMForEvaluation()
         system_model = SystemModelClass(
-            tools = [
+            tools=[
                 GoogleCalendarCreatorEvaluation(),
                 GoogleCalendarRetrieverEvaluation(),
                 GmailRetrieverEvaluation(),
@@ -83,7 +86,8 @@ for test_case in test_cases:
             user_response = user_model.execute(system_response)
             evaluation_logger.log_user_message(user_response)
 
-            if user_response in ["Goodbye!", "Thank you!", "Thank you, you too!", "Thank you! Goodbye!"]:
+            if user_response in ["Goodbye!", "Thank you!",
+                                 "Thank you, you too!", "Thank you! Goodbye!"]:
                 raise ConversationAborted()
     except SuccessfulExecution:
         evaluation_logger.log_result("Successful execution")

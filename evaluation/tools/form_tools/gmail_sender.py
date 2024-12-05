@@ -7,6 +7,7 @@ from wizard_ai.conversational_engine.tools import GmailSender
 
 fake = faker.Faker()
 
+
 class GmailSenderEvaluation(GmailSender):
     def _run_when_complete(
         self,

@@ -1,8 +1,8 @@
 from langchain_core.prompts.chat import ChatPromptTemplate
 
 from wizard_ai.conversational_engine.form_agent import (AgentState,
-                                                          FormAgentExecutor,
-                                                          ModelFactory)
+                                                        FormAgentExecutor,
+                                                        ModelFactory)
 
 from .mocks import *
 

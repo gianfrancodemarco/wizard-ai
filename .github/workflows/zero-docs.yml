@@ -20,4 +20,5 @@ jobs:
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           paths: ${{ github.event.inputs.paths }}
+          code-entities: ${{ github.event.inputs.code-entities }}
           reviewers: gianfrancodemarco

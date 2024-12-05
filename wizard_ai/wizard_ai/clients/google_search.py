@@ -4,7 +4,7 @@ from typing import Dict, List
 
 import requests
 from parsel import Selector
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from wizard_ai.helpers import HtmlProcessor
 
@@ -12,9 +12,13 @@ logger = logging.getLogger(__name__)
 
 
 class GoogleSearchClientPayload(BaseModel):
-    query: str
-    # page: int = 1
-    num_expanded_results: int = 1
+    query: str = Field(
+        description="The query to search Google with."
+    )
+    num_expanded_results: int = Field(
+        1,
+        description="The number of links to crawl from the result list."
+    )
 
 
 class GoogleSearchClient:
